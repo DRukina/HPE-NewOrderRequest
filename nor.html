@@ -9558,6 +9558,10 @@
 		  $('select[data-name="PA_Number"]').val($('select[data-name="PA_Number"] option')[1].innerText).trigger('change');
 		}
 	  }
+	  
+	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone)
+		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
+
 
 	  //PO_CompleteDelivery LOGIC FOR KR
 	  if (document.querySelector('input[data-name="PO_CompleteDelivery"]') && !PO_CompleteDeliveryLogicCheck && (config.dataset.PO_CompleteDelivery == null || config.dataset.PO_CompleteDelivery == '' || config.dataset.PO_CompleteDelivery == 'N')) {
