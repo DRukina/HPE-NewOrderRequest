@@ -514,6 +514,10 @@
 	global.data.user.language = "[SSOData.PreferredLanguageCode]";
 	global.data.user.planguage = "[SSOData.Language]";
 
+	if (!global.data.company.party) {
+	  global.noPartyError = true;
+	}
+
 	profile.get({
 	  email: '[SSOData.Email]',
 	  relationship: true,
@@ -12324,6 +12328,16 @@
 
 
 			  crud.q.stop(function() {
+		
+				if (global.noPartyError) {
+				  mo.fn.modal.show({
+					ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+					title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+					content: hpe.fn.lang("FormNoParty", config.locale, config.localizations),
+				  });
+				  return;
+				}
+				
 				if (global.data.company.party) {
 				  mo.fn.overlay.show({
 					loading: true,
