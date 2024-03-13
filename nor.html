@@ -513,10 +513,6 @@
 	global.data.user.locale = "[SSOData.Locale]";
 	global.data.user.language = "[SSOData.PreferredLanguageCode]";
 	global.data.user.planguage = "[SSOData.Language]";
-	
-	if (!global.data.company.party) {
-	  global.noPartyError = true;
-	}
 
 	profile.get({
 	  email: '[SSOData.Email]',
@@ -10417,7 +10413,8 @@
 		  OpportunityId,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
-		  SalesOrg
+		  SalesOrg,
+		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
 
 		const filterConfig = {
@@ -10621,6 +10618,13 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
+		  PO_BackgroundGroup: {
+			filter: {
+			  logic: "and",
+			  filters: []
+			},
+			value: BusinessGroup === 'Edge' ? 'Edge' : 'Hybrid IT',
+		  }
 		};
 		return filterConfig;
 	  }
@@ -10643,6 +10647,7 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
+	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
 	initCountry: function(config, invalidQuoteID, force = true) {
@@ -12319,16 +12324,6 @@
 
 
 			  crud.q.stop(function() {
-		
-				if (global.noPartyError) {
-				  mo.fn.modal.show({
-					ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-					title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
-					content: hpe.fn.lang("FormNoParty", config.locale, config.localizations),
-				  });
-				  return;
-				}
-				
 				if (global.data.company.party) {
 				  mo.fn.overlay.show({
 					loading: true,
