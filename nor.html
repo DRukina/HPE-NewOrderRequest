@@ -11320,18 +11320,11 @@
 				  }
 				}
 
-				if (section == 'ShipTo' || section == 'EndCx' || section == 'SoldTo') {
-					var externalidentifier = d.party[0].externalIdentifier;
-					for (i = 0; i < externalidentifier.length; i++) {
-					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
-						addressObj['NationalID'] = externalidentifier[i].identifierValue;
-						config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
-						break;
-					  }
-					}
-				}
-				// SoldTo NationalID
-				if (section == 'SoldTo') {
+        const isInitNationID = (
+                (section == 'ShipTo' || section == 'EndCx' ) && ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].includes(d.party[0].countryName)
+            ) || section == 'SoldTo';
+
+				if (isInitNationID) {
 					var externalidentifier = d.party[0].externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
