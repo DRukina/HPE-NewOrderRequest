@@ -19,7 +19,7 @@
   } // create error log
 
 
-  function EMDMAddress(currentVal, type, hasNationalID) {
+  function EMDMAddress(currentVal, type, hasNationalID, isForce = false) {
 	hpe.data.xref(currentVal, function(d) {
 	  console.log('EMDMAddress', d)
 	  mo.fn.overlay.show({
@@ -72,7 +72,7 @@
 		  }
 
 		  if (addressMatched) {
-			if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
+			if (isForce || ["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
 			  config.dataset[`${type}_Address_State`] = addressMatched.stateProvince;
 
 			let address1 = addressMatched.addressLine1;
@@ -1526,7 +1526,7 @@
 				  value: "1",
 				}*/
 			  ]
-			},	
+			},
 			{
 			  field: "CountryCode",
 			  operator: "eq",
@@ -1572,7 +1572,7 @@
 				  value: "Y"
 				}
 			  ]
-			},	
+			},
 			{
 			  field: "CountryCode",
 			  operator: "eq",
@@ -3055,17 +3055,17 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only 00000 after '3' - 300000XXXXX 
+		  // allow only 00000 after '3' - 300000XXXXX
 		  if (this.value.length > 2 && this.value.length <= 6 && /^30/.test(this.value) && !/^3[0]{2,5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only digits after '300000' - 300000XXXXX 
+		  // allow only digits after '300000' - 300000XXXXX
 		  if (this.value.length > 6 && this.value.length <= 11 && /^30/.test(this.value) && !/^300000\d*$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // 300000XXXXX 
+		  // 300000XXXXX
 		  if (this.value.length > 11 && /^30/.test(this.value) && !/^300000\d{5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
@@ -3080,7 +3080,7 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // read quote 
+		  // read quote
 		  if (this.value) {
 			// const quotePattern = /(^(NQ|DQ)\d{8}-([0-9][0-9]))|^(300000)\d{5}$/;
 			// for testing
@@ -8410,7 +8410,7 @@
 		  }
 		} catch (error) {
 		  console.error("Error fetching the link:", error);
-		  //window.location = "fallbackURL"; 
+		  //window.location = "fallbackURL";
 		}
 	  });
 	}
@@ -8430,7 +8430,7 @@
 	pages: [page1, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
 	onNext: function() {
 	  if (config.dataset.xrefFail == 'Yes') config.dataset.xrefFail = 'No';
-	  
+
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
 
@@ -8826,7 +8826,7 @@
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
 				config.dataset.Region = global.data.geo.region;
-				config.dataset.Geo = global.data.geo.geography;							 
+				config.dataset.Geo = global.data.geo.geography;
 
 				if (!global.data.brt.channel) {
 				  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -9757,7 +9757,7 @@
 		});
 	  }
 
-	  // Populate data from QuoteId 
+	  // Populate data from QuoteId
 	  if (document.querySelector('input[data-name="Requestor_PO_Quote_ID"]')) {
 		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", function(event, invalid) {
 		  let completedData = document.querySelectorAll('*[data-name]');
@@ -9816,8 +9816,8 @@
 		document.querySelector('*[data-name="Payment_TermsPlaceholder"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="TaxAmount"]'))
           document.querySelector('*[data-name="TaxAmount"]').closest('.row').classList.add("customFilteredClass");
-	  
-	  
+
+
 	  if (document.querySelector('input[data-name="PO_Value"]')) {
 		$('input[data-name="PO_Value"]').change(function() {
 		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
@@ -9987,7 +9987,7 @@
 		});
 	  }
 
-	  //QOD logic for not turkey and MAP 
+	  //QOD logic for not turkey and MAP
 	  if (!QODCheck) {
 		QODCheck = true;
 		var config_QuoteToggle = document.querySelector('input[data-name="Config_Quote"]');
@@ -10072,7 +10072,7 @@
 			close: false
 		  })
 		  config.dataset.SoldTo_PartyId = currentVal;
-		  EMDMAddress(currentVal, 'SoldTo', true);
+		  EMDMAddress(currentVal, 'SoldTo', true, true);
 		}
 	  });
 
@@ -10554,7 +10554,7 @@
 		'GET',
 		`https://hpe-rfb.it.hpe.com/resources/rs/custom/php/qids/readquote.php?qid=${qid}`
 	  );
-	  // for testing: 
+	  // for testing:
 	  // xhr.timeout = qid === 'NI01062833-01' ? 1000 : 10000;
 	  xhr.timeout = 80000;
 	  const errorHandler = function() {
@@ -10612,7 +10612,7 @@
 	  }
 	  // for testing
 		isExpired = false;
-	  
+
 	  if (isExpired) {
 		const formatDate = new Date(QuoteEndDate).toJSON().slice(0, 10);
 		return {
@@ -10943,7 +10943,7 @@
 	  let quoteCurrency = null;
 	  let quoteCurrencies = null;
 
-	  // if quote is exist 
+	  // if quote is exist
 	  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
 	  const isCurrentQuote = quote && quote.quoteHeader && !config.dataset.Quote_Error && quote.quoteHeader.OriginatingSystemQuoteAndVersionID === config.dataset.Requestor_PO_Quote_ID;
 	  const quoteCountry = isCurrentQuote && quote.quoteHeader.EndCustomer && quote.quoteHeader.EndCustomer.Address && quote.quoteHeader.EndCustomer.Address.Country;
@@ -11320,7 +11320,7 @@
 				  }
 				}
 
-				if (section == 'ShipTo' || section == 'EndCx') {
+				if (section == 'ShipTo' || section == 'EndCx' || section == 'SoldTo') {
 				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
 					var externalidentifier = d.party[0].externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
@@ -11332,7 +11332,7 @@
 					}
 				  }
 				}
-				// SoldTo NationalID 
+				// SoldTo NationalID
 				if (section == 'SoldTo') {
 				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
 					var externalidentifier = d.party[0].externalIdentifier;
@@ -11397,7 +11397,7 @@
 			}
 		  }
 
-		  // “TradeStyleName” to “Company name” wherever available if not use the name field 
+		  // “TradeStyleName” to “Company name” wherever available if not use the name field
 		  //config.dataset[`${section}_CompanyName`] = (quoteHelper.quote.quoteHeader[quoteSection].Address && quoteHelper.quote.quoteHeader[quoteSection].Address.TradeStyleName) || quoteHelper.quote.quoteHeader[quoteSection].Company.Name;
 		}
 
@@ -11834,7 +11834,7 @@
 		}
 		document.querySelector(`input[data-name=${id}]`).parentElement.parentElement.parentElement.parentElement.classList.add('PPC', `${id}_output`);
 		var app = document.querySelector(`.${id}_output`);
-		// move config toggle to the right 
+		// move config toggle to the right
 		$(app).prev().addClass('PPC PPC_toggle');
 		const geo = config.dataset.Geo || global.data.geo.geography;
 
@@ -11843,7 +11843,7 @@
 		  validationConfig,
 		  hidebill
 		} = quoteHelper.validateAddressData(config, key);
-		// Disable toggle and open page 
+		// Disable toggle and open page
 		const toggleId = `Config_${id}`;
 		if (!valid) {
 		  if (document.querySelector(`*[data-name="${toggleId}"]`)) {
@@ -12079,9 +12079,7 @@
 		validationConfig.shipping.push("ShipTo_Address_Postal");
 		validationConfig.endcx.push("EndCx_Address_Postal");
 		validationConfig.reseller.push("Reseller_Address_Postal");
-	  }
-	  if (["Brazil"].includes(config.dataset.SoldTo_Address_Country)) {
-		validationConfig.shipping.push("SoldTo_NationalID");
+        validationConfig.shipping.push("SoldTo_NationalID");
 	  }
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
@@ -12817,7 +12815,7 @@
                               field: "CountryEntity",
                               operator: "eq",
                               value: global.data.company.country
-                          }, 
+                          },
                           {
                               field: "PartnerBRT",
                               operator: "eq",
