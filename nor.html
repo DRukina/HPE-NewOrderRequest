@@ -11320,11 +11320,11 @@
 				  }
 				}
 
-        const isInitNationID = (
+        const isInitNationlID = (
                 (section == 'ShipTo' || section == 'EndCx' ) && ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].includes(d.party[0].countryName)
             ) || section == 'SoldTo';
 
-				if (isInitNationID) {
+				if (isInitNationlID) {
 					var externalidentifier = d.party[0].externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
