@@ -303,6 +303,11 @@
 	  },
 	  brts: [
 		{
+		  code: "OEV",
+		  name: "Virtual OEM",
+		  channel: ["ICMOEM", "ICMChannelGeneral"]
+		},
+		{
 		  code: "RS1",
 		  name: "T1 Solution Provider",
 		  channel: ["ICMChannelT1", "ICMChannelGeneral"]
@@ -511,6 +516,10 @@
 	global.data.user.language = "[SSOData.PreferredLanguageCode]";
 	global.data.user.planguage = "[SSOData.Language]";
 
+	if (!global.data.company.party) {
+	  global.noPartyError = true;
+	}
+
 	profile.get({
 	  email: '[SSOData.Email]',
 	  relationship: true,
@@ -574,6 +583,15 @@
 		let brtCode = global.data.brts.filter(function(item) {
 		  return (item.name.toLowerCase() == global.data.brt.name.toLowerCase())
 		});
+		
+		/*if (global.data.brt.code !== brtCode[0].code && brtCode[0].code) {
+		  // SETTING THE CHANNEL IS IMPORTANT
+		  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
+		  for (let i = 0; i < global.data.brts.length; i++) {
+			if (brtCode[0].code.toLowerCase() == global.data.brts[i].code.toLowerCase())
+			  global.data.brt.channel = global.data.brts[i].channel;
+		  }
+		}*/
 		global.data.brt.code = brtCode[0].code;
 		global.ready = true;
 	  }
@@ -5865,7 +5883,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "Form161",
-			 validation: ["mixA", "minLen|1", "maxLen|60"],
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
 			 typing: "kpDefault"
 		   },
 		   {
@@ -8607,8 +8625,14 @@
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
+		// Don't override user's data if exist
+		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
+		}
+		
+		quoteHelper.clearPOData(config);
+		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9539,6 +9563,10 @@
 		}
 	  }
 
+	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone)
+		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
+
+
 	  //PO_CompleteDelivery LOGIC FOR KR
 	  if (document.querySelector('input[data-name="PO_CompleteDelivery"]') && !PO_CompleteDeliveryLogicCheck && (config.dataset.PO_CompleteDelivery == null || config.dataset.PO_CompleteDelivery == '' || config.dataset.PO_CompleteDelivery == 'N')) {
 		if (config.dataset.CountryCode == 'KR') {
@@ -10398,7 +10426,8 @@
 		  OpportunityId,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
-		  SalesOrg
+		  SalesOrg,
+		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
 
 		const filterConfig = {
@@ -10602,6 +10631,13 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
+		  PO_BackgroundGroup: {
+			filter: {
+			  logic: "and",
+			  filters: []
+			},
+			value: BusinessGroup === 'Edge' ? 'Edge' : 'Hybrid IT',
+		  }
 		};
 		return filterConfig;
 	  }
@@ -10624,6 +10660,7 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
+	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
 	initCountry: function(config, invalidQuoteID, force = true) {
@@ -11295,12 +11332,13 @@
 	  if (document.querySelector('*[data-name="Config_PPC_EndCx"]'))
 		$('*[data-name="Config_PPC_EndCx"]').val(config.dataset.Config_PPC_EndCx);
 	},
-	clearAddressData: function(config, section = 'all') {
+	clearAddressData: function(config, section = 'all', type) {
 	  // typeof section: all, SoldTo, Payer, BillTo, ShipTo, Reseller, EndCustomer, CustomShipTo, AgentProgram
+	  // typeof type: address / contact / all
 
-	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country',
-					  'Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country', 'Address'
-					 ];
+	  const addressFields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country', 'Address'];
+	  const contactFields = ['Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country'];
+	  const fields = type === 'address' ? addressFields : (type === 'contact' ? contactFields : [...addressFields, ...contactFields]);
 	  fields.forEach((field) => {
 		if (section === 'all' || section === 'SoldTo') {
 		  config.dataset[`SoldTo_${field}`] = null;
@@ -11317,7 +11355,7 @@
 		if (section === 'all' || section === 'Reseller') {
 		  config.dataset[`Reseller_${field}`] = null;
 		}
-		if (section === 'all' || section === 'EndCustomer') {
+		if (section === 'all' || section === 'EndCustomer' || section === 'EndCx') {
 		  config.dataset[`EndCx_${field}`] = null;
 		}
 		if (section === 'all' || section === 'CustomShipTo') {
@@ -12181,6 +12219,17 @@
 
 	  }
 	},
+	clearPOData: function(config) {
+	  const sections = ['SoldTo', 'Payer', 'BillTo', 'ShipTo', 'Reseller', 'EndCx'];
+	  sections.forEach(section => {
+		if (config.dataset[`Config_${section}Details`] == 'Y') {
+		  quoteHelper.clearAddressData(config, section, 'address');
+		}
+		if (config.dataset[`Config_${section}Details_Contact`] == 'Y') {
+		  quoteHelper.clearAddressData(config, section, 'contact');
+		}
+	  });
+	},
   };
 
   const helper = {
@@ -12288,6 +12337,16 @@
 
 
 			  crud.q.stop(function() {
+		
+				if (global.noPartyError) {
+				  mo.fn.modal.show({
+					ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+					title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+					content: hpe.fn.lang("FormNoParty", config.locale, config.localizations),
+				  });
+				  return;
+				}
+				
 				if (global.data.company.party) {
 				  mo.fn.overlay.show({
 					loading: true,
