@@ -37,6 +37,8 @@
 		})
 		// HIDDEN INPUT: SOLDTO
 		config.dataset[`${type}_Address_Country`] = d.party[0].countryName;
+		config.dataset[`${type}_PartyId`] = d.party[0].currentPartyID || d.party[0].submittedPartyID || currentVal;
+		$(`input[data-name="${type}_PartyId"]`).val(config.dataset[`${type}_PartyId`]);
 
 		let alternateName = '';
 		if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
@@ -301,11 +303,6 @@
 	  },
 	  brts: [
 		{
-		  code: "OEV",
-		  name: "Virtual OEM",
-		  channel: ["ICMOEM", "ICMChannelGeneral"]
-		},
-		{
 		  code: "RS1",
 		  name: "T1 Solution Provider",
 		  channel: ["ICMChannelT1", "ICMChannelGeneral"]
@@ -514,10 +511,6 @@
 	global.data.user.language = "[SSOData.PreferredLanguageCode]";
 	global.data.user.planguage = "[SSOData.Language]";
 
-	if (!global.data.company.party) {
-	  global.noPartyError = true;
-	}
-
 	profile.get({
 	  email: '[SSOData.Email]',
 	  relationship: true,
@@ -581,15 +574,6 @@
 		let brtCode = global.data.brts.filter(function(item) {
 		  return (item.name.toLowerCase() == global.data.brt.name.toLowerCase())
 		});
-		
-		/*if (global.data.brt.code !== brtCode[0].code && brtCode[0].code) {
-		  // SETTING THE CHANNEL IS IMPORTANT
-		  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
-		  for (let i = 0; i < global.data.brts.length; i++) {
-			if (brtCode[0].code.toLowerCase() == global.data.brts[i].code.toLowerCase())
-			  global.data.brt.channel = global.data.brts[i].channel;
-		  }
-		}*/
 		global.data.brt.code = brtCode[0].code;
 		global.ready = true;
 	  }
@@ -5881,7 +5865,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "Form161",
-			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
+			 validation: ["mixA", "minLen|1", "maxLen|60"],
 			 typing: "kpDefault"
 		   },
 		   {
@@ -8397,6 +8381,7 @@
 
 				  crud.q.stop(function() {
 					hpe.data.xref(global.data.company.party, function(d) {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  reference.xref = d;
 					  config.locale = global.data.user.locale;
 					  config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8555,6 +8540,7 @@
 
 				crud.q.stop(function() {
 				  hpe.data.xref(global.data.company.party, function(d) {
+					global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					reference.xref = d;
 					config.locale = global.data.user.locale;
 					config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8621,14 +8607,8 @@
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
-		// Don't override user's data if exist
-		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
-		  config.dataset.FirstName = '[SSOData.FirstName]';
-		  config.dataset.LastName = '[SSOData.LastName]';
-		}
-		
-		quoteHelper.clearPOData(config);
-		
+		config.dataset.FirstName = '[SSOData.FirstName]';
+		config.dataset.LastName = '[SSOData.LastName]';
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9558,10 +9538,6 @@
 		  $('select[data-name="PA_Number"]').val($('select[data-name="PA_Number"] option')[1].innerText).trigger('change');
 		}
 	  }
-	  
-	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone)
-		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
-
 
 	  //PO_CompleteDelivery LOGIC FOR KR
 	  if (document.querySelector('input[data-name="PO_CompleteDelivery"]') && !PO_CompleteDeliveryLogicCheck && (config.dataset.PO_CompleteDelivery == null || config.dataset.PO_CompleteDelivery == '' || config.dataset.PO_CompleteDelivery == 'N')) {
@@ -9695,6 +9671,7 @@
 			progressPercent: 10,
 			close: false
 		  })
+		  config.dataset.Payer_PartyId = currentVal;
 		  EMDMAddress(currentVal, 'Payer', false);
 		}
 	  });
@@ -10421,8 +10398,7 @@
 		  OpportunityId,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
-		  SalesOrg,
-		  BusinessGroup
+		  SalesOrg
 		} = quoteHelper.quote.quoteHeader;
 
 		const filterConfig = {
@@ -10626,13 +10602,6 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
-		  PO_BackgroundGroup: {
-			filter: {
-			  logic: "and",
-			  filters: []
-			},
-			value: BusinessGroup === 'Edge' ? 'Edge' : 'Hybrid IT',
-		  }
 		};
 		return filterConfig;
 	  }
@@ -10655,7 +10624,6 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
-	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
 	initCountry: function(config, invalidQuoteID, force = true) {
@@ -10986,7 +10954,7 @@
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: partyId,
+				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
 				  Address_Country: d.party[0].countryName
 				};
 				let alternateName = '';
@@ -11327,13 +11295,12 @@
 	  if (document.querySelector('*[data-name="Config_PPC_EndCx"]'))
 		$('*[data-name="Config_PPC_EndCx"]').val(config.dataset.Config_PPC_EndCx);
 	},
-	clearAddressData: function(config, section = 'all', type) {
+	clearAddressData: function(config, section = 'all') {
 	  // typeof section: all, SoldTo, Payer, BillTo, ShipTo, Reseller, EndCustomer, CustomShipTo, AgentProgram
-	  // typeof type: address / contact / all
 
-	  const addressFields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country', 'Address'];
-	  const contactFields = ['Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country'];
-	  const fields = type === 'address' ? addressFields : (type === 'contact' ? contactFields : [...addressFields, ...contactFields]);
+	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country',
+					  'Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country', 'Address'
+					 ];
 	  fields.forEach((field) => {
 		if (section === 'all' || section === 'SoldTo') {
 		  config.dataset[`SoldTo_${field}`] = null;
@@ -11350,7 +11317,7 @@
 		if (section === 'all' || section === 'Reseller') {
 		  config.dataset[`Reseller_${field}`] = null;
 		}
-		if (section === 'all' || section === 'EndCustomer' || section === 'EndCx') {
+		if (section === 'all' || section === 'EndCustomer') {
 		  config.dataset[`EndCx_${field}`] = null;
 		}
 		if (section === 'all' || section === 'CustomShipTo') {
@@ -12214,17 +12181,6 @@
 
 	  }
 	},
-	clearPOData: function(config) {
-	  const sections = ['SoldTo', 'Payer', 'BillTo', 'ShipTo', 'Reseller', 'EndCx'];
-	  sections.forEach(section => {
-		if (config.dataset[`Config_${section}Details`] == 'Y') {
-		  quoteHelper.clearAddressData(config, section, 'address');
-		}
-		if (config.dataset[`Config_${section}Details_Contact`] == 'Y') {
-		  quoteHelper.clearAddressData(config, section, 'contact');
-		}
-	  });
-	},
   };
 
   const helper = {
@@ -12332,16 +12288,6 @@
 
 
 			  crud.q.stop(function() {
-		
-				if (global.noPartyError) {
-				  mo.fn.modal.show({
-					ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-					title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
-					content: hpe.fn.lang("FormNoParty", config.locale, config.localizations),
-				  });
-				  return;
-				}
-				
 				if (global.data.company.party) {
 				  mo.fn.overlay.show({
 					loading: true,
@@ -12350,6 +12296,7 @@
 				  hpe.data.xref(global.data.company.party, function(d) {
 					mo.fn.overlay.hide();
 					if (d.status == 'SUCCESS') {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  //d.party[0].countryCode = 'IN'; //CFI
 					  //d.party[0].countryName = 'India'; //CFI
 					  reference.xref = d;
