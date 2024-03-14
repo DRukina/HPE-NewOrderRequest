@@ -472,8 +472,8 @@
 							for (i = 0; i < navLi.length; i++) navLi[i].classList.remove("inactive");
 							for (i = 0; i < tiles.length; i++) tiles[i].classList.remove("inactive");
 					} else if (applet && applet.user && applet.user.UserRole && !applet.user.UserRole.OPS.AMS && !applet.user.UserRole.OPS.APJ && !applet.user.UserRole.OPS.EMEA && (applet.user.UserRole.SRP.AMS || applet.user.UserRole.SRP.APJ || applet.user.UserRole.SRP.EMEA)) {
-							
-				$('body').addClass('srp');
+
+							$('body').addClass('srp');
 							$('.srp section#nav #icons ul li[icon-id=search]').remove();
 							$('.srp section#nav #icons ul li[icon-id=bugs]').remove();
 							$('.srp section#nav #burger').remove();
@@ -849,7 +849,7 @@
 							crud.read("3180", "eid=5415", function(d) {
 									self.sample = d.Rows[0];
 									pending.ui();
-							//    pending._getCount();
+									//    pending._getCount();
 									pending._loadGrids();
 									pending.ready = true;
 									mo.fn.overlay.hide();
@@ -884,6 +884,17 @@
 									var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
 									document.querySelector("#pending span[tab-id=" + cid + "]").classList.add("active");
 									document.querySelector("#pending section[tab-id=" + cid + "]").classList.add("active");
+									var activeSection = document.querySelector("#pending section[tab-id=" + cid + "]");
+									var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+									kendoGrids.forEach(function(gridElement) {
+											var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+											if (kendoGridInstance) {
+													kendoGridInstance.resize();
+											}
+									});
+
 							});
 					}
 					// DEFAULT TO FIRST TAB
@@ -903,10 +914,19 @@
 											value: "Y"
 									},
 									{
-					field: "SFDC_Status",
-					operator: "neq",
-					value: "ERROR"
-				},
+											logic: "or",
+											filters: [{
+															field: "SFDC_Status",
+															operator: "neq",
+															value: "ERROR"
+													},
+													{
+															field: "SFDC_Status",
+															operator: "isempty",
+															value: ""
+													}
+											]
+									},
 									{
 											logic: "or",
 											filters: [{
@@ -934,10 +954,19 @@
 											value: "Y"
 									},
 									{
-					field: "SFDC_Status",
-					operator: "neq",
-					value: "ERROR"
-				},
+											logic: "or",
+											filters: [{
+															field: "SFDC_Status",
+															operator: "neq",
+															value: "ERROR"
+													},
+													{
+															field: "SFDC_Status",
+															operator: "isempty",
+															value: ""
+													}
+											]
+									},
 									{
 											logic: "or",
 											filters: [{
@@ -964,7 +993,7 @@
 					crud.read("3180", "eid=5415", function(d) {
 							self.sample = d.Rows[0];
 							//pending.ui();
-					//    pending._getCount();
+							//    pending._getCount();
 							pending._loadGrids();
 							pending.ready = true;
 							mo.fn.overlay.hide();
@@ -980,10 +1009,19 @@
 											value: "Y"
 									},
 									{
-					field: "SFDC_Status",
-					operator: "neq",
-					value: "ERROR"
-				},
+											logic: "or",
+											filters: [{
+															field: "SFDC_Status",
+															operator: "neq",
+															value: "ERROR"
+													},
+													{
+															field: "SFDC_Status",
+															operator: "isempty",
+															value: ""
+													}
+											]
+									},
 									{
 											logic: "or",
 											filters: [{
@@ -1008,10 +1046,19 @@
 											value: "Y"
 									},
 									{
-					field: "SFDC_Status",
-					operator: "neq",
-					value: "ERROR"
-				},
+											logic: "or",
+											filters: [{
+															field: "SFDC_Status",
+															operator: "neq",
+															value: "ERROR"
+													},
+													{
+															field: "SFDC_Status",
+															operator: "isempty",
+															value: ""
+													}
+											]
+									},
 									{
 											logic: "or",
 											filters: [{
@@ -1090,72 +1137,8 @@
 											field: "EntryId",
 											title: "ID",
 											filterable: true,
-											width: "85px"
-									},
-									{
-											field: "PO_BackgroundGroup",
-											title: "BG",
-											filterable: true,
-						width: 90,
-									},
-									{
-											field: "Region",
-											title: "Region",
-											filterable: true,
-						width: 115,
-									},
-									{
-											field: "Geo",
-											title: "Geo",
-											filterable: true,
-									},
-									{
-											field: "SoldTo_Address_Country",
-											title: "Country",
-											filterable: true,
-									},
-									{
-											field: "SoldTo_CompanyName",
-											title: "SoldTo CompanyName",
-											filterable: true,
-						width: 215,
-									},
-									{
-											field: "PartyId",
-											title: "PartyId",
-											filterable: true,
-									},
-									{
-											field: "PO_Number",
-											title: "PO",
-											filterable: true,
-									},
-									/*{
-											field: "PO_Value",
-											title: "Value",
-											filterable: false,
-											template: function(d) {
-													return d.PO_Value + " " + d.PO_Currency;
-											}
-									},*/
-									{
-											field: "SubmittedTimestamp",
-											title: "Date",
-											filterable: false,
-						width: 100,
-											template: function(d) {
-													try {
-															return d.SubmittedTimestamp.split("T")[0];
-													} catch (err) {
-															return d.SubmittedTimestamp;
-													}
-											}
-									},
-									{
-											field: "CaseNumber",
-											title: "Case Number",
-											filterable: true,
-						width: 155,
+											width: "85px",
+											locked: true
 									},
 									{
 											title: "",
@@ -1163,6 +1146,7 @@
 											attributes: {
 													"class": "cta"
 											},
+											locked: true,
 											template: function(d) {
 													//var icons = '<a class="clone"><svg version="1.1" viewBox="0 0 24 24" width="24px" height="24px" role="img" aria-label="clone"><path fill="none" stroke="#666" stroke-width="2" d="M9,15 L17,15 L9,15 Z M9,11 L19,11 L9,11 Z M9,7 L13,7 L9,7 Z M16,1 L16,7 L22,7 M6,5 L2,5 L2,23 L18,23 L18,19 M22,19 L6,19 L6,1 L17,1 L22,6 L22,19 L22,19 Z"></path></svg></a>';
 													//icons += '<a class="edit"><svg version="1.1" viewBox="0 0 24 24" width="24px" height="24px" role="img" aria-label="copy"><path fill="none" stroke="#666" stroke-width="2" d="M14,4 L20,10 L14,4 Z M22.2942268,5.29422684 C22.6840146,5.68401459 22.6812861,6.3187139 22.2864907,6.71350932 L9,20 L2,22 L4,15 L17.2864907,1.71350932 C17.680551,1.319449 18.3127724,1.31277239 18.7057732,1.70577316 L22.2942268,5.29422684 Z M3,19 L5,21 M7,17 L15,9"></path></svg></a>';
@@ -1176,7 +1160,86 @@
 						<a class="view"><svg version="1.1" viewBox="0 0 24 24" width="24px" height="24px" role="img" aria-label="edit"><path fill="none" stroke="#666" stroke-width="2" d="M12,21 C7,21 1,16 1,12 C1,8 7,3 12,3 C17,3 23,8 23,12 C23,16 17,21 12,21 Z M12,7 C9.23875,7 7,9.23875 7,12 C7,14.76125 9.23875,17 12,17 C14.76125,17 17,14.76125 17,12 C17,9.23875 14.76125,7 12,7 L12,7 Z"></path></a>`;
 													return icons;
 											}
-									}
+									},
+									{
+											field: "PO_BackgroundGroup",
+											title: "BG",
+											filterable: true,
+											width: 90,
+											locked: false
+									},
+									{
+											field: "Region",
+											title: "Region",
+											filterable: true,
+											width: 115,
+											locked: false
+									},
+									{
+											field: "Geo",
+											title: "Geo",
+											filterable: true,
+											width: 115,
+									},
+									{
+											field: "SoldTo_Address_Country",
+											title: "Country",
+											filterable: true,
+											width: 125,
+									},
+									{
+											field: "SoldTo_CompanyName",
+											title: "SoldTo CompanyName",
+											filterable: true,
+											width: 215,
+									},
+									{
+											field: "PartyId",
+											title: "PartyId",
+											filterable: true,
+											width: 115,
+
+
+									},
+									{
+											field: "PO_Number",
+											title: "PO",
+											filterable: true,
+											width: 115,
+									},
+									/*{
+											field: "PO_Value",
+											title: "Value",
+											filterable: false,
+											template: function(d) {
+													return d.PO_Value + " " + d.PO_Currency;
+											}
+									},*/
+									{
+											field: "SubmittedTimestamp",
+											title: "Date",
+											filterable: false,
+											width: 100,
+											template: function(d) {
+													try {
+															return d.SubmittedTimestamp.split("T")[0];
+													} catch (err) {
+															return d.SubmittedTimestamp;
+													}
+											}
+									},
+									{
+											field: "SubmitterEmail",
+											title: "Submitter",
+											filterable: true,
+											width: 255
+									},
+									{
+											field: "CaseNumber",
+											title: "Case Number",
+											filterable: true,
+											width: 155,
+									},
 							];
 							return cusConfig;
 					},
@@ -1226,7 +1289,7 @@
 									columns: config,
 									dataBound: function(e) {
 											document.querySelector("#pending .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
-				},
+									},
 									pageable: {
 											buttonCount: 4,
 											pageSize: 10,
@@ -1275,7 +1338,7 @@
 									type: "rfb-v2",
 									transport: {
 											read: {
-											 //   url: "/form/data-set-provider/v2/989/NOR_Full/kendo/data"
+													//   url: "/form/data-set-provider/v2/989/NOR_Full/kendo/data"
 													url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
 											}
 									},
@@ -2557,7 +2620,7 @@
 									} catch (err) {}
 							} else if (review.data.Status == "3") {
 									fullscreen.querySelector(".timeline .status strong").innerText = "Completed";
-									fullscreen.querySelector(".timeline .order strong").innerText = review.data.PO_Order_ID;
+									fullscreen.querySelector(".timeline .order strong").innerText = review.data.PO_Order_ID || review.data.PO_AAS_ID;
 									try {
 											var ops = JSON.parse(review.data.Operations);
 											var tme = ops[ops.length - 1].Created;
@@ -2788,8 +2851,8 @@
 							if (user.ADMIN && (review.data.Status === '3')) {
 									match = true;
 									matchAdmin = true;
-			}
-			
+							}
+
 							// ADD TASKS
 							if (match) {
 									slct.innerHTML = '<div class="nbsf"></div>';
@@ -2821,15 +2884,21 @@
 											'</div>' +
 											'</label>';*/
 									slct.innerHTML += '<label class="wrapper text" style="display:' + (matchAdmin ? 'block' : 'none') + ';">' +
-											'<span class="name">S4 Order ID</span>' + (matchAdmin ? '' : '<span class="required">*</span>') + 
+											'<span class="name">S4 Order ID</span>' + (matchAdmin ? '' : '<span class="required">*</span>') +
 											'<div class="fmmcosmin">' +
-											'<input type="text" placeholder="Provide the S4 Order ID" name="Operations_OrderID" data-name="Operations_OrderID" data-type="text" maxlength="33" value="">' +
+											'<input type="text" placeholder="Provide the S4 Order ID" name="Operations_OrderID" data-name="Operations_OrderID" data-type="text" maxlength="77" value="">' +
 											'</div>' +
 											'</label>';
 									slct.innerHTML += '<label class="wrapper text" style="display:' + (matchAdmin ? 'block' : 'none') + ';">' +
-											'<span class="name">Legacy Order ID</span>' + (matchAdmin ? '' : '<span class="required">*</span>') + 
+											'<span class="name">Legacy Order ID</span>' + (matchAdmin ? '' : '<span class="required">*</span>') +
 											'<div class="fmmcosmin">' +
 											'<input type="text" placeholder="Provide the Legacy Order ID" name="Operations_Legacy_OrderID" data-name="Operations_Legacy_OrderID" data-type="text" maxlength="39" value="">' +
+											'</div>' +
+											'</label>';
+									slct.innerHTML += '<label class="wrapper text" style="display:' + (matchAdmin ? 'block' : 'none') + ';">' +
+											'<span class="name">aaS order ID</span>' + (matchAdmin ? '' : '<span class="required">*</span>') +
+											'<div class="fmmcosmin">' +
+											'<input type="text" placeholder="Provide the aaS Order ID" name="Operations_aaS_OrderID" data-name="Operations_aaS_OrderID" data-type="text" maxlength="27" value="">' +
 											'</div>' +
 											'</label>';
 									slct.innerHTML += '<label class="wrapper textarea" style="display:block;">' +
@@ -2845,16 +2914,20 @@
 									var orderId = slct.querySelector("input[name=Operations_OrderID]");
 									var comment = slct.querySelector("textarea[name=Operations_Comment]");
 									var legacyorderid = slct.querySelector("input[name=Operations_Legacy_OrderID]");
+									var aasid = slct.querySelector("input[name=Operations_aaS_OrderID]");
 									var submit = slct.querySelector("span.btn.continue");
+									var orderIdRequiredSpan = orderId.closest('.wrapper.text').querySelector('.required');
+									var aasidRequiredSpan = aasid.closest('.wrapper.text').querySelector('.required');
 
 									function toggleSubmit() {
 											if (status.value == "3" || status.value == "4" || status.value == "5" || (status.value == "2" && matchAdmin)) {
 													if (status.value == "3") {
 															if (
-								(legacyorderid.value.length > 0 && legacyorderid.value.length <= 39 && /^[a-zA-Z0-9;]*$/.test(legacyorderid.value) && orderId.value === 'N/A') ||
-								(orderId.value.length > 0 && orderId.value.length <= 33 && /^[7][0-9;]*$/.test(orderId.value) && legacyorderid.value === 'N/A') ||
-								(legacyorderid.value === 'N/A' && orderId.value === 'N/A')
-							) {
+																	(legacyorderid.value.length > 0 && legacyorderid.value.length <= 39 && /^[a-zA-Z0-9;]*$/.test(legacyorderid.value) && orderId.value === 'N/A' && aasid.value === 'N/A') ||
+																	(orderId.value.length >= 10 && orderId.value.length <= 77 && /^(7\d{9};){0,7}(7\d{9})?$/.test(orderId.value) && legacyorderid.value === 'N/A' && (aasid.value === 'N/A' || (aasid.value.length >= 8 && aasid.value.length <= 27 && /^5[0-9]{7}(;5[0-9]{7})*$/.test(aasid.value)))) ||
+																	(aasid.value.length >= 8 && aasid.value.length <= 27 && /^5[0-9]{7}(;5[0-9]{7})*$/.test(aasid.value) && legacyorderid.value === 'N/A' && (orderId.value === 'N/A' || (orderId.value.length >= 10 && orderId.value.length <= 77 && /^(7\d{9};){0,7}(7\d{9})?$/.test(orderId.value)))) ||
+																	(legacyorderid.value === 'N/A' && orderId.value === 'N/A' && aasid.value === 'N/A')
+															) {
 																	submit.classList.remove("disabled");
 																	submit.addEventListener("click", submitUpdate);
 															} else {
@@ -2870,6 +2943,8 @@
 													submit.removeEventListener("click", submitUpdate);
 											}
 									}
+
+									toggleSubmit();
 
 									function submitUpdate() {
 											slct.setAttribute("style", "opacity:0.5;pointer-events:none;");
@@ -2887,6 +2962,7 @@
 															oldStatus: review.data.Status,
 															Order: orderId.value,
 															LegacyOrder: legacyorderid.value,
+															aasid: aasid.value,
 															Comment: comment.value
 													}
 											} else {
@@ -2900,14 +2976,16 @@
 											/*if (obj.Status == "3") obj.SubStatus = "N/A";
 											else obj.SubStatus = subStatus.value;*/
 											var poorderid = "";
-											if (orderId.value != "N/A")
+											if (orderId.value != "N/A"){
 													poorderid = orderId.value;
-											else
+					}
+					else if (orderId.value == "N/A" && aasid.value == "N/A") {
 													poorderid = legacyorderid.value;
-
+											}
 											var data = {
 													Status: status.value,
-													PO_Order_ID: poorderid
+													PO_Order_ID: poorderid,
+							PO_AAS_ID: aasid.value
 											};
 											time.timestamp(function(t) {
 													obj.Created = t;
@@ -2924,27 +3002,30 @@
 													});
 											});
 									}
-				
-									if (matchAdmin || (user.ADMIN && review.data.Status === '2')) {
-					status.value = review.data.Status;
-					if (review.data.Operations) {
-					const dataOperations = JSON.parse(review.data.Operations);
-					const opData = dataOperations[dataOperations.length - 1];
 
-					orderId.value = opData.Order === undefined ? '' : opData.Order;
-					legacyorderid.value = opData.LegacyOrder === undefined ? 'N/A' : opData.LegacyOrder;
-											toggleSubmit();
-					}
-				}
+									if (matchAdmin || (user.ADMIN && review.data.Status === '2')) {
+											status.value = review.data.Status;
+											if (review.data.Operations) {
+													const dataOperations = JSON.parse(review.data.Operations);
+													const opData = dataOperations[dataOperations.length - 1];
+
+													orderId.value = opData.Order === undefined ? '' : opData.Order;
+													legacyorderid.value = opData.LegacyOrder === undefined ? 'N/A' : opData.LegacyOrder;
+													aasid.value = opData.aasid === undefined ? 'N/A' : opData.aasid;
+													toggleSubmit();
+											}
+									}
 
 									status.addEventListener("change", function(e) {
 											var val = e.target.value;
 											if (val == "3" || matchAdmin) {
 													orderId.closest("label").style.display = "block";
 													legacyorderid.closest("label").style.display = "block";
+													aasid.closest("label").style.display = "block";
 													if (!matchAdmin && !(user.ADMIN && review.data.Status === '2')) {
 															orderId.value = "";
 															legacyorderid.value = "";
+															aasid.value = "";
 													}
 											} else {
 													document.getElementsByName('Operations_OrderID')[0].parentElement.parentElement.getElementsByClassName('name')[0].innerText = "Order ID";
@@ -2952,6 +3033,8 @@
 													legacyorderid.value = "N/A";
 													orderId.closest("label").style.display = "none";
 													orderId.value = "N/A";
+													aasid.closest("label").style.display = "none";
+													aasid.value = "N/A";
 											}
 
 											if (!matchAdmin && !(user.ADMIN && review.data.Status === '2')) {
@@ -2977,34 +3060,86 @@
 											toggleSubmit();
 									});*/
 									orderId.addEventListener("input", function(e) {
-											if ((legacyorderid.value == "" || legacyorderid.value == "N/A") && (orderId.value != "" || orderId.value != "N/A")) {
+											if ((legacyorderid.value == "" || legacyorderid.value == "N/A") && (orderId.value != "" && orderId.value != "N/A")) {
 													legacyorderid.value = "N/A";
-											} else
-													orderId.value = "N/A";
+													if (aasidRequiredSpan) {
+															aasidRequiredSpan.style.display = 'none';
+													}
+													aasid.removeAttribute('required');
 
+											} else {
+													//orderId.value = "N/A";
+													aasid.setAttribute('required', 'required');
+													aasidRequiredSpan.style.display = 'inline';
+											}
 											toggleSubmit();
 									});
 									orderId.addEventListener("focusout", function(e) {
-											if ((legacyorderid.value == "" || legacyorderid.value == "N/A") && (orderId.value != "" || orderId.value != "N/A")) {
+											if ((legacyorderid.value == "" || legacyorderid.value == "N/A") && (orderId.value != "" && orderId.value != "N/A")) {
 													legacyorderid.value = "N/A";
-											} else
+													aasid.removeAttribute('required');
+													if (aasidRequiredSpan) {
+															aasidRequiredSpan.style.display = 'none';
+													}
+											} else {
 													orderId.value = "N/A";
-
+													aasid.setAttribute('required', 'required');
+													aasidRequiredSpan.style.display = 'inline';
+											}
 											toggleSubmit();
 									});
 									legacyorderid.addEventListener("focusout", function(e) {
-											if ((legacyorderid.value != "" || legacyorderid.value != "N/A") && (orderId.value == "" || orderId.value == "N/A")) {
+											if ((legacyorderid.value != "" && legacyorderid.value != "N/A") && (orderId.value == "" || orderId.value == "N/A")) {
 													orderId.value = "N/A";
+													aasid.value = "N/A";
 											} else
 													legacyorderid.value = "N/A";
 
 											toggleSubmit();
 									});
 									legacyorderid.addEventListener("input", function(e) {
-											if ((legacyorderid.value != "" || legacyorderid.value != "N/A") && (orderId.value == "" || orderId.value == "N/A")) {
+											if ((legacyorderid.value != "" && legacyorderid.value != "N/A") && (orderId.value == "" || orderId.value == "N/A")) {
 													orderId.value = "N/A";
-											} else
+													aasid.value = "N/A";
+											}
+
+											toggleSubmit();
+									});
+									aasid.addEventListener("focusout", function(e) {
+											if ((aasid.value != "" && aasid.value != "N/A") && (legacyorderid.value == "" || legacyorderid.value == "N/A")) {
 													legacyorderid.value = "N/A";
+													orderId.removeAttribute('required');
+													if (orderIdRequiredSpan) {
+
+															orderIdRequiredSpan.style.display = 'none';
+													}
+											} else {
+													orderId.value = "N/A";
+													aasid.value = "N/A";
+											}
+
+
+											toggleSubmit();
+									});
+									aasid.addEventListener("input", function(e) {
+											if ((aasid.value != "" && aasid.value != "N/A") && (legacyorderid.value == "" || legacyorderid.value == "N/A")) {
+													legacyorderid.value = "N/A";
+													orderId.removeAttribute('required');
+													if (orderIdRequiredSpan) {
+
+															orderIdRequiredSpan.style.display = 'none';
+													}
+											} else {
+													orderId.value = "N/A";
+													//aasid.value = "N/A";
+													if (orderIdRequiredSpan) {
+															orderIdRequiredSpan.style.display = 'inline';
+													}
+													orderId.setAttribute('required', 'required');
+
+
+											}
+
 
 											toggleSubmit();
 									});
@@ -3610,23 +3745,23 @@
 			rejectedReady: false,
 			data: {},
 			_init: function() {
-				 // if (!closed.ready) {
-							mo.fn.overlay.show({
-									loading: true,
-									close: false
-							});
-							let self = this;
-							closed.rejectedReady = false;
-							crud.read("3180", "eid=5415", function(d) {
-									self.sample = d.Rows[0];
-									closed._ui();
-									closed._getCount();
-									closed._loadGrids();
-									closed.ready = true;
-									mo.fn.overlay.hide();
-							});
+					// if (!closed.ready) {
+					mo.fn.overlay.show({
+							loading: true,
+							close: false
+					});
+					let self = this;
+					closed.rejectedReady = false;
+					crud.read("3180", "eid=5415", function(d) {
+							self.sample = d.Rows[0];
+							closed._ui();
+							closed._getCount();
+							closed._loadGrids();
+							closed.ready = true;
+							mo.fn.overlay.hide();
+					});
 
-				 // }
+					// }
 			},
 			_ui: function(cb) {
 					// CLEAR IF ANY EXISTING
@@ -3656,11 +3791,11 @@
 									var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
 									document.querySelector("#closed span[tab-id=" + cid + "]").classList.add("active");
 									document.querySelector("#closed section[tab-id=" + cid + "]").classList.add("active");
-				
+
 									if (cid === 'rejected' && !closed.rejectedReady) {
 											const rejectedGrid = document.querySelector("#closed section[tab-id=rejected] .grid");
 											rejectedGrid.innerHTML = "";
-					
+
 											closed.grid._load("#closed section[tab-id=rejected] .grid", closed.grid._datasource({
 													field: "Status",
 													operator: "eq",
@@ -3746,43 +3881,43 @@
 											field: "PO_BackgroundGroup",
 											title: "BG",
 											filterable: true,
-						width: 90,
+											width: 90,
 									},
 									{
 											field: "Region",
 											title: "Region",
 											filterable: true,
-						width: 115,
+											width: 115,
 									},
 									{
 											field: "Geo",
 											title: "Geo",
 											filterable: true,
-						width: 110,
+											width: 110,
 									},
 									{
 											field: "SoldTo_Address_Country",
 											title: "Country",
 											filterable: true,
-						width: 120,
+											width: 120,
 									},
 									{
 											field: "SoldTo_CompanyName",
 											title: "SoldTo CompanyName",
 											filterable: true,
-						width: 215,
+											width: 215,
 									},
 									{
 											field: "PartyId",
 											title: "PartyId",
 											filterable: true,
-						width: 120,
+											width: 120,
 									},
 									{
 											field: "PO_Number",
 											title: "PO",
 											filterable: true,
-						width: 110,
+											width: 110,
 									},
 									/*{
 											field: "PO_Value",
@@ -3796,10 +3931,15 @@
 											field: "PO_Order_ID",
 											title: "Order #",
 											filterable: true,
-						width: 120,
+											width: 120,
 											template: function(d) {
-													if (d.PO_Order_ID == null || d.PO_Order_ID == "NA" || d.PO_Order_ID.length == 0)
+													if (d.PO_Order_ID == null || d.PO_Order_ID == "NA" || d.PO_Order_ID.length == 0) {
+							if (d.PO_AAS_ID == null || d.PO_AAS_ID == "NA" || d.PO_AAS_ID.length == 0) {
 															return "N/A";
+							} else {
+															return d.PO_AAS_ID;
+							}
+						}
 													else
 															return d.PO_Order_ID;
 											}
@@ -3808,7 +3948,7 @@
 											field: "SubmittedTimestamp",
 											title: "Date",
 											filterable: false,
-						width: 100,
+											width: 100,
 											template: function(d) {
 													try {
 															return d.SubmittedTimestamp.split("T")[0];
@@ -3821,7 +3961,7 @@
 											field: "CaseNumber",
 											title: "Case Number",
 											filterable: true,
-						width: 155,
+											width: 155,
 									},
 									{
 											title: "",
@@ -3924,10 +4064,10 @@
 									var row = grid.dataItem($(this).closest("tr"));
 									sfdc.init(row.EntryId);
 							});
-			
+
 							if (parent.getAttribute("tab-id") === 'rejected' && document.querySelector(selector.split(" .grid")[0] + ' .toolbar .k-grid-toolbar')) {
 									$(selector + ' .k-grid-toolbar').hide();
-			} else {
+							} else {
 									$(selector + ' .k-grid-toolbar').appendTo(selector.split(" .grid")[0] + ' .toolbar');
 									var exportFlag = false;
 									$(selector).data("kendoGrid").bind("excelExport", function(e) {
@@ -3955,7 +4095,7 @@
 									type: "rfb-v2",
 									transport: {
 											read: {
-											 //   url: "/form/data-set-provider/v2/989/NOR_Full/kendo/data"
+													//   url: "/form/data-set-provider/v2/989/NOR_Full/kendo/data"
 													url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
 											}
 									},
@@ -4026,37 +4166,37 @@
 									{
 											field: "CreatedAt",
 											title: "Created",
-						template: function(d) {
-						const date = d.CreatedAt;
-						if (date) {
-						let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
-						let h = ("00" + date.getHours()).slice(-2);
-						let m = ("00" + date.getMinutes()).slice(-2);
-						let timeOfDay = [h, m].join(':');
+											template: function(d) {
+													const date = d.CreatedAt;
+													if (date) {
+															let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+															let h = ("00" + date.getHours()).slice(-2);
+															let m = ("00" + date.getMinutes()).slice(-2);
+															let timeOfDay = [h, m].join(':');
 
-						return `${formatedDate} ${timeOfDay}`;
-						}
-						return '';
-					},
+															return `${formatedDate} ${timeOfDay}`;
+													}
+													return '';
+											},
 									},
 									{
 											field: "CompletedAt",
 											title: "Completed",
-						template: function(d) {
-						const date = d.CompletedAt;
-						if (date) {
-						let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
-						let h = ("00" + date.getHours()).slice(-2);
-						let m = ("00" + date.getMinutes()).slice(-2);
-						let timeOfDay = [h, m].join(':');
+											template: function(d) {
+													const date = d.CompletedAt;
+													if (date) {
+															let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+															let h = ("00" + date.getHours()).slice(-2);
+															let m = ("00" + date.getMinutes()).slice(-2);
+															let timeOfDay = [h, m].join(':');
 
-						return `${formatedDate} ${timeOfDay}`;
-						}
-						return '';
-					},
+															return `${formatedDate} ${timeOfDay}`;
+													}
+													return '';
+											},
 									},
 									{
-									 //   field: "SuccessResult",
+											//   field: "SuccessResult",
 											field: "Response",
 											title: "Response",
 											filter: true
@@ -4068,7 +4208,7 @@
 									type: "rfb-v2",
 									transport: {
 											read: {
-											 //   url: "/form/data-set-provider/v2/989/SFDC_Queue/kendo/data/search",
+													//   url: "/form/data-set-provider/v2/989/SFDC_Queue/kendo/data/search",
 													url: "/form/data-set-provider/v2/989/Modified_Response_SFDC_Queue/kendo/data/search",
 													type: "POST"
 											}
@@ -4077,8 +4217,12 @@
 											model: {
 													id: "EntryId",
 													fields: {
-															CreatedAt: { type: "date" },
-															CompletedAt: { type: "date" },
+															CreatedAt: {
+																	type: "date"
+															},
+															CompletedAt: {
+																	type: "date"
+															},
 													}
 											}
 									},
@@ -4346,7 +4490,7 @@
 									$(table).delegate('.query-selector-table-download', 'click', function(ev) {
 											var grid = $(table).data("kendoGrid");
 											var el = grid.dataItem($(this).closest("tr"));
-											
+
 											if (!!el) {
 													const aLink = document.createElement("a");
 													aLink.setAttribute("target", "_self");
@@ -7186,11 +7330,11 @@
 					},
 					_load: function(selector, datasource, config) {
 							$(selector).kendoGrid({
-				toolbar: ["excel"],
-				excel: {
-						fileName: "NORLocalizationsExport.xlsx",
-									allPages: true
-				},
+									toolbar: ["excel"],
+									excel: {
+											fileName: "NORLocalizationsExport.xlsx",
+											allPages: true
+									},
 									dataSource: {
 											data: datasource,
 											sort: {
@@ -8358,9 +8502,9 @@
 							}
 							bigd.r.usr.all(function(d) {
 									//users.data = d.Data;
-				users.data = d.Data.filter(function(item) {
-					return item.UserData != 'Inactive';
-				});
+									users.data = d.Data.filter(function(item) {
+											return item.UserData != 'Inactive';
+									});
 									users.data.forEach((item) => {
 											if (JSON.parse(item.UserRole).ADMIN) item.ADMIN = 'Y';
 											else item.ADMIN = 'N';
@@ -8399,9 +8543,10 @@
 					document.querySelector("#users .toolbar").innerHTML = "";
 					bigd.r.usr.all(function(d) {
 							//users.data = d.Data;
-			users.data = d.Data.filter(function(item) {
-				return item.UserData != 'Inactive';
-			});
+							users.data = d.Data.filter(function(item) {
+									return item.UserData != 'Inactive';
+							});
+
 							function processed(r, d) {
 									try {
 											var roles = JSON.parse(d.UserRole);
@@ -8429,7 +8574,7 @@
 									item.OPS = processed("OPS", item);
 							});
 							users.grid._load("#users section[tab-id=users] .grid", users.data, users.grid._config());
-				$('section[tab-id="users"] .toolbar div:last-child').remove();
+							$('section[tab-id="users"] .toolbar div:last-child').remove();
 							mo.fn.overlay.hide();
 					});
 			},
@@ -8437,9 +8582,10 @@
 					document.querySelector("#users .toolbar").innerHTML = "";
 					bigd.r.usr.all(function(d) {
 							//users.data = d.Data;
-			users.data = d.Data.filter(function(item) {
-				return item.UserData != 'Inactive';
-			});
+							users.data = d.Data.filter(function(item) {
+									return item.UserData != 'Inactive';
+							});
+
 							function processed(r, d) {
 									try {
 											var roles = JSON.parse(d.UserRole);
@@ -8571,9 +8717,9 @@
 											template: function(d) {
 													try {
 															if ((JSON.parse(d.UserRole).ADMIN && applet.user.UserRole.ADMIN) || !JSON.parse(d.UserRole).ADMIN) {
-																	var icons = '<a class="edit" title="Edit user"><svg version="1.1" viewBox="0 0 24 24" width="24px" height="24px" role="img" aria-label="copy"><path fill="none" stroke="#666" stroke-width="2" d="M14,4 L20,10 L14,4 Z M22.2942268,5.29422684 C22.6840146,5.68401459 22.6812861,6.3187139 22.2864907,6.71350932 L9,20 L2,22 L4,15 L17.2864907,1.71350932 C17.680551,1.319449 18.3127724,1.31277239 18.7057732,1.70577316 L22.2942268,5.29422684 Z M3,19 L5,21 M7,17 L15,9"></path>'+
-									'</svg></a>'+
-									'<a class="delete" title="Inactivate user"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="form-trash" width="30px" height="30px"> <path fill="none" stroke="#666" stroke-width="2" d="M7.5,9 L16.5,9 L16.5,19 L7.5,19 L7.5,9 Z M5,9 L19,9 M9.36363636,6 L14.3636364,6 L14.3636364,9 L9.36363636,9 L9.36363636,6 Z M10.5455,11 L10.5455,17 M13.5455,11 L13.5455,17"> </path> </svg></a>';
+																	var icons = '<a class="edit" title="Edit user"><svg version="1.1" viewBox="0 0 24 24" width="24px" height="24px" role="img" aria-label="copy"><path fill="none" stroke="#666" stroke-width="2" d="M14,4 L20,10 L14,4 Z M22.2942268,5.29422684 C22.6840146,5.68401459 22.6812861,6.3187139 22.2864907,6.71350932 L9,20 L2,22 L4,15 L17.2864907,1.71350932 C17.680551,1.319449 18.3127724,1.31277239 18.7057732,1.70577316 L22.2942268,5.29422684 Z M3,19 L5,21 M7,17 L15,9"></path>' +
+																			'</svg></a>' +
+																			'<a class="delete" title="Inactivate user"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="form-trash" width="30px" height="30px"> <path fill="none" stroke="#666" stroke-width="2" d="M7.5,9 L16.5,9 L16.5,19 L7.5,19 L7.5,9 Z M5,9 L19,9 M9.36363636,6 L14.3636364,6 L14.3636364,9 L9.36363636,9 L9.36363636,6 Z M10.5455,11 L10.5455,17 M13.5455,11 L13.5455,17"> </path> </svg></a>';
 																	return icons;
 															} else return "";
 													} catch (err) {
@@ -8667,8 +8813,7 @@
 															'</label>' +
 															'</fieldset>' +
 															'</div>';
-											} 
-						else if (type == "edit") {
+											} else if (type == "edit") {
 													container.querySelector("div[tab-id=personal]").innerHTML = '<div class="row">' +
 															'<fieldset>' +
 															'<label class="wrapper text" style="display:block;">' +
@@ -8692,7 +8837,7 @@
 															'</fieldset>' +
 															'</div>';
 											}
-						
+
 											if (applet.user.UserRole.ADMIN || applet.user.UserRole.USER) {
 													container.querySelector("div[tab-id=ops]").innerHTML += '<div class="row">' +
 															'<fieldset>' +
@@ -8825,9 +8970,9 @@
 													}
 											}
 
-						if (type == "delete") {
-						document.querySelector(".dxpModalContent").innerHTML = "Are you sure you want to inactivate this user?";
-					}
+											if (type == "delete") {
+													document.querySelector(".dxpModalContent").innerHTML = "Are you sure you want to inactivate this user?";
+											}
 											mo.fn.overlay.show({
 													close: false
 											})
@@ -8855,42 +9000,42 @@
 											};
 
 											// UPDATE ROLES OBJECT
-										 /* if (document.querySelector("input[data-name=ADMIN]") != null && document.querySelector("input[data-name=ADMIN]").value == "Y")
-													roles = {
-															ADMIN: true,
-															OPS: {
-																	EMEA: true,
-																	AMS: true,
-																	APJ: true
-															},
-															SRP: {
-																	EMEA: true,
-																	AMS: true,
-																	APJ: true
-															},
-															LANG: true,
-															STAT: true,
-															USER: true,
-															CNT: true
-													};
-											else*/
-													for (i = 0; i < Object.keys(roles).length; i++) {
-															var key = Object.keys(roles)[i];
-								console.log('key', key);
-															var input = sel.querySelector("*[data-name=" + key + "]");
-															if (input != null && input.tagName == "SELECT") {
-																	var opt = input.querySelectorAll("option:checked");
-																	var arr = [];
-																	for (k = 0; k < opt.length; k++) arr.push(opt[k].value);
-																	for (k = 0; k < Object.keys(roles[key]).length; k++) {
-																			if (arr.indexOf(Object.keys(roles[key])[k]) > -1) roles[key][Object.keys(roles[key])[k]] = true;
-																			else roles[key][Object.keys(roles[key])[k]] = false;
-																	}
-															} else if (input != null && input.tagName == "INPUT") {
-																	if (input.value == "Y") roles[key] = true;
-																	else roles[key] = false;
+											/* if (document.querySelector("input[data-name=ADMIN]") != null && document.querySelector("input[data-name=ADMIN]").value == "Y")
+													 roles = {
+															 ADMIN: true,
+															 OPS: {
+																	 EMEA: true,
+																	 AMS: true,
+																	 APJ: true
+															 },
+															 SRP: {
+																	 EMEA: true,
+																	 AMS: true,
+																	 APJ: true
+															 },
+															 LANG: true,
+															 STAT: true,
+															 USER: true,
+															 CNT: true
+													 };
+											 else*/
+											for (i = 0; i < Object.keys(roles).length; i++) {
+													var key = Object.keys(roles)[i];
+													console.log('key', key);
+													var input = sel.querySelector("*[data-name=" + key + "]");
+													if (input != null && input.tagName == "SELECT") {
+															var opt = input.querySelectorAll("option:checked");
+															var arr = [];
+															for (k = 0; k < opt.length; k++) arr.push(opt[k].value);
+															for (k = 0; k < Object.keys(roles[key]).length; k++) {
+																	if (arr.indexOf(Object.keys(roles[key])[k]) > -1) roles[key][Object.keys(roles[key])[k]] = true;
+																	else roles[key][Object.keys(roles[key])[k]] = false;
 															}
+													} else if (input != null && input.tagName == "INPUT") {
+															if (input.value == "Y") roles[key] = true;
+															else roles[key] = false;
 													}
+											}
 
 											// UPDATE DATABASE
 											mo.fn.modal.lock();
@@ -8930,8 +9075,7 @@
 																	}
 															});
 													}
-											} 
-						else if (type == "edit") {
+											} else if (type == "edit") {
 													var eid = row.EntryId;
 													crud.update("3255", eid, {
 															UserRole: JSON.stringify(roles)
@@ -8944,8 +9088,7 @@
 																	mo.fn.modal.unlock();
 															}
 													});
-											}
-						else{
+											} else {
 													var eid = row.EntryId;
 													crud.update("3255", eid, {
 															UserData: "Inactive"
@@ -8957,20 +9100,20 @@
 																	mo.fn.modal.msg("An error occured when writing to the database. Please try again later.", 3);
 																	mo.fn.modal.unlock();
 															}
-								users._refreshNoCloseOverlay();
+															users._refreshNoCloseOverlay();
 													});
-					}
+											}
 											//console.log(roles);
 									}
 							});
 					},
 					_load: function(selector, datasource, config) {
 							$(selector).kendoGrid({
-				toolbar: ["excel"],
-				excel: {
-						fileName: "NORUsersExport.xlsx",
-									allPages: true
-				},
+									toolbar: ["excel"],
+									excel: {
+											fileName: "NORUsersExport.xlsx",
+											allPages: true
+									},
 									dataSource: {
 											data: datasource,
 											sort: {
@@ -9026,47 +9169,46 @@
 					}
 			},
 			init: function() {
-				 // if (!this.ready) {
-		this.node.innerHTML = '';
-		if (reporting._auth()) {
-		mo.fn.overlay.show({
-			loading: true,
-			close: false
-		});
-		this.ui(function() {
-			tibcoErrors.grid.load(tibcoErrors.node.querySelector("[tab-id=tibcoErrors] .grid"));
-			tibcoErrors.ready = true;
-			//	  mo.fn.overlay.hide();
-		});
-		} else {
-	//	ui.message.open("You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.", 3, 1000);
-		
-					mo.fn.modal.show({
-							ctaLabel: 'Close',
-							close: false,
-							title: 'Access Error',
-							content: 'You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.',
-							ctaCallback: function() {
-									ui._dashboard();
-									mo.fn.events.closeAll();
-							}
-					});
-		}
-		// }
+					// if (!this.ready) {
+					this.node.innerHTML = '';
+					if (tibcoErrors._auth()) {
+							mo.fn.overlay.show({
+									loading: true,
+									close: false
+							});
+							this.ui(function() {
+									tibcoErrors.grid.load(tibcoErrors.node.querySelector("[tab-id=tibcoErrors] .grid"));
+									tibcoErrors.ready = true;
+									//	  mo.fn.overlay.hide();
+							});
+					} else {
+							//	ui.message.open("You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.", 3, 1000);
+
+							mo.fn.modal.show({
+									ctaLabel: 'Close',
+									close: false,
+									title: 'Access Error',
+									content: 'You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.',
+									ctaCallback: function() {
+											ui._dashboard();
+											mo.fn.events.closeAll();
+									}
+							});
+					}
+					// }
 			},
 			ui: function(cb) {
 					hpe.ui.tabs({
 							dom: this.node,
 							tabs: [{
-											id: "tibcoErrors",
-											label: "TIBCO Errors",
-											html: '<div class="grid"></div><div class="toolbar"></div>',
-											active: true
-									},
-							]
+									id: "tibcoErrors",
+									label: "TIBCO Errors",
+									html: '<div class="grid"></div><div class="toolbar"></div>',
+									active: true
+							}, ]
 					}, function() {
-			cb();
-		});
+							cb();
+					});
 			},
 			modal: function(data) {
 					mo.fn.overlay.show({
@@ -9132,80 +9274,80 @@
 			download: {
 					init: function(selector) {
 							$(selector).find('.k-grid-toolbar').appendTo($(selector).parent().find('.toolbar'));
-		},
-	},
+					},
+			},
 			retrigger: {
 					init: function(selector) {
-			const btn = document.createElement('a');
-			btn.setAttribute('id', 'retrigger-cases');
-			btn.className = 'k-button k-button-icontext';
-			btn.innerHTML = 'Retrigger SFDC cases';
-			btn.addEventListener('click', function(event) {
-			event.preventDefault();
-			
-			const grid = $(selector).data("kendoGrid");
-			const view = grid.dataSource.view();
-			const number = grid.dataSource.total();
-			
-			// message to confirm the retrigger
-			mo.fn.modal.show({
-				ctaLabel: 'Yes',
-				close: true,
-				title: 'Batch SFDC',
-				content: `You are going to re-trigger ${number} cases and send ${number} SFDC requests. Continue?`,
-				ctaCallback: function() {
-				mo.fn.events.closeAll();
-			
-				mo.fn.overlay.show({
-					loading: true,
-					close: false
-				});
+							const btn = document.createElement('a');
+							btn.setAttribute('id', 'retrigger-cases');
+							btn.className = 'k-button k-button-icontext';
+							btn.innerHTML = 'Retrigger SFDC cases';
+							btn.addEventListener('click', function(event) {
+									event.preventDefault();
 
-				const retriggerCase = function(eid, cb) {
-				/*  setTimeout(() => {
-					console.log('eid', eid);
-					cb();
-					}, 2000);*/
+									const grid = $(selector).data("kendoGrid");
+									const view = grid.dataSource.view();
+									const number = view.length;
 
-					crud.update('3158', eid, {
-					Workflow: "1"
-					}, function(d) {
-					cb();
-					});
-				};
+									// message to confirm the retrigger
+									mo.fn.modal.show({
+											ctaLabel: 'Yes',
+											close: true,
+											title: 'Batch SFDC',
+											content: `You are going to re-trigger ${number} cases and send ${number} SFDC requests. Continue?`,
+											ctaCallback: function() {
+													mo.fn.events.closeAll();
 
-				let requests = view.map((item) => {
-					const eid = item.EntryId;
-					return new Promise((resolve) => {
-					retriggerCase(eid, resolve);
-					});
-				})
+													mo.fn.overlay.show({
+															loading: true,
+															close: false
+													});
 
-				Promise.all(requests).then(() => {
-					console.log('retrigger done');
-					mo.fn.overlay.hide();
-					mo.fn.modal.show({
-					ctaLabel: 'Close',
-					close: true,
-					title: 'Success',
-					content: `You successfully re-triggered ${number} cases. You can check their status by clicking on the ticket icon in the case row or refresh the table.`,
-					});
-				});
-				}
-			});
-			
-			});
+													const retriggerCase = function(eid, cb) {
+															/*  setTimeout(() => {
+																console.log('eid', eid);
+																cb();
+																}, 2000);*/
 
-			selector.parentNode.querySelector('.k-grid-toolbar').append(btn);
-		},
-	},
+															crud.update('3158', eid, {
+																	Workflow: "1"
+															}, function(d) {
+																	cb();
+															});
+													};
+
+													let requests = view.map((item) => {
+															const eid = item.EntryId;
+															return new Promise((resolve) => {
+																	retriggerCase(eid, resolve);
+															});
+													})
+
+													Promise.all(requests).then(() => {
+															console.log('retrigger done');
+															mo.fn.overlay.hide();
+															mo.fn.modal.show({
+																	ctaLabel: 'Close',
+																	close: true,
+																	title: 'Success',
+																	content: `You successfully re-triggered ${number} cases. You can check their status by clicking on the ticket icon in the case row or refresh the table.`,
+															});
+													});
+											}
+									});
+
+							});
+
+							selector.parentNode.querySelector('.k-grid-toolbar').append(btn);
+					},
+			},
 			grid: {
 					load: function(selector) {
 							mo.fn.overlay.show({
 									loading: true,
 									close: false
 							});
-			
+
 							// load grid
 							$(selector).kendoGrid({
 									toolbar: [{
@@ -9245,55 +9387,55 @@
 											title: "ID",
 											filterable: true,
 											width: 85,
-						locked: true,
+											locked: true,
 									},
 									{
 											field: "PO_BackgroundGroup",
 											title: "BG",
 											filterable: true,
-						width: 90,
+											width: 90,
 									},
 									{
 											field: "Region",
 											title: "Region",
 											filterable: true,
-						width: 115,
+											width: 115,
 									},
 									{
 											field: "Geo",
 											title: "Geo",
 											filterable: true,
-						width: 115,
+											width: 115,
 									},
 									{
 											field: "SoldTo_Address_Country",
 											title: "Country",
 											filterable: true,
-						width: 130,
+											width: 130,
 									},
 									{
 											field: "SoldTo_CompanyName",
 											title: "SoldTo CompanyName",
 											filterable: true,
-						width: 215,
+											width: 215,
 									},
 									{
 											field: "PartyId",
 											title: "PartyId",
 											filterable: true,
-						width: 130,
+											width: 130,
 									},
 									{
 											field: "PO_Number",
 											title: "PO",
 											filterable: true,
-						width: 130,
+											width: 130,
 									},
 									{
 											field: "SubmittedTimestamp",
 											title: "Date",
 											filterable: false,
-						width: 100,
+											width: 100,
 											template: function(d) {
 													try {
 															return d.SubmittedTimestamp.split("T")[0];
@@ -9306,66 +9448,66 @@
 											field: "SFDC_Status",
 											title: "Tibco Status",
 											filterable: false,
-						width: 140,
+											width: 140,
 									},
 									{
 											field: "SendingAttempts",
 											title: "Attempts",
 											filterable: true,
-						width: 130,
+											width: 130,
 									},
 									{
 											field: "SFDC_CreatedAt",
 											title: "Created Time",
 											filterable: true,
-						width: 160,
-						template: function(d) {
-						const date = d.SFDC_CreatedAt;
-						if (date) {
-						let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
-						let h = ("00" + date.getHours()).slice(-2);
-						let m = ("00" + date.getMinutes()).slice(-2);
-						let timeOfDay = [h, m].join(':');
+											width: 160,
+											template: function(d) {
+													const date = d.SFDC_CreatedAt;
+													if (date) {
+															let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+															let h = ("00" + date.getHours()).slice(-2);
+															let m = ("00" + date.getMinutes()).slice(-2);
+															let timeOfDay = [h, m].join(':');
 
-						return `${formatedDate} ${timeOfDay}`;
-						}
-						return '';
-					},
+															return `${formatedDate} ${timeOfDay}`;
+													}
+													return '';
+											},
 									},
 									{
 											field: "SFDC_CompletedAt",
 											title: "Completed Time",
 											filterable: true,
-						width: 170,
-						template: function(d) {
-						const date = d.SFDC_CompletedAt;
-						if (date) {
-						let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
-						let h = ("00" + date.getHours()).slice(-2);
-						let m = ("00" + date.getMinutes()).slice(-2);
-						let timeOfDay = [h, m].join(':');
+											width: 170,
+											template: function(d) {
+													const date = d.SFDC_CompletedAt;
+													if (date) {
+															let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+															let h = ("00" + date.getHours()).slice(-2);
+															let m = ("00" + date.getMinutes()).slice(-2);
+															let timeOfDay = [h, m].join(':');
 
-						return `${formatedDate} ${timeOfDay}`;
-						}
-						return '';
-					},
+															return `${formatedDate} ${timeOfDay}`;
+													}
+													return '';
+											},
 									},
 									{
 											field: "Response",
 											title: "Response",
 											filterable: true,
-						width: 350,
+											width: 350,
 									},
 									{
 											field: "SFDC_CaseNumber",
 											title: "Case Number",
 											filterable: true,
-						width: 155,
+											width: 155,
 									},
 									{
 											title: "",
 											width: "80px",
-						locked: true,
+											locked: true,
 											attributes: {
 													"class": "cta"
 											},
@@ -9394,44 +9536,48 @@
 											model: {
 													id: "EntryId",
 													fields: {
-															SFDC_CreatedAt: { type: "date" },
-															SFDC_CompletedAt: { type: "date" },
+															SFDC_CreatedAt: {
+																	type: "date"
+															},
+															SFDC_CompletedAt: {
+																	type: "date"
+															},
 													}
 											}
 									},
 									filter: {
-					logic: "and",
-					filters: [{
-					field: "Submitted",
-					operator: "eq",
-					value: "Y"
-					},
-							{
-								field: "SFDC_Status",
-								operator: "eq",
-								value: "ERROR"
-							},
-							{
-								logic: "or",
-								filters: [{
-								field: "Status",
-								operator: "eq",
-								value: "1"
-								},
-										{
-											field: "Status",
-											operator: "eq",
-											value: "2"
-										},
-										{
-											field: "Status",
-											operator: "eq",
-											value: "4"
-										}
-										 ]
-							}
-							 ]
-				},
+											logic: "and",
+											filters: [{
+															field: "Submitted",
+															operator: "eq",
+															value: "Y"
+													},
+													{
+															field: "SFDC_Status",
+															operator: "eq",
+															value: "ERROR"
+													},
+													{
+															logic: "or",
+															filters: [{
+																			field: "Status",
+																			operator: "eq",
+																			value: "1"
+																	},
+																	{
+																			field: "Status",
+																			operator: "eq",
+																			value: "2"
+																	},
+																	{
+																			field: "Status",
+																			operator: "eq",
+																			value: "4"
+																	}
+															]
+													}
+											]
+									},
 									serverPaging: true,
 									pageSize: 10,
 									serverFiltering: true,
@@ -9491,10 +9637,10 @@
 							ui.message.escape(e);
 					});
 					// ADD JIRA COLLECTOR FOR BUGS
-		$('section#nav #icons ul li[icon-id="bugs"] a').click(function( event ) {
-			event.preventDefault();
-			document.querySelector('.atlwdg-trigger.atlwdg-SUBTLE').click();
-		});
+					$('section#nav #icons ul li[icon-id="bugs"] a').click(function(event) {
+							event.preventDefault();
+							document.querySelector('.atlwdg-trigger.atlwdg-SUBTLE').click();
+					});
 					//ui._overview();
 					crud.q.stop(function() {
 							// CHECK EXISTING QUERY
@@ -9504,7 +9650,7 @@
 							} else mo.fn.overlay.hide();
 					});
 			});
-					$('body').show();
+			$('body').show();
 			document.querySelector("select[id=searchoptions]").addEventListener("change", function() {
 					document.querySelector("#search").value = "";
 					if (document.querySelector("select[id=searchoptions]").value == "AppID") {
