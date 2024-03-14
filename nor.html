@@ -72,7 +72,7 @@
 		  }
 
 		  if (addressMatched) {
-			if (isForce || ["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
+			if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
 			  config.dataset[`${type}_Address_State`] = addressMatched.stateProvince;
 
 			let address1 = addressMatched.addressLine1;
@@ -91,7 +91,7 @@
 		}
 
 		if (hasNationalID) {
-		  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
+		  if (isForce || ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
 			var externalidentifier = d.party[0].externalIdentifier;
 			for (i = 0; i < externalidentifier.length; i++) {
 			  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
@@ -11321,7 +11321,6 @@
 				}
 
 				if (section == 'ShipTo' || section == 'EndCx' || section == 'SoldTo') {
-				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
 					var externalidentifier = d.party[0].externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
@@ -11330,11 +11329,9 @@
 						break;
 					  }
 					}
-				  }
 				}
 				// SoldTo NationalID
 				if (section == 'SoldTo') {
-				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
 					var externalidentifier = d.party[0].externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
@@ -11343,7 +11340,6 @@
 						break;
 					  }
 					}
-				  }
 				}
 
 				quoteHelper.addressArr.push(addressObj);
