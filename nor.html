@@ -3989,10 +3989,6 @@
 			field: "Config_SoldToDetails",
 			operator: "neq",
 			value: "Y"
-		  }, {
-			field: "SoldTo_Address_Country",
-			operator: "in",
-			value: ["Brazil"]
 		  }]
 		},
 		group: [
@@ -11655,8 +11651,8 @@
 			[hpe.fn.lang("StateProvince", config.locale, config.localizations), "SoldTo_Address_State"],
 			[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_Address_Postal"],
 			[hpe.fn.lang("Country", config.locale, config.localizations), "SoldTo_Address_Country"],
-			["Brazil"].includes(config.dataset.SoldTo_Address_Country) ? [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"] : ['', 'blank'],
-			// [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
+			// ["Brazil"].includes(config.dataset.SoldTo_Address_Country) ? [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"] : ['', 'blank'],
+			[hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
 			// ['', 'blank'],
 			[hpe.fn.lang("FirstName", config.locale, config.localizations), "SoldTo_Contact_FirstName"],
 			[hpe.fn.lang("Surname", config.locale, config.localizations), "SoldTo_Contact_LastName"],
