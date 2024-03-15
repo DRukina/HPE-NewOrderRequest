@@ -9553,9 +9553,11 @@
 		$(this).val(vl)
 	  });
 
-	  if (document.querySelector('select[data-name="PO_Currency"]') && document.querySelector('select[data-name="PO_Currency"]').value == config.pages[1].selectone)
-		//if($('select[data-name="PO_Currency"] option').length == 1)
-		$('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
+	  if (document.querySelector('select[data-name="PO_Currency"]') && document.querySelector('select[data-name="PO_Currency"]').value == config.pages[1].selectone) {
+		if ($('select[data-name="PO_Currency"] option').length > 1) {
+		  $('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
+		}
+	  }
 
 	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
 		if ($('select[data-name="PA_Number"] option').length > 1) {
