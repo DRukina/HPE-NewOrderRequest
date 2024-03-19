@@ -9222,7 +9222,7 @@
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
 		// Don't override user's data if exist
-		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
+		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.FirstName && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
