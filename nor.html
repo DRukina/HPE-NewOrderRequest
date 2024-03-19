@@ -9565,8 +9565,12 @@
 		}
 	  }
 
-	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone)
+	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone) {
 		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
+		if ($('select[data-name="PO_Category"]'))  {
+		  $('select[data-name="PO_Category"]').trigger('change');
+		}
+	  }
 
 
 	  //PO_CompleteDelivery LOGIC FOR KR
