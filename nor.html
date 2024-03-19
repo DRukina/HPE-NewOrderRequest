@@ -8626,7 +8626,7 @@
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
 		// Don't override user's data if exist
-		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
+		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.FirstName && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
@@ -12650,7 +12650,7 @@
 		var all = [{
 		  field: "EntryId",
 		  title: hpe.fn.lang('ID', config.locale, config.localizations),
-		  width: "100px",
+		  width: "60px",
 		  filterable: false
 		},
 
@@ -12658,51 +12658,69 @@
 					 field: "PO_Number",
 					 filterable: false,
 					 title: hpe.fn.lang('PO', config.locale, config.localizations),
-					 width: "200px",
+					 width: "100px"
 				   },
 				   {
 					 field: "PartyId",
 					 filterable: false,
 					 hidden: true,
 					 title: hpe.fn.lang('PartyId', config.locale, config.localizations),
-					 //width: "100px"
+					 width: "100px"
 				   },
 				   {
 					 field: "PO_Order_ID",
 					 title: hpe.fn.lang('HPEOrder', config.locale, config.localizations),
 					 filterable: false,
 					 template: function(d) {
-					   var elem = "";
+					   var elem = '<div class="orderList" style="text-align: left">';
 					   if (d.PO_Order_ID != "" && d.PO_Order_ID != "N/A" && d.PO_Order_ID != null) {
 						 if (d.PO_Order_ID && d.PO_Order_ID.length > 10) {
-						   const orderIds = d.PO_Order_ID.split(';');
+						   let orderIds = d.PO_Order_ID.trim();
+						   if (orderIds.includes(';')) {
+							 orderIds = orderIds.split(';');
+						   } else {
+							 orderIds = orderIds.split(' ');
+						   }
 						   //const orderIds = d.Operations.Order
+						   console.log(orderIds);
 						   orderIds.forEach(orderId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
+							 elem += '<span class="' + orderId + '" title="' + orderId + '"> ' + orderId + '</span>';
+							 console.log(elem);
+							// elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
 						   });
 						 } else {
-						   //const orderId = d.Operations.Order
-						   // += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID + '" target="_blank">' + d.PO_Order_ID + '</a><br>';
+						   elem += '<span class="' + d.PO_Order_ID.trim() + '" title="' + d.PO_Order_ID.trim() + '"> ' + d.PO_Order_ID.trim() + '</span>';
+						  // elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID + '" target="_blank">' + d.PO_Order_ID + '</a><br>';
 						 }
 					   }
 					   if (d.PO_AAS_ID != "" && d.PO_AAS_ID != "N/A" && d.PO_AAS_ID != null) {
 						 if (d.PO_AAS_ID && d.PO_AAS_ID.length > 8) {
-						   const aasIds = d.PO_AAS_ID.split(';');
+						   let aasIds = d.PO_AAS_ID.trim().split(';');
+						   if (aasIds.includes(';')) {
+							 aasIds = aasIds.split(';');
+						   } else {
+							 aasIds = aasIds.split(' ');
+						   }
+						   console.log(aasIds);
 						   aasIds.forEach(aasId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
+							 elem += '<span class="' + aasId + '" title="' + aasId + '"> ' + aasId + '</span>';
+							 console.log(elem);
+							// elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
 						   });
 						 } else {
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID + '" target="_blank">' + d.PO_AAS_ID + '</a>';
+						   elem += '<span class="' + d.PO_AAS_ID.trim() + '" title="' + d.PO_AAS_ID.trim() + '"> ' + d.PO_AAS_ID.trim() + '</span>';
+						  // elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID + '" target="_blank">' + d.PO_AAS_ID + '</a>';
 						 }
 					   }
+					   elem += '</div>';
 
 					   if (elem == "") {
 						 elem = "N/A";
 					   }
+					//   console.log(elem);
 					   return elem;
 					 },
-					 width: "120px",
+					 width: "100px"
 				   },
 				   {
 					 field: "Requestor_Email",
@@ -12715,7 +12733,7 @@
 				   },
 				   {
 					 field: "EndCx_CompanyName",
-					 title: hpe.fn.lang("Form058", config.locale, config.localizations),
+					 title: hpe.fn.lang("FormEndCx", config.locale, config.localizations),
 					 width: "400px",
 					 filterable: true,
 					 template: function(d) {
@@ -12731,6 +12749,7 @@
 					 title: hpe.fn.lang('Submitter', config.locale, config.localizations),
 					 hidden: true,
 					 filterable: false,
+					 width: "80px",
 					 template: function(d) {
 					   try {
 						 if (d.Requestor_Email.indexOf("@") > -1)
@@ -12767,7 +12786,7 @@
 				   {
 					 field: "SubmittedTimestamp",
 					 title: hpe.fn.lang('Form44x2', config.locale, config.localizations),
-					 width: "250px",
+					 width: "100px",
 					 filterable: {
 					   cell: {
 						 template: function(d) {
@@ -12788,7 +12807,7 @@
 				   {
 					 field: "Status",
 					 title: hpe.fn.lang('Status', config.locale, config.localizations),
-					 width: "120px",
+					 width: "90px",
 					 filterable: {
 					   ui: function(element) {
 						 const dataSourceConfig = {
@@ -12843,7 +12862,7 @@
 		all.push({
 		  field: "AvailableActions",
 		  title: " ",
-		  width: 160,
+		  width: 90,
 		  filterable: false,
 		  headerAttributes: {
 			style: "text-align: right;"
