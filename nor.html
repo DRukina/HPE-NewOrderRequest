@@ -536,6 +536,11 @@
 									document.querySelector("div.tile[section-id=tibcoErrors]").classList.remove("inactive");
 									document.querySelector("nav ul li[section-id=tibcoErrors]").classList.remove("inactive");
 							}
+				// ACCOUNT VIEW
+							if (cur.ACCOUNTVIEW) {
+									document.querySelector("div.tile[section-id=accountView]").classList.remove("inactive");
+									document.querySelector("nav ul li[section-id=accountView]").classList.remove("inactive");
+							}
 					}
 					if (typeof(callback) === "function") callback();
 			},
@@ -797,6 +802,21 @@
 							case "tibcoErrors":
 									tibcoErrors.init();
 									break;
+							case "drafts":
+									drafts._init();
+									break;
+			case "accountView":
+									accountView._init();
+									break;
+			case "inProgress":
+									inProgress._init();
+									break;
+			case "completed":
+									completed._init();
+									break; 
+			case "cancelled":
+									cancelled._init();
+									break; 
 							default:
 									console.log("No application component requested");
 									break;
@@ -8911,6 +8931,15 @@
 															'</label>' +
 															'</div>' +
 															'</label>' +
+								'<label class="wrapper toggle" style="display:block;">' +
+															'<span class="name">Account View</span>' +
+															'<div class="fmmcosmin">' +
+															'<label for="ACCOUNTVIEW">' +
+															'<input name="ACCOUNTVIEW" data-name="ACCOUNTVIEW" type="hidden" value="N">' +
+															'<div class="toggle" data-values="N,Y"><span></span></div>' +
+															'</label>' +
+															'</div>' +
+															'</label>' +
 															'<label class="wrapper toggle" style="display:block;">' +
 															'<span class="name">Administrator</span>' +
 															'<div class="fmmcosmin">' +
@@ -8997,6 +9026,7 @@
 													USER: false,
 													CNT: false,
 													TIBCOERROR: false,
+							ACCOUNTVIEW: false,
 											};
 
 											// UPDATE ROLES OBJECT
@@ -9612,6 +9642,2201 @@
 					//console.log("admin");
 			}
 	}
+</script>
+<!-- COMPONENT DRAFTS -->
+<script>
+const drafts = {
+	ready: false,
+	data: {},
+	_auth: function() {
+			const operationsRole = '{"EMEA":true,"AMS":true,"APJ":true}';
+			return (operationsRole === JSON.stringify(applet?.user?.UserRole?.OPS));
+	},
+	_init: function() {
+			if(drafts._auth()) {
+					if (!drafts.ready) {
+							mo.fn.overlay.show({
+									loading: true,
+									close: false
+							});
+							let self = this
+							crud.read("3180", "eid=5415", function(d) {
+									self.sample = d.Rows[0];
+									drafts.ui();
+									drafts._loadGrids();
+									drafts.ready = true;
+									mo.fn.overlay.hide();
+							});
+	
+					}
+			} else {
+					mo.fn.modal.show({
+							ctaLabel: 'Close',
+							close: false,
+							title: 'Access Error',
+							content: 'You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.',
+							ctaCallback: function() {
+									ui._dashboard();
+									mo.fn.events.closeAll();
+							}
+					});
+			}        
+	},
+	ui: function(cb) {
+			if (document.querySelector("#drafts .tabs") == null)
+					document.querySelector("#drafts").innerHTML += '<section class="tabs"></div>';
+			if (document.querySelector("#drafts .container") == null)
+					document.querySelector("#drafts").innerHTML += '<section class="container"></div>';
+
+			document.querySelector("#drafts .tabs").innerHTML += '<span tab-id="ops">Drafts (<em>0</em>)</span>';
+			document.querySelector("#drafts .container").innerHTML += '<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>';
+			// ADD REFRESH
+			document.querySelector("#drafts").innerHTML += '<span class="refresh"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="refresh" width="24px" height="24px"><path fill="none" stroke="#666" stroke-width="2" d="M20,8 C18.5974037,5.04031171 15.536972,3 12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 L12,21 C16.9705627,21 21,16.9705627 21,12 M21,3 L21,9 L15,9"></path></svg></span>';
+			// ADD TAB ON CLICK
+			var tabs = document.querySelectorAll("#drafts .tabs span");
+			var sections = document.querySelectorAll("#drafts .container section");
+			for (i = 0; i < tabs.length; i++) {
+					tabs[i].addEventListener("click", function(e) {
+							// RESET ALL TABS
+							for (i = 0; i < tabs.length; i++)
+									tabs[i].setAttribute("class", "");
+							// RESET ALL SECTIONS
+							for (i = 0; i < sections.length; i++)
+									sections[i].setAttribute("class", "");
+							// ENABLE REQUESTED SECTION
+							var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
+							document.querySelector("#drafts span[tab-id=" + cid + "]").classList.add("active");
+							document.querySelector("#drafts section[tab-id=" + cid + "]").classList.add("active");
+							var activeSection = document.querySelector("#drafts section[tab-id=" + cid + "]");
+							var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+							kendoGrids.forEach(function(gridElement) {
+									var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+									if (kendoGridInstance) {
+											kendoGridInstance.resize();
+									}
+							});
+
+					});
+			}
+			// DEFAULT TO FIRST TAB
+			document.querySelector("#drafts .tabs span").click();
+			// ADD REFRESH EVENT
+			document.querySelector("#drafts span.refresh").addEventListener("click", drafts._refresh);
+			// CALLBACK
+			if (typeof(cb) === "function") return cb();
+			else return true;
+	},
+	_getCount: function() {
+			var pend = drafts.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "neq",
+									value: "Y"
+							}
+					]
+			});
+			pend.fetch(function() {
+					document.querySelector("#drafts .tabs span[tab-id=ops] em").innerText = pend.total();
+			});
+	},
+	_refresh: function() {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+			var grids = document.querySelectorAll("#drafts .grid , #drafts .toolbar");
+			for (i = 0; i < grids.length; i++)
+					grids[i].innerHTML = "";
+			let self = this
+			crud.read("3180", "eid=5415", function(d) {
+					self.sample = d.Rows[0];
+					drafts._loadGrids();
+					drafts.ready = true;
+					mo.fn.overlay.hide();
+			});
+	},
+	_loadGrids: function() {
+			// KENDO GRID HAS SOME ITERATION IN IT AND IT CONFLICTS WITH I,J,K AS INDEX VARIABLE; USE INDEX AS VARIABLE
+			drafts.grid._load("#drafts section[tab-id=ops] .grid", drafts.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "neq",
+									value: "Y"
+							},
+					]
+			}));
+	},
+	_modal: function(data) {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+
+			var ctalabel = "OK";
+			var modtitle = "Viewing Onboarding request #" + data.EntryId;
+			mo.fn.modal.show({
+					ctaLabel: ctalabel,
+					title: modtitle,
+					content: '<div class="nbsf" style="overflow:hidden;padding-bottom:10px;max-width:100%"><div class="tabs"></div><div class="container"></div></div>',
+					contentCallback: function() {
+							var target = document.querySelector(".dxpModalContent .nbsf");
+							var tabs = target.querySelector(".tabs");
+							var container = target.querySelector(".container");
+							container.innerHTML += '<iframe></iframe>';
+							container.innerHTML += '<style>html .dxpModal {height: 100vh;box-sizing: border-box;width: 1200px!important;max-width: none!important;}.dxpModal .dxpModalFooter {display:none!important;}.dxpModal iframe {width:100%;height:100%;border:0;}html .dxpModal .dxpModalContainer,html .dxpModal .dxpModalContainer .dxpModalContent, html .dxpModal .dxpModalContainer .dxpModalContent .nbsf {height:100%;margin-bottom:0;padding-bottom:0;}</style>';
+							container.querySelector("iframe").setAttribute("src", "https://hpe-rfb.it.hpe.com/form/681/072267d4-1434-420c-b241-1f366816ddcf?EntryId=" + data.EntryId);
+
+							//// FUNCTIONALITY
+							// TABS
+							var allt = tabs.querySelectorAll("span");
+							var allc = container.querySelectorAll("div[tab-id]");
+
+							function hideAll() {
+									for (i = 0; i < allt.length; i++)
+											allt[i].setAttribute("class", "");
+									for (i = 0; i < allc.length; i++)
+											allc[i].setAttribute("class", "");
+							}
+							for (i = 0; i < allt.length; i++) {
+									allt[i].addEventListener("click", function(e) {
+											var tabid = e.target.getAttribute("tab-id");
+											hideAll();
+											e.target.classList.add("active");
+											container.querySelector("div[tab-id=" + tabid + "]").classList.add("active");
+									});
+							}
+							// TOGGLES
+							var alltog = container.querySelectorAll("div.toggle");
+							for (i = 0; i < alltog.length; i++) {
+									alltog[i].addEventListener("click", function(e) {
+											var el = e.target.closest("label");
+											el.classList.toggle("active");
+											if (el.getAttribute("class") == "active") el.querySelector("input").value = "Y";
+											else el.querySelector("input").value = "N";
+									});
+							}
+
+							//// CLOSE MODAL
+							mo.fn.overlay.show({
+									close: false
+							})
+					},
+					ctaCallback: function() {
+							// HELPERS
+							var sel = document.querySelector(".dxpModalContent");
+					}
+			});
+	},
+	grid: {
+			_custom: function() {
+					var cusConfig = [{
+									field: "EntryId",
+									title: "ID",
+									filterable: true,
+									width: "85px",
+									locked: true
+							},
+							{
+									field: "PO_BackgroundGroup",
+									title: "BG",
+									filterable: true,
+									width: 90,
+									locked: false
+							},
+							{
+									field: "Region",
+									title: "Region",
+									filterable: true,
+									width: 115,
+									locked: false
+							},
+							{
+									field: "Geo",
+									title: "Geo",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SoldTo_Address_Country",
+									title: "Country",
+									filterable: true,
+									width: 125,
+							},
+							{
+									field: "SoldTo_CompanyName",
+									title: "SoldTo CompanyName",
+									filterable: true,
+									width: 215,
+							},
+							{
+									field: "PartyId",
+									title: "PartyId",
+									filterable: true,
+									width: 115,
+
+
+							},
+							{
+									field: "PO_Number",
+									title: "PO",
+									filterable: true,
+									width: 115,
+							},
+							// {
+							//     field: "SubmittedTimestamp",
+							//     title: "Date",
+							//     filterable: false,
+							//     width: 100,
+							//     template: function(d) {
+							//         try {
+							//             return d.SubmittedTimestamp.split("T")[0];
+							//         } catch (err) {
+							//             return d.SubmittedTimestamp;
+							//         }
+							//     }
+							// },
+							{
+									field: "SubmitterEmail",
+									title: "Submitter",
+									filterable: true,
+									width: 255
+							},
+							// {
+							//     field: "CaseNumber",
+							//     title: "Case Number",
+							//     filterable: true,
+							//     width: 155,
+							// },
+					];
+					return cusConfig;
+			},
+			_default: function() {
+					var defConfig = [];
+					if (drafts.data.length > 0)
+							for (i = 0; i < Object.keys(drafts.data[0]).length; i++) {
+									var key = Object.keys(drafts.data[0])[i];
+									var obj = {};
+									obj.field = key;
+									obj.title = key;
+									obj.hidden = true;
+									defConfig.push(obj);
+							}
+					return defConfig;
+			},
+			_config: function() {
+					var cusConfig = drafts.grid._custom();
+					var defConfig = drafts.grid._default();
+					for (j = cusConfig.length - 1; j >= 0; j--) {
+							for (i = 0; i < defConfig.length; i++) {
+									if (defConfig[i].field == cusConfig[j].field) {
+											defConfig.splice(i, 1);
+											break;
+									}
+							}
+					}
+					for (i = cusConfig.length - 1; i >= 0; i--) {
+							defConfig.unshift(cusConfig[i]);
+					}
+					return defConfig;
+			},
+			_load: function(selector, datasource) {
+					var parent = document.querySelector(selector.split(" .grid")[0]);
+					let config = this._config();
+					$(selector).kendoGrid({
+							toolbar: [{
+									name: "excel",
+									text: "Download"
+							}],
+							excel: {
+									fileName: "Onboarding_Drafts_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
+									filterable: true,
+									allPages: true
+							},
+							dataSource: datasource,
+							columns: config,
+							dataBound: function(e) {
+									document.querySelector("#drafts .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
+							},
+							pageable: {
+									buttonCount: 4,
+									pageSize: 10,
+									pageSizes: [10, 25, 50, 100],
+									messages: {
+											itemsPerPage: ""
+									}
+							},
+							scrollable: true,
+							sortable: true,
+							filterable: true
+					});
+					$(selector + ' .k-grid-toolbar').appendTo(selector.split(" .grid")[0] + ' .toolbar');
+					var exportFlag = false;
+					$(selector).data("kendoGrid").bind("excelExport", function(e) {
+							if (!exportFlag) {
+									e.preventDefault();
+									exportFlag = true;
+									mo.fn.overlay.show({
+											loading: true,
+											close: false
+									});
+									setTimeout(function() {
+											e.sender.saveAsExcel();
+									}, 1500);
+							} else {
+									exportFlag = false;
+									setTimeout(function() {
+											mo.fn.overlay.hide();
+									}, 500);
+							}
+					});
+			},
+			_datasource: function(filter) {
+					return new kendo.data.DataSource({
+							type: "rfb-v2",
+							transport: {
+									read: {
+											url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
+									}
+							},
+							schema: {
+									model: {
+											id: "EntryId",
+									}
+							},
+							filter: filter,
+							serverPaging: true,
+							pageSize: 10,
+							serverFiltering: true,
+							serverSorting: true,
+					});
+			}
+	}
+}
+</script>
+
+<script>
+function getStatus(statusCode) {
+	const statusMap = {
+			'0': 'Draft',
+			'1': 'Sent',
+			'2': 'In progress',
+			'3': 'Completed',
+			'4': 'Fallout',
+			'5': 'Cancelled',
+			'6': 'Closed',
+	};
+
+	return statusMap[statusCode] ? statusMap[statusCode] : '';
+}
+</script>
+
+<!-- COMPONENT ACCOUNT VIEW-->
+<script>
+const parsePAAndPartyId = (str) => {
+	const list = str.trim().split(';');
+	const partyIds = [];
+	const PANumbers = [];
+
+	for (number of list) {
+			if (number.length === 10) {
+					partyIds.push(+number);
+			} else if (number.length === 5){
+					PANumbers.push(number.toUpperCase());
+			}
+	}
+
+	return {
+			partyIds: partyIds,
+			PANumbers: PANumbers,
+	}
+}
+const formatFilter = (field, options, type = 'or') => {
+	const filter = {
+			logic: type,
+			filters: [],
+	};
+
+	for (let option of options) {
+			filter.filters.push({
+					field: field,
+					operator: "eq",
+					value: option,
+			});
+	}
+
+	return filter;
+}
+const buildFilterCombobox = (grid, field, dataSource) => {
+const configureDataSource = function () {
+if (Array.isArray(dataSource)) {
+	return { dataSource };
+} else {
+	const { dataset, form, filter, dataTextField, dataValueField } = dataSource;
+	return ({
+	dataSource: typeof dataset === 'string' ? new kendo.data.DataSource({
+		type: "rfb-v2",
+		serverSorting: true,
+		sort: {
+		field: dataTextField,
+		dir: "asc"
+		},
+		transport: {
+		read: {
+			url: `/form/data-set-provider/v2/${form}/${dataset}/kendo/data/search`,
+			type: "POST",
+		},
+		},
+	}) : dataset,
+	dataTextField,
+	dataValueField,
+	filter: filter || [],
+	});
+}
+};
+const comboboxFilter = function (element) {
+const dataSourceConfig = configureDataSource();
+element.kendoComboBox({
+	...dataSourceConfig,
+	filter: "contains",
+});
+};
+const addFilterToGridConfig = function () {
+const grid_data = grid.data("kendoGrid");
+const column = grid_data.columns.find(el => el.field === field);
+if (column) {
+	column.filterable = {
+	ui: comboboxFilter,
+	}
+	grid_data.setOptions({
+	columns: grid_data.columns,
+	});
+}
+};
+addFilterToGridConfig();
+};
+
+
+const accountView = {
+config: null,
+ready: false,
+filters: null,
+isFormInited: false,
+data: {},
+_auth: function () {
+	var arr = ["ADMIN", "ACCOUNTVIEW"];
+	for (i = 0; i < arr.length; i++) {
+		if (applet._getAuth(arr[i])) {
+			return true;
+			break;
+		} else if (i == arr.length - 1) return false;
+	}
+},
+_init: function () {
+	if (accountView._auth()) {
+		if (!accountView.ready) {
+			mo.fn.overlay.show({
+				loading: true,
+				close: false,
+			});
+
+			accountView.ui();
+			accountView._getNbsfConfig();
+			nbsf.init(accountView.config, 0);
+			mo.fn.overlay.hide();
+		}
+	} else {
+		mo.fn.modal.show({
+			ctaLabel: "Close",
+			close: false,
+			title: "Access Error",
+			content:
+				"You do not have permission to access this section. Please request additional access if required or reach out to someone that has access to this functionality.",
+			ctaCallback: function () {
+				ui._dashboard();
+				mo.fn.events.closeAll();
+			},
+		});
+	}
+},
+_getNbsfConfig: () => {
+	const config = {
+		dom: document.querySelector("#accountView__search"),
+		page: 0,
+		dataset: {},
+		pages: [
+			{
+				nav: true,
+				structure: [
+					{
+						description:
+							"Input PA Number and/or party Id, separated by semicolomn",
+						group: [
+							[
+								{
+									label: "PA contains 5 symbols, PartyId 10 digits",
+									type: "text",
+									placeholder: "",
+									data: "PANumber",
+									required: true,
+									validation: ["minLen|5", "noBlanks"],
+								},
+							],
+						],
+					},
+				],
+				callback: function () {},
+				validation: function () {
+					var result = {
+						fail: [],
+						pass: [],
+					};
+
+					return result;
+				},
+			},
+		],
+		onSubmit: function () {
+			const filterParams = parsePAAndPartyId(this.dataset.PANumber);
+			const filters = {
+				logic: "and",
+				filters: [
+					{
+						field: "Submitted",
+						operator: "eq",
+						value: "Y",
+					},
+				],
+			};
+
+			if (filterParams.partyIds.length) {
+				filters.filters.push(formatFilter("PartyId", filterParams.partyIds));
+			}
+
+			if (filterParams.PANumbers.length) {
+				filters.filters.push(
+					formatFilter("PA_Number", filterParams.PANumbers)
+				);
+			}
+
+			accountView.filters = filters;
+
+			if (!accountView.ready) {
+				let self = this;
+				crud.read("3180", "eid=5415", function (d) {
+					self.sample = d.Rows[0];
+					accountView._loadGrids();
+					accountView.ready = true;
+				});
+			} else {
+				accountView._refresh();
+			}
+
+			document.querySelector("#accountView .tabs").style.display = "block";
+			document.querySelector("#accountView .container").style.display = "block";
+		},
+	};
+
+	accountView.config = config;
+},
+ui: function (cb) {
+	const selector = document.querySelector("#accountView");
+
+	if (selector.querySelector(".tabs") == null) {
+		selector.innerHTML += '<section class="tabs"></div>';
+	}
+
+	if (selector.querySelector(".container") == null) {
+		selector.innerHTML += '<section class="container"></div>';
+	}
+
+	if (!accountView.isFormInited) {
+		selector.querySelector(".tabs").style.display = "none";
+		selector.querySelector(".container").style.display = "none";
+		
+		selector.querySelector(".tabs").innerHTML += `<span tab-id="ops">Account View (<em>0</em>)</span>`;
+		selector.querySelector(".container").innerHTML += `<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>`;
+		document.querySelector("#accountView span[tab-id='ops']").classList.add("active");
+		document.querySelector("#accountView section[tab-id='ops']").classList.add("active");
+		accountView.isFormInited = true;
+	}
+
+	var activeSection = document.querySelector("#accountView section[tab-id='ops']");
+	var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+	kendoGrids.forEach(function (gridElement) {
+		var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+		if (kendoGridInstance) {
+			kendoGridInstance.resize();
+		}
+	}); 
+
+	// CALLBACK
+	if (typeof cb === "function") return cb();
+	else return true;
+},
+_getCount: function () {
+	var pend = accountView.grid._datasource(accountView.filters);
+	pend.fetch(function () {
+		document.querySelector(
+			"#accountView .tabs span[tab-id=ops] em"
+		).innerText = pend.total();
+	});
+},
+_refresh: function () {
+	mo.fn.overlay.show({
+		loading: true,
+		close: false,
+	});
+	var grids = document.querySelectorAll(
+		"#accountView .grid , #accountView .toolbar"
+	);
+	for (i = 0; i < grids.length; i++) grids[i].innerHTML = "";
+	let self = this;
+
+	crud.read("3180", "eid=5415", function (d) {
+		self.sample = d.Rows[0];
+		accountView._loadGrids();
+		accountView.ready = true;
+		mo.fn.overlay.hide();
+	});
+},
+_loadGrids: function () {
+	// KENDO GRID HAS SOME ITERATION IN IT AND IT CONFLICTS WITH I,J,K AS INDEX VARIABLE; USE INDEX AS VARIABLE
+	accountView.grid._load(
+		"#accountView section[tab-id=ops] .grid",
+		accountView.grid._datasource(accountView.filters)
+	);
+},
+_modal: function (data) {
+	mo.fn.overlay.show({
+		loading: true,
+		close: false,
+	});
+
+	var ctalabel = "OK";
+	var modtitle = "Viewing Onboarding request #" + data.EntryId;
+	mo.fn.modal.show({
+		ctaLabel: ctalabel,
+		title: modtitle,
+		content: '<div class="nbsf" style="overflow:hidden;padding-bottom:10px;max-width:100%"><div class="tabs"></div><div class="container"></div></div>',
+		contentCallback: function () {
+			var target = document.querySelector(".dxpModalContent .nbsf");
+			var tabs = target.querySelector(".tabs");
+			var container = target.querySelector(".container");
+			container.innerHTML += "<iframe></iframe>";
+			container.innerHTML += "<style>html .dxpModal {height: 100vh;box-sizing: border-box;width: 1200px!important;max-width: none!important;}.dxpModal .dxpModalFooter {display:none!important;}.dxpModal iframe {width:100%;height:100%;border:0;}html .dxpModal .dxpModalContainer,html .dxpModal .dxpModalContainer .dxpModalContent, html .dxpModal .dxpModalContainer .dxpModalContent .nbsf {height:100%;margin-bottom:0;padding-bottom:0;}</style>";
+			container.querySelector("iframe").setAttribute("src", "https://hpe-rfb.it.hpe.com/form/681/072267d4-1434-420c-b241-1f366816ddcf?EntryId=" + data.EntryId );
+
+			//// FUNCTIONALITY
+			// TABS
+			var allt = tabs.querySelectorAll("span");
+			var allc = container.querySelectorAll("div[tab-id]");
+
+			function hideAll() {
+				for (i = 0; i < allt.length; i++) allt[i].setAttribute("class", "");
+				for (i = 0; i < allc.length; i++) allc[i].setAttribute("class", "");
+			}
+			for (i = 0; i < allt.length; i++) {
+				allt[i].addEventListener("click", function (e) {
+					var tabid = e.target.getAttribute("tab-id");
+					hideAll();
+					e.target.classList.add("active");
+					container
+						.querySelector("div[tab-id=" + tabid + "]")
+						.classList.add("active");
+				});
+			}
+			// TOGGLES
+			var alltog = container.querySelectorAll("div.toggle");
+			for (i = 0; i < alltog.length; i++) {
+				alltog[i].addEventListener("click", function (e) {
+					var el = e.target.closest("label");
+					el.classList.toggle("active");
+					if (el.getAttribute("class") == "active")
+						el.querySelector("input").value = "Y";
+					else el.querySelector("input").value = "N";
+				});
+			}
+
+			//// CLOSE MODAL
+			mo.fn.overlay.show({
+				close: false,
+			});
+		},
+		ctaCallback: function () {
+			// HELPERS
+			var sel = document.querySelector(".dxpModalContent");
+		},
+	});
+},
+grid: {
+	_custom: function () {
+		var cusConfig = [
+			{
+				field: "EntryId",
+				title: "ID",
+				filterable: true,
+				width: "85px",
+				locked: true,
+			},
+	{
+		field: "Status",
+		title: "Status",
+		filterable: true,
+		width: "130px",
+		template: function(obj) {
+		return getStatus(obj.Status);
+		}
+	},
+			{
+				field: "PO_BackgroundGroup",
+				title: "BG",
+				filterable: true,
+				width: 90,
+				locked: false,
+			},
+			{
+				field: "Region",
+				title: "Region",
+				filterable: true,
+				width: 115,
+				locked: false,
+			},
+			{
+				field: "Geo",
+				title: "Geo",
+				filterable: true,
+				width: 115,
+			},
+			{
+				field: "SoldTo_Address_Country",
+				title: "Country",
+				filterable: true,
+				width: 125,
+			},
+			{
+				field: "SoldTo_CompanyName",
+				title: "SoldTo CompanyName",
+				filterable: true,
+				width: 215,
+			},
+			{
+				field: "PartyId",
+				title: "PartyId",
+				filterable: true,
+				width: 115,
+			},
+			{
+				field: "PA_Number",
+				title: "PA",
+				filterable: true,
+				width: 115,
+			},
+			{
+				field: "PO_Number",
+				title: "PO",
+				filterable: true,
+				width: 115,
+			},
+			{
+				field: "SubmittedTimestamp",
+				title: "Date",
+				filterable: false,
+				width: 100,
+				template: function (d) {
+					try {
+						return d.SubmittedTimestamp.split("T")[0];
+					} catch (err) {
+						return d.SubmittedTimestamp;
+					}
+				},
+			},
+			{
+				field: "SubmitterEmail",
+				title: "Submitter",
+				filterable: true,
+				width: 255,
+			},
+			{
+				field: "CaseNumber",
+				title: "Case Number",
+				filterable: true,
+				width: 155,
+			},
+		];
+		return cusConfig;
+	},
+	_default: function () {
+		var defConfig = [];
+		if (accountView.data.length > 0)
+			for (i = 0; i < Object.keys(accountView.data[0]).length; i++) {
+				var key = Object.keys(accountView.data[0])[i];
+				var obj = {};
+				obj.field = key;
+				obj.title = key;
+				obj.hidden = true;
+				defConfig.push(obj);
+			}
+		return defConfig;
+	},
+	_config: function () {
+		var cusConfig = accountView.grid._custom();
+		var defConfig = accountView.grid._default();
+		for (j = cusConfig.length - 1; j >= 0; j--) {
+			for (i = 0; i < defConfig.length; i++) {
+				if (defConfig[i].field == cusConfig[j].field) {
+					defConfig.splice(i, 1);
+					break;
+				}
+			}
+		}
+		for (i = cusConfig.length - 1; i >= 0; i--) {
+			defConfig.unshift(cusConfig[i]);
+		}
+		return defConfig;
+	},
+	_load: function (selector, datasource) {
+		var parent = document.querySelector(selector.split(" .grid")[0]);
+		let config = this._config();
+		$(selector).kendoGrid({
+			toolbar: [
+				{
+					name: "excel",
+					text: "Download",
+				},
+			],
+			excel: {
+				fileName: "Onboarding_Drafts_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
+				filterable: true,
+				allPages: true,
+			},
+			dataSource: datasource,
+			columns: config,
+			dataBound: function (e) {
+				document.querySelector("#accountView .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
+			},
+			pageable: {
+				buttonCount: 4,
+				pageSize: 10,
+				pageSizes: [10, 25, 50, 100],
+				messages: {
+					itemsPerPage: "",
+				},
+			},
+			scrollable: true,
+			sortable: true,
+			filterable: true,
+		});
+		$(selector + " .k-grid-toolbar").appendTo(
+			selector.split(" .grid")[0] + " .toolbar"
+		);
+		var exportFlag = false;
+		$(selector)
+			.data("kendoGrid")
+			.bind("excelExport", function (e) {
+				if (!exportFlag) {
+					e.preventDefault();
+					exportFlag = true;
+					mo.fn.overlay.show({
+						loading: true,
+						close: false,
+					});
+					setTimeout(function () {
+						e.sender.saveAsExcel();
+					}, 1500);
+				} else {
+					exportFlag = false;
+					setTimeout(function () {
+						mo.fn.overlay.hide();
+					}, 500);
+				}
+			});
+	
+	buildFilterCombobox($(selector), "Status", {
+		dataset: [
+		{ text: "Draft", value: "0" },
+		{ text: "Sent", value: "1" },
+		{ text: "In progress", value: "2" },
+		{ text: "Completed", value: "3" },
+		{ text: "Fallout", value: "4" },
+		{ text: "Cancelled", value: "5" },
+		{ text: "Closed", value: "6" },
+		],
+		dataTextField: "text",
+		dataValueField: "value",
+	});
+	},
+	_datasource: function (filter) {
+		return new kendo.data.DataSource({
+			type: "rfb-v2",
+			transport: {
+				read: {
+					url: "/form/data-set-provider/v2/989/NOR_Data_List_Dev/kendo/data",
+				},
+			},
+			schema: {
+				model: {
+					id: "EntryId",
+				},
+			},
+			filter: filter,
+			serverPaging: true,
+			pageSize: 10,
+			serverFiltering: true,
+			serverSorting: true,
+		});
+	},
+},
+};
+</script>
+
+<!-- COMPONENT IN PROGRESS -->
+<script>
+const inProgress = {
+	ready: false,
+	data: {},
+	_init: function() {
+			if (!inProgress.ready) {
+					mo.fn.overlay.show({
+							loading: true,
+							close: false
+					});
+					let self = this
+					crud.read("3180", "eid=5415", function(d) {
+							self.sample = d.Rows[0];
+							inProgress.ui();
+							inProgress._loadGrids();
+							inProgress.ready = true;
+							mo.fn.overlay.hide();
+					});
+
+			}
+	},
+	ui: function(cb) {
+			if (document.querySelector("#inProgress .tabs") == null)
+					document.querySelector("#inProgress").innerHTML += '<section class="tabs"></div>';
+			if (document.querySelector("#inProgress .container") == null)
+					document.querySelector("#inProgress").innerHTML += '<section class="container"></div>';
+
+			document.querySelector("#inProgress .tabs").innerHTML += '<span tab-id="ops">In progress (<em>0</em>)</span>';
+			document.querySelector("#inProgress .container").innerHTML += '<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>';
+			// ADD REFRESH
+			document.querySelector("#inProgress").innerHTML += '<span class="refresh"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="refresh" width="24px" height="24px"><path fill="none" stroke="#666" stroke-width="2" d="M20,8 C18.5974037,5.04031171 15.536972,3 12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 L12,21 C16.9705627,21 21,16.9705627 21,12 M21,3 L21,9 L15,9"></path></svg></span>';
+			// ADD TAB ON CLICK
+			var tabs = document.querySelectorAll("#inProgress .tabs span");
+			var sections = document.querySelectorAll("#inProgress .container section");
+			for (i = 0; i < tabs.length; i++) {
+					tabs[i].addEventListener("click", function(e) {
+							// RESET ALL TABS
+							for (i = 0; i < tabs.length; i++)
+									tabs[i].setAttribute("class", "");
+							// RESET ALL SECTIONS
+							for (i = 0; i < sections.length; i++)
+									sections[i].setAttribute("class", "");
+							// ENABLE REQUESTED SECTION
+							var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
+							document.querySelector("#inProgress span[tab-id=" + cid + "]").classList.add("active");
+							document.querySelector("#inProgress section[tab-id=" + cid + "]").classList.add("active");
+							var activeSection = document.querySelector("#inProgress section[tab-id=" + cid + "]");
+							var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+							kendoGrids.forEach(function(gridElement) {
+									var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+									if (kendoGridInstance) {
+											kendoGridInstance.resize();
+									}
+							});
+
+					});
+			}
+			// DEFAULT TO FIRST TAB
+			document.querySelector("#inProgress .tabs span").click();
+			// ADD REFRESH EVENT
+			document.querySelector("#inProgress span.refresh").addEventListener("click", inProgress._refresh);
+			// CALLBACK
+			if (typeof(cb) === "function") return cb();
+			else return true;
+	},
+	_getCount: function() {
+			var pend = inProgress.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "Status",
+													operator: "eq",
+													value: "1"
+											},
+											{
+													field: "Status",
+													operator: "eq",
+													value: "2"
+											}
+									]
+							}
+					]
+			});
+			pend.fetch(function() {
+					document.querySelector("#inProgress .tabs span[tab-id=ops] em").innerText = pend.total();
+			});
+	},
+	_refresh: function() {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+			var grids = document.querySelectorAll("#inProgress .grid , #inProgress .toolbar");
+			for (i = 0; i < grids.length; i++)
+					grids[i].innerHTML = "";
+			let self = this
+			crud.read("3180", "eid=5415", function(d) {
+					self.sample = d.Rows[0];
+					inProgress._loadGrids();
+					inProgress.ready = true;
+					mo.fn.overlay.hide();
+			});
+	},
+	_loadGrids: function() {
+			// KENDO GRID HAS SOME ITERATION IN IT AND IT CONFLICTS WITH I,J,K AS INDEX VARIABLE; USE INDEX AS VARIABLE
+			inProgress.grid._load("#inProgress section[tab-id=ops] .grid", inProgress.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "Status",
+													operator: "eq",
+													value: "1"
+											},
+											{
+													field: "Status",
+													operator: "eq",
+													value: "2"
+											}
+									]
+							}
+					]
+			}));
+	},
+	_modal: function(data) {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+
+			var ctalabel = "OK";
+			var modtitle = "Viewing Onboarding request #" + data.EntryId;
+			mo.fn.modal.show({
+					ctaLabel: ctalabel,
+					title: modtitle,
+					content: '<div class="nbsf" style="overflow:hidden;padding-bottom:10px;max-width:100%"><div class="tabs"></div><div class="container"></div></div>',
+					contentCallback: function() {
+							var target = document.querySelector(".dxpModalContent .nbsf");
+							var tabs = target.querySelector(".tabs");
+							var container = target.querySelector(".container");
+							container.innerHTML += '<iframe></iframe>';
+							container.innerHTML += '<style>html .dxpModal {height: 100vh;box-sizing: border-box;width: 1200px!important;max-width: none!important;}.dxpModal .dxpModalFooter {display:none!important;}.dxpModal iframe {width:100%;height:100%;border:0;}html .dxpModal .dxpModalContainer,html .dxpModal .dxpModalContainer .dxpModalContent, html .dxpModal .dxpModalContainer .dxpModalContent .nbsf {height:100%;margin-bottom:0;padding-bottom:0;}</style>';
+							container.querySelector("iframe").setAttribute("src", "https://hpe-rfb.it.hpe.com/form/681/072267d4-1434-420c-b241-1f366816ddcf?EntryId=" + data.EntryId);
+
+							//// FUNCTIONALITY
+							// TABS
+							var allt = tabs.querySelectorAll("span");
+							var allc = container.querySelectorAll("div[tab-id]");
+
+							function hideAll() {
+									for (i = 0; i < allt.length; i++)
+											allt[i].setAttribute("class", "");
+									for (i = 0; i < allc.length; i++)
+											allc[i].setAttribute("class", "");
+							}
+							for (i = 0; i < allt.length; i++) {
+									allt[i].addEventListener("click", function(e) {
+											var tabid = e.target.getAttribute("tab-id");
+											hideAll();
+											e.target.classList.add("active");
+											container.querySelector("div[tab-id=" + tabid + "]").classList.add("active");
+									});
+							}
+							// TOGGLES
+							var alltog = container.querySelectorAll("div.toggle");
+							for (i = 0; i < alltog.length; i++) {
+									alltog[i].addEventListener("click", function(e) {
+											var el = e.target.closest("label");
+											el.classList.toggle("active");
+											if (el.getAttribute("class") == "active") el.querySelector("input").value = "Y";
+											else el.querySelector("input").value = "N";
+									});
+							}
+
+							//// CLOSE MODAL
+							mo.fn.overlay.show({
+									close: false
+							})
+					},
+					ctaCallback: function() {
+							// HELPERS
+							var sel = document.querySelector(".dxpModalContent");
+					}
+			});
+	},
+	grid: {
+			_custom: function() {
+					var cusConfig = [
+							{
+									field: "EntryId",
+									title: "ID",
+									filterable: true,
+									width: "85px",
+									locked: true
+							},
+			/*
+							{
+									field: "Status",
+									title: "Status",
+									filterable: true,
+									width: "85px",
+									template: function(obj) {
+										 return getStatus(obj.Status);
+									}
+							},
+			*/
+							{
+									field: "PO_BackgroundGroup",
+									title: "BG",
+									filterable: true,
+									width: 90,
+									locked: false
+							},
+							{
+									field: "Region",
+									title: "Region",
+									filterable: true,
+									width: 115,
+									locked: false
+							},
+							{
+									field: "Geo",
+									title: "Geo",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SoldTo_Address_Country",
+									title: "Country",
+									filterable: true,
+									width: 125,
+							},
+							{
+									field: "SoldTo_CompanyName",
+									title: "SoldTo CompanyName",
+									filterable: true,
+									width: 215,
+							},
+							{
+									field: "PartyId",
+									title: "PartyId",
+									filterable: true,
+									width: 115,
+
+
+							},
+							{
+									field: "PO_Number",
+									title: "PO",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SubmittedTimestamp",
+									title: "Date",
+									filterable: false,
+									width: 100,
+									template: function(d) {
+											try {
+													return d.SubmittedTimestamp.split("T")[0];
+											} catch (err) {
+													return d.SubmittedTimestamp;
+											}
+									}
+							},
+							{
+									field: "SubmitterEmail",
+									title: "Submitter",
+									filterable: true,
+									width: 255
+							},
+							{
+									field: "CaseNumber",
+									title: "Case Number",
+									filterable: true,
+									width: 155,
+							},
+					];
+					return cusConfig;
+			},
+			_default: function() {
+					var defConfig = [];
+					if (inProgress.data.length > 0)
+							for (i = 0; i < Object.keys(inProgress.data[0]).length; i++) {
+									var key = Object.keys(inProgress.data[0])[i];
+									var obj = {};
+									obj.field = key;
+									obj.title = key;
+									obj.hidden = true;
+									defConfig.push(obj);
+							}
+					return defConfig;
+			},
+			_config: function() {
+					var cusConfig = inProgress.grid._custom();
+					var defConfig = inProgress.grid._default();
+					for (j = cusConfig.length - 1; j >= 0; j--) {
+							for (i = 0; i < defConfig.length; i++) {
+									if (defConfig[i].field == cusConfig[j].field) {
+											defConfig.splice(i, 1);
+											break;
+									}
+							}
+					}
+					for (i = cusConfig.length - 1; i >= 0; i--) {
+							defConfig.unshift(cusConfig[i]);
+					}
+					return defConfig;
+			},
+			_load: function(selector, datasource) {
+					var parent = document.querySelector(selector.split(" .grid")[0]);
+					let config = this._config();
+					$(selector).kendoGrid({
+							toolbar: [{
+									name: "excel",
+									text: "Download"
+							}],
+							excel: {
+									fileName: "Onboarding_InProgress_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
+									filterable: true,
+									allPages: true
+							},
+							dataSource: datasource,
+							columns: config,
+							dataBound: function(e) {
+									document.querySelector("#inProgress .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
+							},
+							pageable: {
+									buttonCount: 4,
+									pageSize: 10,
+									pageSizes: [10, 25, 50, 100],
+									messages: {
+											itemsPerPage: ""
+									}
+							},
+							scrollable: true,
+							sortable: true,
+							filterable: true
+					});
+					$(selector + ' .k-grid-toolbar').appendTo(selector.split(" .grid")[0] + ' .toolbar');
+					var exportFlag = false;
+					$(selector).data("kendoGrid").bind("excelExport", function(e) {
+							if (!exportFlag) {
+									e.preventDefault();
+									exportFlag = true;
+									mo.fn.overlay.show({
+											loading: true,
+											close: false
+									});
+									setTimeout(function() {
+											e.sender.saveAsExcel();
+									}, 1500);
+							} else {
+									exportFlag = false;
+									setTimeout(function() {
+											mo.fn.overlay.hide();
+									}, 500);
+							}
+					});
+			},
+			_datasource: function(filter) {
+					return new kendo.data.DataSource({
+							type: "rfb-v2",
+							transport: {
+									read: {
+											url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
+									}
+							},
+							schema: {
+									model: {
+											id: "EntryId",
+									}
+							},
+							filter: filter,
+							serverPaging: true,
+							pageSize: 10,
+							serverFiltering: true,
+							serverSorting: true,
+					});
+			}
+	}
+}  
+</script> 
+
+<!-- COMPONENT COMPLETED -->
+<script>
+const completed = {
+	ready: false,
+	data: {},
+	_init: function() {
+			if (!completed.ready) {
+					mo.fn.overlay.show({
+							loading: true,
+							close: false
+					});
+					let self = this
+					crud.read("3180", "eid=5415", function(d) {
+							self.sample = d.Rows[0];
+							completed.ui();
+							completed._loadGrids();
+							completed.ready = true;
+							mo.fn.overlay.hide();
+					});
+
+			}
+	},
+	ui: function(cb) {
+			if (document.querySelector("#completed .tabs") == null)
+					document.querySelector("#completed").innerHTML += '<section class="tabs"></div>';
+			if (document.querySelector("#completed .container") == null)
+					document.querySelector("#completed").innerHTML += '<section class="container"></div>';
+
+			document.querySelector("#completed .tabs").innerHTML += '<span tab-id="ops">Completed(<em>0</em>)</span>';
+			document.querySelector("#completed .container").innerHTML += '<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>';
+			// ADD REFRESH
+			document.querySelector("#completed").innerHTML += '<span class="refresh"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="refresh" width="24px" height="24px"><path fill="none" stroke="#666" stroke-width="2" d="M20,8 C18.5974037,5.04031171 15.536972,3 12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 L12,21 C16.9705627,21 21,16.9705627 21,12 M21,3 L21,9 L15,9"></path></svg></span>';
+			// ADD TAB ON CLICK
+			var tabs = document.querySelectorAll("#completed .tabs span");
+			var sections = document.querySelectorAll("#completed .container section");
+			for (i = 0; i < tabs.length; i++) {
+					tabs[i].addEventListener("click", function(e) {
+							// RESET ALL TABS
+							for (i = 0; i < tabs.length; i++)
+									tabs[i].setAttribute("class", "");
+							// RESET ALL SECTIONS
+							for (i = 0; i < sections.length; i++)
+									sections[i].setAttribute("class", "");
+							// ENABLE REQUESTED SECTION
+							var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
+							document.querySelector("#completed span[tab-id=" + cid + "]").classList.add("active");
+							document.querySelector("#completed section[tab-id=" + cid + "]").classList.add("active");
+							var activeSection = document.querySelector("#completed section[tab-id=" + cid + "]");
+							var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+							kendoGrids.forEach(function(gridElement) {
+									var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+									if (kendoGridInstance) {
+											kendoGridInstance.resize();
+									}
+							});
+
+					});
+			}
+			// DEFAULT TO FIRST TAB
+			document.querySelector("#completed .tabs span").click();
+			// ADD REFRESH EVENT
+			document.querySelector("#completed span.refresh").addEventListener("click", completed._refresh);
+			// CALLBACK
+			if (typeof(cb) === "function") return cb();
+			else return true;
+	},
+	_getCount: function() {
+			var pend = completed.grid._datasource({
+					logic: "and",
+					filters: [
+							{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									field: "Status",
+									operator: "eq",
+									value: "3"
+							},
+					]
+			});
+			pend.fetch(function() {
+					document.querySelector("#completed .tabs span[tab-id=ops] em").innerText = pend.total();
+			});
+	},
+	_refresh: function() {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+			var grids = document.querySelectorAll("#completed .grid , #completed .toolbar");
+			for (i = 0; i < grids.length; i++)
+					grids[i].innerHTML = "";
+			let self = this
+			crud.read("3180", "eid=5415", function(d) {
+					self.sample = d.Rows[0];
+					completed._loadGrids();
+					completed.ready = true;
+					mo.fn.overlay.hide();
+			});
+	},
+	_loadGrids: function() {
+			// KENDO GRID HAS SOME ITERATION IN IT AND IT CONFLICTS WITH I,J,K AS INDEX VARIABLE; USE INDEX AS VARIABLE
+			completed.grid._load("#completed section[tab-id=ops] .grid", completed.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									field: "Status",
+									operator: "eq",
+									value: "3"
+							},
+					]
+			}));
+	},
+	_modal: function(data) {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+
+			var ctalabel = "OK";
+			var modtitle = "Viewing Onboarding request #" + data.EntryId;
+			mo.fn.modal.show({
+					ctaLabel: ctalabel,
+					title: modtitle,
+					content: '<div class="nbsf" style="overflow:hidden;padding-bottom:10px;max-width:100%"><div class="tabs"></div><div class="container"></div></div>',
+					contentCallback: function() {
+							var target = document.querySelector(".dxpModalContent .nbsf");
+							var tabs = target.querySelector(".tabs");
+							var container = target.querySelector(".container");
+							container.innerHTML += '<iframe></iframe>';
+							container.innerHTML += '<style>html .dxpModal {height: 100vh;box-sizing: border-box;width: 1200px!important;max-width: none!important;}.dxpModal .dxpModalFooter {display:none!important;}.dxpModal iframe {width:100%;height:100%;border:0;}html .dxpModal .dxpModalContainer,html .dxpModal .dxpModalContainer .dxpModalContent, html .dxpModal .dxpModalContainer .dxpModalContent .nbsf {height:100%;margin-bottom:0;padding-bottom:0;}</style>';
+							container.querySelector("iframe").setAttribute("src", "https://hpe-rfb.it.hpe.com/form/681/072267d4-1434-420c-b241-1f366816ddcf?EntryId=" + data.EntryId);
+
+							//// FUNCTIONALITY
+							// TABS
+							var allt = tabs.querySelectorAll("span");
+							var allc = container.querySelectorAll("div[tab-id]");
+
+							function hideAll() {
+									for (i = 0; i < allt.length; i++)
+											allt[i].setAttribute("class", "");
+									for (i = 0; i < allc.length; i++)
+											allc[i].setAttribute("class", "");
+							}
+							for (i = 0; i < allt.length; i++) {
+									allt[i].addEventListener("click", function(e) {
+											var tabid = e.target.getAttribute("tab-id");
+											hideAll();
+											e.target.classList.add("active");
+											container.querySelector("div[tab-id=" + tabid + "]").classList.add("active");
+									});
+							}
+							// TOGGLES
+							var alltog = container.querySelectorAll("div.toggle");
+							for (i = 0; i < alltog.length; i++) {
+									alltog[i].addEventListener("click", function(e) {
+											var el = e.target.closest("label");
+											el.classList.toggle("active");
+											if (el.getAttribute("class") == "active") el.querySelector("input").value = "Y";
+											else el.querySelector("input").value = "N";
+									});
+							}
+
+							//// CLOSE MODAL
+							mo.fn.overlay.show({
+									close: false
+							})
+					},
+					ctaCallback: function() {
+							// HELPERS
+							var sel = document.querySelector(".dxpModalContent");
+					}
+			});
+	},
+	grid: {
+			_custom: function() {
+					var cusConfig = [
+							{
+									field: "EntryId",
+									title: "ID",
+									filterable: true,
+									width: "85px",
+									locked: true
+							},
+			/*
+				{
+									field: "Status",
+									title: "Status",
+									filterable: true,
+									width: "85px",
+									template: function(obj) {
+										 return getStatus(obj.Status);
+									}
+							},
+			*/
+							{
+									field: "PO_BackgroundGroup",
+									title: "BG",
+									filterable: true,
+									width: 90,
+									locked: false
+							},
+							{
+									field: "Region",
+									title: "Region",
+									filterable: true,
+									width: 115,
+									locked: false
+							},
+							{
+									field: "Geo",
+									title: "Geo",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SoldTo_Address_Country",
+									title: "Country",
+									filterable: true,
+									width: 125,
+							},
+							{
+									field: "SoldTo_CompanyName",
+									title: "SoldTo CompanyName",
+									filterable: true,
+									width: 215,
+							},
+							{
+									field: "PartyId",
+									title: "PartyId",
+									filterable: true,
+									width: 115,
+
+
+							},
+							{
+									field: "PO_Number",
+									title: "PO",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SubmittedTimestamp",
+									title: "Date",
+									filterable: false,
+									width: 100,
+									template: function(d) {
+											try {
+													return d.SubmittedTimestamp.split("T")[0];
+											} catch (err) {
+													return d.SubmittedTimestamp;
+											}
+									}
+							},
+							{
+									field: "SubmitterEmail",
+									title: "Submitter",
+									filterable: true,
+									width: 255
+							},
+							{
+									field: "CaseNumber",
+									title: "Case Number",
+									filterable: true,
+									width: 155,
+							},
+					];
+					return cusConfig;
+			},
+			_default: function() {
+					var defConfig = [];
+					if (completed.data.length > 0)
+							for (i = 0; i < Object.keys(completed.data[0]).length; i++) {
+									var key = Object.keys(completed.data[0])[i];
+									var obj = {};
+									obj.field = key;
+									obj.title = key;
+									obj.hidden = true;
+									defConfig.push(obj);
+							}
+					return defConfig;
+			},
+			_config: function() {
+					var cusConfig = completed.grid._custom();
+					var defConfig = completed.grid._default();
+					for (j = cusConfig.length - 1; j >= 0; j--) {
+							for (i = 0; i < defConfig.length; i++) {
+									if (defConfig[i].field == cusConfig[j].field) {
+											defConfig.splice(i, 1);
+											break;
+									}
+							}
+					}
+					for (i = cusConfig.length - 1; i >= 0; i--) {
+							defConfig.unshift(cusConfig[i]);
+					}
+					return defConfig;
+			},
+			_load: function(selector, datasource) {
+					var parent = document.querySelector(selector.split(" .grid")[0]);
+					let config = this._config();
+					$(selector).kendoGrid({
+							toolbar: [{
+									name: "excel",
+									text: "Download"
+							}],
+							excel: {
+									fileName: "Onboarding_Completed_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
+									filterable: true,
+									allPages: true
+							},
+							dataSource: datasource,
+							columns: config,
+							dataBound: function(e) {
+									document.querySelector("#completed .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
+							},
+							pageable: {
+									buttonCount: 4,
+									pageSize: 10,
+									pageSizes: [10, 25, 50, 100],
+									messages: {
+											itemsPerPage: ""
+									}
+							},
+							scrollable: true,
+							sortable: true,
+							filterable: true
+					});
+					$(selector + ' .k-grid-toolbar').appendTo(selector.split(" .grid")[0] + ' .toolbar');
+					var exportFlag = false;
+					$(selector).data("kendoGrid").bind("excelExport", function(e) {
+							if (!exportFlag) {
+									e.preventDefault();
+									exportFlag = true;
+									mo.fn.overlay.show({
+											loading: true,
+											close: false
+									});
+									setTimeout(function() {
+											e.sender.saveAsExcel();
+									}, 1500);
+							} else {
+									exportFlag = false;
+									setTimeout(function() {
+											mo.fn.overlay.hide();
+									}, 500);
+							}
+					});
+			},
+			_datasource: function(filter) {
+					return new kendo.data.DataSource({
+							type: "rfb-v2",
+							transport: {
+									read: {
+											url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
+									}
+							},
+							schema: {
+									model: {
+											id: "EntryId",
+									}
+							},
+							filter: filter,
+							serverPaging: true,
+							pageSize: 10,
+							serverFiltering: true,
+							serverSorting: true,
+					});
+			}
+	}
+}
+</script>
+
+<!-- COMPONENT CANCELLED -->
+<script>
+const cancelled = {
+	ready: false,
+	data: {},
+	_init: function() {
+			if (!cancelled.ready) {
+					mo.fn.overlay.show({
+							loading: true,
+							close: false
+					});
+					let self = this
+					crud.read("3180", "eid=5415", function(d) {
+							self.sample = d.Rows[0];
+							cancelled.ui();
+							cancelled._loadGrids();
+							cancelled.ready = true;
+							mo.fn.overlay.hide();
+					});
+
+			}
+	},
+	ui: function(cb) {
+			if (document.querySelector("#cancelled .tabs") == null)
+					document.querySelector("#cancelled").innerHTML += '<section class="tabs"></div>';
+			if (document.querySelector("#cancelled .container") == null)
+					document.querySelector("#cancelled").innerHTML += '<section class="container"></div>';
+
+			document.querySelector("#cancelled .tabs").innerHTML += '<span tab-id="ops">Cancelled (<em>0</em>)</span>';
+			document.querySelector("#cancelled .container").innerHTML += '<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>';
+			// ADD REFRESH
+			document.querySelector("#cancelled").innerHTML += '<span class="refresh"><svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="refresh" width="24px" height="24px"><path fill="none" stroke="#666" stroke-width="2" d="M20,8 C18.5974037,5.04031171 15.536972,3 12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 L12,21 C16.9705627,21 21,16.9705627 21,12 M21,3 L21,9 L15,9"></path></svg></span>';
+			// ADD TAB ON CLICK
+			var tabs = document.querySelectorAll("#cancelled .tabs span");
+			var sections = document.querySelectorAll("#cancelled .container section");
+			for (i = 0; i < tabs.length; i++) {
+					tabs[i].addEventListener("click", function(e) {
+							// RESET ALL TABS
+							for (i = 0; i < tabs.length; i++)
+									tabs[i].setAttribute("class", "");
+							// RESET ALL SECTIONS
+							for (i = 0; i < sections.length; i++)
+									sections[i].setAttribute("class", "");
+							// ENABLE REQUESTED SECTION
+							var cid = e.target.getAttribute("tab-id") || e.target.closest("span").getAttribute("tab-id");
+							document.querySelector("#cancelled span[tab-id=" + cid + "]").classList.add("active");
+							document.querySelector("#cancelled section[tab-id=" + cid + "]").classList.add("active");
+							var activeSection = document.querySelector("#cancelled section[tab-id=" + cid + "]");
+							var kendoGrids = activeSection.querySelectorAll(".k-grid");
+
+							kendoGrids.forEach(function(gridElement) {
+									var kendoGridInstance = $(gridElement).data("kendoGrid");
+
+									if (kendoGridInstance) {
+											kendoGridInstance.resize();
+									}
+							});
+
+					});
+			}
+			// DEFAULT TO FIRST TAB
+			document.querySelector("#cancelled .tabs span").click();
+			// ADD REFRESH EVENT
+			document.querySelector("#cancelled span.refresh").addEventListener("click", cancelled._refresh);
+			// CALLBACK
+			if (typeof(cb) === "function") return cb();
+			else return true;
+	},
+	_getCount: function() {
+			var pend = cancelled.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									field: "Status",
+									operator: "eq",
+									value: "5"
+							},
+					]
+			});
+			pend.fetch(function() {
+					document.querySelector("#cancelled .tabs span[tab-id=ops] em").innerText = pend.total();
+			});
+	},
+	_refresh: function() {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+			var grids = document.querySelectorAll("#cancelled .grid , #cancelled .toolbar");
+			for (i = 0; i < grids.length; i++)
+					grids[i].innerHTML = "";
+			let self = this
+			crud.read("3180", "eid=5415", function(d) {
+					self.sample = d.Rows[0];
+					cancelled._loadGrids();
+					cancelled.ready = true;
+					mo.fn.overlay.hide();
+			});
+	},
+	_loadGrids: function() {
+			// KENDO GRID HAS SOME ITERATION IN IT AND IT CONFLICTS WITH I,J,K AS INDEX VARIABLE; USE INDEX AS VARIABLE
+			cancelled.grid._load("#cancelled section[tab-id=ops] .grid", cancelled.grid._datasource({
+					logic: "and",
+					filters: [{
+									field: "Submitted",
+									operator: "eq",
+									value: "Y"
+							},
+							{
+									logic: "or",
+									filters: [{
+													field: "SFDC_Status",
+													operator: "neq",
+													value: "ERROR"
+											},
+											{
+													field: "SFDC_Status",
+													operator: "isempty",
+													value: ""
+											}
+									]
+							},
+							{
+									field: "Status",
+									operator: "eq",
+									value: "5"
+							},
+					]
+			}));
+	},
+	_modal: function(data) {
+			mo.fn.overlay.show({
+					loading: true,
+					close: false
+			});
+
+			var ctalabel = "OK";
+			var modtitle = "Viewing Onboarding request #" + data.EntryId;
+			mo.fn.modal.show({
+					ctaLabel: ctalabel,
+					title: modtitle,
+					content: '<div class="nbsf" style="overflow:hidden;padding-bottom:10px;max-width:100%"><div class="tabs"></div><div class="container"></div></div>',
+					contentCallback: function() {
+							var target = document.querySelector(".dxpModalContent .nbsf");
+							var tabs = target.querySelector(".tabs");
+							var container = target.querySelector(".container");
+							container.innerHTML += '<iframe></iframe>';
+							container.innerHTML += '<style>html .dxpModal {height: 100vh;box-sizing: border-box;width: 1200px!important;max-width: none!important;}.dxpModal .dxpModalFooter {display:none!important;}.dxpModal iframe {width:100%;height:100%;border:0;}html .dxpModal .dxpModalContainer,html .dxpModal .dxpModalContainer .dxpModalContent, html .dxpModal .dxpModalContainer .dxpModalContent .nbsf {height:100%;margin-bottom:0;padding-bottom:0;}</style>';
+							container.querySelector("iframe").setAttribute("src", "https://hpe-rfb.it.hpe.com/form/681/072267d4-1434-420c-b241-1f366816ddcf?EntryId=" + data.EntryId);
+
+							//// FUNCTIONALITY
+							// TABS
+							var allt = tabs.querySelectorAll("span");
+							var allc = container.querySelectorAll("div[tab-id]");
+
+							function hideAll() {
+									for (i = 0; i < allt.length; i++)
+											allt[i].setAttribute("class", "");
+									for (i = 0; i < allc.length; i++)
+											allc[i].setAttribute("class", "");
+							}
+							for (i = 0; i < allt.length; i++) {
+									allt[i].addEventListener("click", function(e) {
+											var tabid = e.target.getAttribute("tab-id");
+											hideAll();
+											e.target.classList.add("active");
+											container.querySelector("div[tab-id=" + tabid + "]").classList.add("active");
+									});
+							}
+							// TOGGLES
+							var alltog = container.querySelectorAll("div.toggle");
+							for (i = 0; i < alltog.length; i++) {
+									alltog[i].addEventListener("click", function(e) {
+											var el = e.target.closest("label");
+											el.classList.toggle("active");
+											if (el.getAttribute("class") == "active") el.querySelector("input").value = "Y";
+											else el.querySelector("input").value = "N";
+									});
+							}
+
+							//// CLOSE MODAL
+							mo.fn.overlay.show({
+									close: false
+							})
+					},
+					ctaCallback: function() {
+							// HELPERS
+							var sel = document.querySelector(".dxpModalContent");
+					}
+			});
+	},
+	grid: {
+			_custom: function() {
+					var cusConfig = [
+							{
+									field: "EntryId",
+									title: "ID",
+									filterable: true,
+									width: "85px",
+									locked: true
+							},
+			/*
+							{
+									field: "Status",
+									title: "Status",
+									filterable: true,
+									width: "85px",
+									template: function(obj) {
+										 return getStatus(obj.Status);
+									}
+							},
+			*/
+							{
+									field: "PO_BackgroundGroup",
+									title: "BG",
+									filterable: true,
+									width: 90,
+									locked: false
+							},
+							{
+									field: "Region",
+									title: "Region",
+									filterable: true,
+									width: 115,
+									locked: false
+							},
+							{
+									field: "Geo",
+									title: "Geo",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SoldTo_Address_Country",
+									title: "Country",
+									filterable: true,
+									width: 125,
+							},
+							{
+									field: "SoldTo_CompanyName",
+									title: "SoldTo CompanyName",
+									filterable: true,
+									width: 215,
+							},
+							{
+									field: "PartyId",
+									title: "PartyId",
+									filterable: true,
+									width: 115,
+
+
+							},
+							{
+									field: "PO_Number",
+									title: "PO",
+									filterable: true,
+									width: 115,
+							},
+							{
+									field: "SubmittedTimestamp",
+									title: "Date",
+									filterable: false,
+									width: 100,
+									template: function(d) {
+											try {
+													return d.SubmittedTimestamp.split("T")[0];
+											} catch (err) {
+													return d.SubmittedTimestamp;
+											}
+									}
+							},
+							{
+									field: "SubmitterEmail",
+									title: "Submitter",
+									filterable: true,
+									width: 255
+							},
+							{
+									field: "CaseNumber",
+									title: "Case Number",
+									filterable: true,
+									width: 155,
+							},
+					];
+					return cusConfig;
+			},
+			_default: function() {
+					var defConfig = [];
+					if (cancelled.data.length > 0)
+							for (i = 0; i < Object.keys(cancelled.data[0]).length; i++) {
+									var key = Object.keys(cancelled.data[0])[i];
+									var obj = {};
+									obj.field = key;
+									obj.title = key;
+									obj.hidden = true;
+									defConfig.push(obj);
+							}
+					return defConfig;
+			},
+			_config: function() {
+					var cusConfig = cancelled.grid._custom();
+					var defConfig = cancelled.grid._default();
+					for (j = cusConfig.length - 1; j >= 0; j--) {
+							for (i = 0; i < defConfig.length; i++) {
+									if (defConfig[i].field == cusConfig[j].field) {
+											defConfig.splice(i, 1);
+											break;
+									}
+							}
+					}
+					for (i = cusConfig.length - 1; i >= 0; i--) {
+							defConfig.unshift(cusConfig[i]);
+					}
+					return defConfig;
+			},
+			_load: function(selector, datasource) {
+					var parent = document.querySelector(selector.split(" .grid")[0]);
+					let config = this._config();
+					$(selector).kendoGrid({
+							toolbar: [{
+									name: "excel",
+									text: "Download"
+							}],
+							excel: {
+									fileName: "Onboarding_cancelled_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
+									filterable: true,
+									allPages: true
+							},
+							dataSource: datasource,
+							columns: config,
+							dataBound: function(e) {
+									document.querySelector("#cancelled .tabs span[tab-id=" + parent.getAttribute("tab-id") + "] em").innerText = this.dataSource.total();
+							},
+							pageable: {
+									buttonCount: 4,
+									pageSize: 10,
+									pageSizes: [10, 25, 50, 100],
+									messages: {
+											itemsPerPage: ""
+									}
+							},
+							scrollable: true,
+							sortable: true,
+							filterable: true
+					});
+					$(selector + ' .k-grid-toolbar').appendTo(selector.split(" .grid")[0] + ' .toolbar');
+					var exportFlag = false;
+					$(selector).data("kendoGrid").bind("excelExport", function(e) {
+							if (!exportFlag) {
+									e.preventDefault();
+									exportFlag = true;
+									mo.fn.overlay.show({
+											loading: true,
+											close: false
+									});
+									setTimeout(function() {
+											e.sender.saveAsExcel();
+									}, 1500);
+							} else {
+									exportFlag = false;
+									setTimeout(function() {
+											mo.fn.overlay.hide();
+									}, 500);
+							}
+					});
+			},
+			_datasource: function(filter) {
+					return new kendo.data.DataSource({
+							type: "rfb-v2",
+							transport: {
+									read: {
+											url: "/form/data-set-provider/v2/989/NOR_Data_List/kendo/data"
+									}
+							},
+							schema: {
+									model: {
+											id: "EntryId",
+									}
+							},
+							filter: filter,
+							serverPaging: true,
+							pageSize: 10,
+							serverFiltering: true,
+							serverSorting: true,
+					});
+			}
+	}
+}
+
 </script>
 
 
