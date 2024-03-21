@@ -9221,7 +9221,7 @@
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
-		// Don't override user's data if exist
+		// Don't override user's data if exist for case description
 		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.FirstName && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
@@ -9547,6 +9547,9 @@
 		}
 
 		config.dataset.Subject = subject.length > 255 ? subject.substring(0, 255) : subject;
+		
+		config.dataset.FirstName = '[SSOData.FirstName]';
+		config.dataset.LastName = '[SSOData.LastName]';
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
