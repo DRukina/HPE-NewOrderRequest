@@ -28,7 +28,7 @@
 						<path fill="none" stroke="#666" stroke-width="2" d="M15,15 L22,22 L15,15 Z M9.5,17 C13.6421356,17 17,13.6421356 17,9.5 C17,5.35786438 13.6421356,2 9.5,2 C5.35786438,2 2,5.35786438 2,9.5 C2,13.6421356 5.35786438,17 9.5,17 Z"></path>
 					</svg>
                 </li>
-                <li icon-id="bugs">
+                <li icon-id="bugs" style="display:none">
                     <a href="#">
 						<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="bug" width="25px" height="25px">
 							<path fill="none" stroke="#666" stroke-width="2" d="M23,20 C21.62,17.91 20,17 19,17 M5,17 C4,17 2.38,17.91 1,20 M19,9 C22,9 23,6 23,6 M1,6 C1,6 2,9 5,9 M19,13 L24,13 L19,13 Z M5,13 L0,13 L5,13 Z M12,23 L12,12 L12,23 L12,23 Z M12,23 C8,22.9999998 5,20.0000002 5,16 L5,9 C5,9 8,6.988 12,7 C16,7.012 19,9 19,9 C19,9 19,11.9999998 19,16 C19,20.0000002 16,23.0000002 12,23 L12,23 Z M7,8 L7,6 C7,3.24 9.24,1 12,1 C14.76,1 17,3.24 17,6 L17,8"></path>
@@ -58,6 +58,11 @@
 			  	<li class="inactive" section-id="caching">Cached data</li>
 			  	<li class="inactive" section-id="oob">Order on Behalf</li>
 			  	<li class="inactive" section-id="tibcoErrors">TIBCO Error</li>
+                <li class="inactive" section-id="drafts">Drafts</li>
+			  	<li class="inactive" section-id="accountView">Account View</li>
+			  	<li class="inactive" section-id="inProgress"></li>
+			  	<li class="inactive" section-id="Completed"></li>
+			  	<li class="inactive" section-id="Cancelled"></li>
             </ul>
         </nav>
         <div id="profile">
@@ -94,6 +99,11 @@
         <div class="tile inactive" section-id="caching"><strong>Caching</strong><em>Managed cached system of record data</em></div>
 	  	<div class="tile inactive" section-id="oob"><strong>Order on Behalf</strong><em>Create or manage an order on behalf of a partner</em></div>
 	  	<div class="tile inactive" section-id="tibcoErrors"><strong>TIBCO Error</strong><em>Review TIBCO Errors</em></div>
+        <div class="tile inactive" section-id="drafts"><strong>Drafts</strong><em>Review drafts</em></div>
+	  	<div class="tile inactive" section-id="accountView"><strong>Account View</strong><em>Manage Account View</em></div>
+	  	<div class="tile inactive" section-id="inProgress"><strong>In Progress</strong><em>Review In progress</em></div>
+	  	<div class="tile inactive" section-id="completed"><strong>Completed</strong><em>Review Completed</em></div>
+	  	<div class="tile inactive" section-id="cancelled"><strong>Cancelled</strong><em>Review Cancelled</em></div>
         <div class="cfix"></div>
     </section>
     <section class="wrapper" id="pending"></section>
@@ -111,8 +121,17 @@
     <section class="wrapper" id="localization"></section>
     <section class="wrapper" id="admin"></section>
   	<section class="wrapper" id="caching"></section>
-  	<section class="wrapper" id="oob"></section>
+    <section class="wrapper" id="oob">
+	   <div class="resources"></div>
+  	</section>
   	<section class="wrapper" id="tibcoErrors"></section>
+    <section class="wrapper" id="drafts"></section>
+  	<section class="wrapper" id="accountView">
+        <div id="accountView__search"></div>
+    </section>
+  	<section class="wrapper" id="inProgress"></section>
+  	<section class="wrapper" id="completed"></section>
+  	<section class="wrapper" id="cancelled"></section>
 </section>
 
 <section id="fullscreen">
