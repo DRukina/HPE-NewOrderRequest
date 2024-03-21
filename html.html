@@ -1,0 +1,184 @@
+<!-- HPE CUSTOM JS LIBRARY -->
+<script src="https://hpe-rfb.it.hpe.com/resources/rs/custom/js/hpe.js"></script>
+<link href="https://hpe-rfb.it.hpe.com/resources/rs/custom/js/hpe.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://hpe-rfb.it.hpe.com/resources/rs/custom/js/nbsf/nbsf.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+<script src="/resources/rs/custom/js/reporting.js"></script>
+<script src="https://hpe-rfb.it.hpe.com/resources/rs/custom/js/nbsf/nbsf.js"></script>
+<script type="text/javascript" src="https://hpheroes.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/azc3hx/b/7/c95134bc67d3a521bb3f4331beb9b804/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=f51e9fa0"></script>
+
+<section id="nav">
+    <section class="wrapper">
+        <div id="burger">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div id="logo"><strong>HPE</strong> New Order Request (NOR)</div>
+        <div id="icons">
+            <ul>
+                <li icon-id="search" class="open">
+					<select id="searchoptions">
+					  <option value="AppID">AppID</option>
+					  <option value="PO">PO</option>
+				  	</select>
+                    <input type="text" id="search" placeholder="Search for any AppID" value="" />
+                    <svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="search" width="25px" height="25px">
+						<path fill="none" stroke="#666" stroke-width="2" d="M15,15 L22,22 L15,15 Z M9.5,17 C13.6421356,17 17,13.6421356 17,9.5 C17,5.35786438 13.6421356,2 9.5,2 C5.35786438,2 2,5.35786438 2,9.5 C2,13.6421356 5.35786438,17 9.5,17 Z"></path>
+					</svg>
+                </li>
+                <li icon-id="bugs">
+                    <a href="#">
+						<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="bug" width="25px" height="25px">
+							<path fill="none" stroke="#666" stroke-width="2" d="M23,20 C21.62,17.91 20,17 19,17 M5,17 C4,17 2.38,17.91 1,20 M19,9 C22,9 23,6 23,6 M1,6 C1,6 2,9 5,9 M19,13 L24,13 L19,13 Z M5,13 L0,13 L5,13 Z M12,23 L12,12 L12,23 L12,23 Z M12,23 C8,22.9999998 5,20.0000002 5,16 L5,9 C5,9 8,6.988 12,7 C16,7.012 19,9 19,9 C19,9 19,11.9999998 19,16 C19,20.0000002 16,23.0000002 12,23 L12,23 Z M7,8 L7,6 C7,3.24 9.24,1 12,1 C14.76,1 17,3.24 17,6 L17,8"></path>
+						</svg>
+				  	</a>
+                </li>
+                <li icon-id="profile">
+                    <svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="user" width="25px" height="25px">
+						<path fill="none" stroke="#666" stroke-width="2" d="M8,24 L8,19 M16,24 L16,19 M3,24 L3,19 C3,14.0294373 7.02943725,11 12,11 C16.9705627,11 21,14.0294373 21,19 L21,24 M12,11 C14.7614237,11 17,8.76142375 17,6 C17,3.23857625 14.7614237,1 12,1 C9.23857625,1 7,3.23857625 7,6 C7,8.76142375 9.23857625,11 12,11 Z"></path>
+					</svg>
+                    <span>
+				  		<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="close" width="128px" height="128px">
+							<path fill="none" stroke="#666" stroke-width="2" d="M3,3 L21,21 M3,21 L21,3"></path>
+						</svg>
+				  	</span>
+                    <li>
+            </ul>
+        </div>
+        <nav>
+            <ul>
+                <li class="inactive" section-id="pending">Pending order requests</li>
+                <li class="inactive" section-id="closed">Closed order requests</li>
+                <li class="inactive" section-id="reporting">Reporting</li>
+                <li class="inactive" section-id="users">Manage users</li>
+                <li class="inactive" section-id="countries">Manage currency</li>
+                <li class="inactive" section-id="localization">Manage localization</li>
+			  	<li class="inactive" section-id="caching">Cached data</li>
+			  	<li class="inactive" section-id="oob">Order on Behalf</li>
+			  	<li class="inactive" section-id="tibcoErrors">TIBCO Error</li>
+            </ul>
+        </nav>
+        <div id="profile">
+            <div class="personal"></div>
+            <div class="roles">
+                <ul></ul>
+            </div>
+            <div class="action">
+                <a class="admin">
+			  		<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="user admin" width="24px" height="24px">
+						<path fill="none" stroke="#333" stroke-width="2" d="M8,11 C10.7614237,11 13,8.76142375 13,6 C13,3.23857625 10.7614237,1 8,1 C5.23857625,1 3,3.23857625 3,6 C3,8.76142375 5.23857625,11 8,11 Z M13.0233822,13.0234994 C11.7718684,11.7594056 10.0125018,11 8,11 C4,11 1,14 1,18 L1,23 L8,23 M10,19.5 C10,20.88 11.12,22 12.5,22 C13.881,22 15,20.88 15,19.5 C15,18.119 13.881,17 12.5,17 C11.12,17 10,18.119 10,19.5 L10,19.5 Z M23,15 L20,12 L14,18 M17.5,14.5 L20.5,17.5 L17.5,14.5 Z"></path>
+					</svg> Admin
+			  	</a>
+                <a href="https://partner.hpe.com" class="back">
+				  	<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="logout" width="24px" height="24px">
+					  <path fill="none" stroke="#333" stroke-width="2" d="M13,9 L13,2 L1,2 L1,22 L13,22 L13,15 M22,12 L5,12 M17,7 L22,12 L17,17"></path>
+					</svg> Back to DXP
+			  	</a>
+            </div>
+        </div>
+    </section>
+</section>
+
+<section id="message" class="wrapper"></section>
+
+<section class="screen active" id="container">
+    <section class="wrapper active" id="tiles">
+        <div class="tile inactive" section-id="pending"><strong>Pending</strong><em>Review order requests that are pending HPE action</em></div>
+        <div class="tile inactive" section-id="closed"><strong>Closed</strong><em>Review closed order requests</em></div>
+        <div class="tile inactive" section-id="reporting"><strong>Reporting</strong><em>Access all data available in the database</em></div>
+        <div class="tile inactive" section-id="users"><strong>Users</strong><em>Manage access for order management</em></div>
+        <div class="tile inactive" section-id="countries"><strong>Currency</strong><em>Manage country reference data</em></div>
+        <div class="tile inactive" section-id="localization"><strong>Localization</strong><em>Manage key translation for New Order Request form</em></div>
+        <div class="tile inactive" section-id="caching"><strong>Caching</strong><em>Managed cached system of record data</em></div>
+	  	<div class="tile inactive" section-id="oob"><strong>Order on Behalf</strong><em>Create or manage an order on behalf of a partner</em></div>
+	  	<div class="tile inactive" section-id="tibcoErrors"><strong>TIBCO Error</strong><em>Review TIBCO Errors</em></div>
+        <div class="cfix"></div>
+    </section>
+    <section class="wrapper" id="pending"></section>
+    <section class="wrapper" id="closed"></section>
+    <section class="wrapper" id="reporting">
+        <div class="grid"></div>
+        <div class="toolbar"></div>
+    </section>
+    <section class="wrapper" id="analytics"></section>
+    <section class="wrapper" id="users">
+        <div class="grid"></div>
+        <div class="toolbar"></div>
+    </section>
+    <section class="wrapper" id="countries"></section>
+    <section class="wrapper" id="localization"></section>
+    <section class="wrapper" id="admin"></section>
+  	<section class="wrapper" id="caching"></section>
+  	<section class="wrapper" id="oob"></section>
+  	<section class="wrapper" id="tibcoErrors"></section>
+</section>
+
+<section id="fullscreen">
+    <h1>
+        <span></span>
+        <svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="close" width="24px" height="24px" class="close"><path fill="none" stroke="#666" stroke-width="2" d="M3,3 L21,21 M3,21 L21,3" class="close"></path></svg>
+    </h1>
+    <div class="timeline">
+        <section>
+            <ul>
+                <li class="CL1">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">Data validation</div>
+                    <div class="description">Contracts</div>
+                </li>
+                <li class="PL1">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">Party creation</div>
+                    <div class="description">profiling</div>
+                </li>
+                <li class="LRC">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">Compliance review</div>
+                    <div class="description">Compliance</div>
+                </li>
+                <li class="ARUBA HIT">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">BUSINESS REVIEW</div>
+                    <div class="description">ARUBA/HIT</div>
+                </li>
+                <li class="PL2">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">Profiling setup</div>
+                    <div class="description">Profiling</div>
+                </li>
+                <li class="CL2">
+                    <div class="timestamp">N/A</div>
+                    <div class="status"></div>
+                    <div class="label">Contract activation</div>
+                    <div class="description">Contracts</div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <div class="container">
+        <div class="tabs">
+            <span tab-id="frame" class="active">Application</span>
+            <span tab-id="tasks">Tasks</span>
+            <span tab-id="cm">Case manager</span>
+            <span tab-id="admin">Admin</span>
+            <span tab-id="legacy">Legacy</span>
+        </div>
+        <section tab-id="frame" class="active"></section>
+        <section tab-id="tasks"></section>
+        <section tab-id="cm"></section>
+        <section tab-id="admin"></section>
+        <section tab-id="legacy"><iframe></iframe></section>
+    </div>
+    <div class="history">
+        <ul></ul>
+    </div>
+    <div class="cfix"></div>
+    <div class="legacy"></div>
+</section>
