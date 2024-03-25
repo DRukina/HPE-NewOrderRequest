@@ -207,8 +207,8 @@ function updateCheckRecords($records, $data)
       $response->error = output(false, "Emdmh Check", "updateCheckRecords", "Unhandled exception; Failed to update the application data row", "", $records);
       return $response;
     }
-    // for testing
-    // $data->updated = false;
+	// for testing
+	// $data->updated = false;
     sendNotification($records, $data->updated);
     $response->data = $rfb;
   }
@@ -241,17 +241,24 @@ function getNotificationConfig($record, $type = 'ProfilingTeam')
     ];
 
   } else {
+	$program = 'EC';
     $ID = 'PECA-PA';
     if ($coe === 'Integrator Reseller') {
       $ID = 'PE_IR_CA';
+	  $program = 'IR';
     } else if ($coe === 'Professional services') {
       $ID = 'PE_PS_CA';
+	   $program = 'PC';
     } else if ($coe === 'Customer success') {
       $ID = 'PE_CS_CA';
+	  $program = 'CS';
     }
+	
+	$bcc = getBCCUsers($program);
 
     $obj = (object) [
       'To' => $record->WorkEmail,
+	  'BCC' => $bcc,
       'Col1' => $record->FirstName . ' ' . $record->LastName,
       'Col2' => $record->EntryId,
       'Col3' => $record->PartyId,
@@ -262,6 +269,35 @@ function getNotificationConfig($record, $type = 'ProfilingTeam')
   }
   return $obj;
 }
+
+function getBCCUsers($program) 
+{
+  $filter = array(
+    "logic" => "and",
+    "filters" => array(
+    )
+  );
+  $bcc = '';
+  $records = fetch(v3url('641', 'ENRL_BCC_Users', 'search'), $filter);
+  if ($records && isset($records->Data) && sizeof($records->Data)) {
+    $records = $records->Data;
+    foreach ($records as &$item) {
+      try {
+        $cfg = json_decode($item->UserRole);
+        $role = $cfg->Role;
+        $prgs = $cfg->BCC_Program;
+        if ($role && $prgs && in_array("BCC Notification", $role) && in_array($program, $prgs)) {
+          $email = $item->Email;
+          $bcc = $bcc ? ($bcc . ';' . $email ) : ('alesya.bondar@clevercraft.net;anton.egorov@clevercraft.net;' . $email) ;
+        }
+        } catch(Exception $e) {
+          return null;
+        }
+    }
+  }
+  return $bcc;
+}
+
 
 function sendNotification($items, $approve = false)
 {
@@ -293,7 +329,7 @@ function sendNotification($items, $approve = false)
         } else if (round($el->CheckCount) > 8) {
           $obj = getNotificationConfig($record, 'ProfilingTeam');
         }
-        $data = array($obj);
+		$data = array($obj);
         $notification = update(v3url('690', 'MAILJS', ''), $data, 'POST');
       }
     }
@@ -304,10 +340,10 @@ function processData($partyId, $filteredRecords, $config)
 {
   $response = fetchBusinessRelationGroup($partyId, $config);
   $error = $response->error;
-  
+
   // test
  // $error = '';
-  
+
   if ($error) {
     // emdm error
     $data = (object) [
@@ -379,8 +415,8 @@ function check($config)
         $data = array();
         foreach ($partyIds as &$partyId) {
           $filteredRecords = filterByPartyId($records, $partyId);
-          $process_response = processData($partyId, $filteredRecords, $config);
-          array_push($data, $process_response);
+			$process_response = processData($partyId, $filteredRecords, $config);
+			array_push($data, $process_response);
         }
         $response = output(true, "Emdmh Check", "Main", "Success", null, $data);
       }
