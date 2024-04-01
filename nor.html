@@ -8154,8 +8154,22 @@
 		  else return false;
 		}
 	  }
-
-
+	  
+	  function emailAddressValidation(value) {
+		const addressPage = config.pages[config.page].addressPage;
+		const pageMapping = {
+		  billto: 'BillTo_Contact_Email',
+		  payer: 'Payer_Contact_Email',
+		  shipping: 'ShipTo_Contact_Email',
+		};
+		if (addressPage && pageMapping[addressPage]) {
+		  const value = config.dataset[pageMapping[addressPage]];
+		  if (value && !nbsf.vld.isEmail(value)) {
+			return false;
+		  }
+		}
+		return true;
+	  }	  
 
 	  //if PartnerBRT is one of the Distributor, OEM Distributor, System Integrator and the PO_BusinessModel is Agent Model" or HPFS & Agent Model, open the optional info modal
 	  if (
@@ -8222,6 +8236,8 @@
 		  (document.querySelector("input[data-name=Reseller_PartyId]") || document.querySelector("input[data-name=Reseller_Contact_FirstName]"))
 		) {
 		  optionalInfoModal();
+		} else if (!emailAddressValidation()) {
+		  $('.nbsf .continue').addClass('disabled');
 		} else doNext();
 	  } else if (document.querySelector("input[data-name=Config_SoldToDetails]")) {
 		if (
@@ -8236,6 +8252,8 @@
 		  (!document.querySelector("input[data-name=Config_EndCxDetails_Contact]") || document.querySelector("input[data-name=Config_EndCxDetails_Contact]").value == "Y")
 		) {
 		  optionalInfoModal();
+		} else if (!emailAddressValidation()) {
+		  $('.nbsf .continue').addClass('disabled');
 		} else doNext();
 	  } else if (document.querySelector("input[data-name=Config_PPC_SoldTo]")) {
 		if (
@@ -8247,6 +8265,8 @@
 		  (!document.querySelector("input[data-name=Config_PPC_EndCx]") || document.querySelector("input[data-name=Config_PPC_EndCx]").value == "Y")
 		) {
 		  optionalInfoModal();
+		} else if (!emailAddressValidation()) {
+		  $('.nbsf .continue').addClass('disabled');
 		} else doNext();
 	  } else if (config.page == 0 && global.data.user.internal) {
 		mo.fn.overlay.show({
@@ -8589,6 +8609,8 @@
 			title: hpe.fn.lang("ModalDeliveryDate", config.locale, config.localizations),
 			content: '<p>' + hpe.fn.lang("ModalDeliveryDateMSG", config.locale, config.localizations) + '</p>',
 		  });
+		} else if (!emailAddressValidation()) {
+		  $('.nbsf .continue').addClass('disabled');
 		} else {
 		  doNext();
 		}
@@ -9003,7 +9025,7 @@
 
 		config.dataset.Subject = subject.length > 255 ? subject.substring(0, 255) : subject;
 		config.dataset.Environment = appSettings.environment;
-
+		
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 
@@ -9573,6 +9595,7 @@
 		if ($('select[data-name="PO_Category"]'))  {
 		  $('select[data-name="PO_Category"]').trigger('change');
 		}
+		
 	  }
 
 
