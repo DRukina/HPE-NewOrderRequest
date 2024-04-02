@@ -13350,17 +13350,23 @@
 			payload: {
 			  filter: {
 				logic: "and",
-				filters: [{
-				  field: "PartyId",
-				  operator: "eq",
-				  value: global.data.company.party
-				},
-						  {
-							field: "PartnerBRT",
-							operator: "eq",
-							value: global.data.brt.name
-						  }
-						 ]
+				filters: [
+				  {
+					field: "PartyId",
+					operator: "eq",
+					value: global.data.company.party
+				  },
+				  {
+					field: "PartnerBRT",
+					operator: "eq",
+					value: global.data.brt.name
+				  },
+				  {
+					field: "Requestor_Email",
+					operator: "eq",
+					value: '[SSOData.Email]'
+				  }
+				]
 			  },
 			  take: '1'
 			}
