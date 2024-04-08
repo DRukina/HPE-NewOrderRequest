@@ -37,6 +37,8 @@
 		})
 		// HIDDEN INPUT: SOLDTO
 		config.dataset[`${type}_Address_Country`] = d.party[0].countryName;
+		config.dataset[`${type}_PartyId`] = d.party[0].currentPartyID || d.party[0].submittedPartyID || currentVal;
+		$(`input[data-name="${type}_PartyId"]`).val(config.dataset[`${type}_PartyId`]);
 
 		let alternateName = '';
 		if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
@@ -301,7 +303,7 @@
 	  },
 	  brts: [
 		{
-		  code: "VIR_OEM",
+		  code: "OEV",
 		  name: "Virtual OEM",
 		  channel: ["ICMOEM", "ICMChannelGeneral"]
 		},
@@ -1504,6 +1506,140 @@
 			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
 			  typing: "povaluetyping"
 			},
+		  ]
+		]
+	  },
+	  // Tax Amount & Purchase order amount (With Tax) with quote
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Config_Quote",
+				  operator: "eq",
+				  value: "Y"
+				},
+				/*{
+				  field: "Requestor_PO_Quote_ID",
+				  operator: "isnotempty",
+				  value: "1",
+				}*/
+			  ]
+			},	
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "BR"
+			},
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form535",
+			data: "TaxAmount",
+			required: true,
+			disabled: true,
+			type: "text",
+			placeholder: "Tax Amount",
+			validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			typing: "povaluetyping"
+		  },
+		   {
+			 label: "Form536",
+			 data: "PO_Value_Tax",
+			 required: true,
+			 type: "text",
+			 placeholder: "Purchase order amount (With Tax)",
+			 validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			 typing: "povaluetyping"
+		   },
+		  ]
+		]
+	  },
+	  // Tax Amount & Purchase order amount (With Tax) without quote
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Config_Quote",
+				  operator: "neq",
+				  value: "Y"
+				}
+			  ]
+			},	
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "BR"
+			},
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form535",
+			data: "TaxAmount",
+			required: true,
+			disabled: false,
+			type: "text",
+			placeholder: "Tax Amount",
+			validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			typing: "povaluetyping"
+		  },
+		   {
+			 label: "Form536",
+			 data: "PO_Value_Tax",
+			 required: true,
+			 disabled: true,
+			 type: "text",
+			 placeholder: "Purchase order amount (With Tax)",
+			 validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			 typing: "povaluetyping"
+		   },
+		  ]
+		]
+	  },
+	  // Currency
+	  {
+		filter: {
+		  logic: "or",
+		  filters: [{
+			field: "CountryCode",
+			operator: "in",
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+		  },
+					{
+					  logic: "and",
+					  filters: [{
+						field: "Region",
+						operator: "neq",
+						value: "APJ"
+					  },
+								{
+								  field: "SubRegion",
+								  operator: "neq",
+								  value: "UKI"
+								},
+								{
+								  field: "Geo",
+								  operator: "nin",
+								  value: ["DACH", "Europe South", "North West Europe"]
+								}
+							   ]
+					}
+				   ]
+		},
+		header: "",
+		group: [
+		  [
 			// PENDING CURRENCY TO COUNTRY MAPPING
 			{
 			  label: "Form007",
@@ -3748,290 +3884,316 @@
 				},
 			   ]
 	},
-	structure: [{
-	  //header: "Form056",
-	  header: "Address",
-	  filter: {
-		logic: "and",
-		filters: [{
+	structure: [
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "No"
+					},
+					{
+					  field: "CountryCode",
+					  operator: "neq",
+					  value: "HK"
+					},
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }],
+		  [{
+			label: "Form058",
+			data: "SoldTo_CompanyName",
+			required: true,
+			type: "text",
+			//placeholder: "Form059",
+			validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Address",
+			 data: "SoldTo_Address_Street",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form216",
+			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "AddressLineOptional",
+			 data: "SoldTo_Address_Street2",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form061",
+			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "City",
+			 data: "SoldTo_Address_City",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form062",
+			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "StateProvince",
+			 data: "SoldTo_Address_State",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form063",
+			 validation: ["kpDefault", "minLen|2"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Postal code",
+			 data: "SoldTo_Address_Postal",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form087",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Country",
+			 data: "SoldTo_Address_Country",
+			 disabled: true,
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   }
+		  ]
+		]
+	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  }, {
+			field: "SoldTo_Address_Country",
+			operator: "in",
+			value: ["Brazil"]
+		  }]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: true,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID"
+		  }]
+		]
+	  },
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "No"
+					},
+					{
+					  field: "CountryCode",
+					  operator: "eq",
+					  value: "HK"
+					},
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }],
+		  [{
+			label: "Form058",
+			data: "SoldTo_CompanyName",
+			required: true,
+			type: "text",
+			//placeholder: "Form059",
+			validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Address",
+			 data: "SoldTo_Address_Street",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form216",
+			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "AddressLineOptional",
+			 data: "SoldTo_Address_Street2",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form061",
+			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "City",
+			 data: "SoldTo_Address_City",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form062",
+			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "StateProvince",
+			 data: "SoldTo_Address_State",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form063",
+			 validation: ["kpDefault", "minLen|2"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Postal code",
+			 data: "SoldTo_Address_Postal",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form087",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Country",
+			 data: "SoldTo_Address_Country",
+			 disabled: true,
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   }
+		  ]
+		]
+	  },
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "Yes"
+					}
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }]
+		]
+	  },
+	  {
+		header: "Contact",
+		filter: {
 		  field: "Config_SoldToDetails",
 		  operator: "neq",
 		  value: "Y"
 		},
-				  {
-					field: "xrefFail",
-					operator: "eq",
-					value: "No"
-				  },
-				  {
-					field: "CountryCode",
-					operator: "neq",
-					value: "HK"
-				  },
-				 ]
-	  },
-	  group: [
-		[{
-		  label: "Form086",
-		  data: "SoldTo_PartyId",
-		  required: false,
-		  type: "text",
-		  //placeholder: "Form057",
-		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-		  typing: "kpDefault"
-		}],
-		[{
-		  label: "Form058",
-		  data: "SoldTo_CompanyName",
-		  required: true,
-		  type: "text",
-		  //placeholder: "Form059",
-		  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-		  typing: "kpDefault"
-		},
-		 {
-		   label: "Address",
-		   data: "SoldTo_Address_Street",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form216",
-		   validation: ["kpDefault", "minLen|2", "maxLen|55"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "AddressLineOptional",
-		   data: "SoldTo_Address_Street2",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form061",
-		   validation: ["kpDefault", "minLen|2", "maxLen|50"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "City",
-		   data: "SoldTo_Address_City",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form062",
-		   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "StateProvince",
-		   data: "SoldTo_Address_State",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form063",
-		   validation: ["kpDefault", "minLen|2"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Postal code",
-		   data: "SoldTo_Address_Postal",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form087",
-		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Country",
-		   data: "SoldTo_Address_Country",
-		   disabled: true,
-		   required: true,
-		   type: "select",
-		   values: function() {
-			 return reference.countriesArray
+		group: [
+		  [{
+			label: "FirstName",
+			data: "SoldTo_Contact_FirstName",
+			required: false,
+			type: "text",
+			//placeholder: "Form065",
+			validation: ["kpDefault", "minLen|1"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Surname",
+			 data: "SoldTo_Contact_LastName",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form066",
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Telephone",
+			 data: "SoldTo_Contact_Phone",
+			 required: false,
+			 type: "text",
+			 //placeholder: "1-888-666-5555",
+			 validation: ["typePhone", "minLen|8", "maxLen|20"],
+			 typing: "typePhone"
+		   },
+		   {
+			 label: "Email",
+			 data: "SoldTo_Contact_Email",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form067",
+			 validation: ["isEmail", "maxLen|96"],
+			 typing: "typeEmail"
+		   },
+		   {
+			 label: "CountryOfResidence",
+			 data: "SoldTo_Contact_Country",
+			 required: false,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
 		   }
-		 }
+		  ]
 		]
-	  ]
-	},
-				{
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "No"
-							  },
-							  {
-								field: "CountryCode",
-								operator: "eq",
-								value: "HK"
-							  },
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}],
-					[{
-					  label: "Form058",
-					  data: "SoldTo_CompanyName",
-					  required: true,
-					  type: "text",
-					  //placeholder: "Form059",
-					  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-					  typing: "kpDefault"
-					},
-					 {
-					   label: "Address",
-					   data: "SoldTo_Address_Street",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form216",
-					   validation: ["kpDefault", "minLen|2", "maxLen|55"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "AddressLineOptional",
-					   data: "SoldTo_Address_Street2",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form061",
-					   validation: ["kpDefault", "minLen|2", "maxLen|50"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "City",
-					   data: "SoldTo_Address_City",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form062",
-					   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "StateProvince",
-					   data: "SoldTo_Address_State",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form063",
-					   validation: ["kpDefault", "minLen|2"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Postal code",
-					   data: "SoldTo_Address_Postal",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form087",
-					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Country",
-					   data: "SoldTo_Address_Country",
-					   disabled: true,
-					   required: true,
-					   type: "select",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-				{
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "Yes"
-							  }
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}]
-				  ]
-				},
-				{
-				  header: "Contact",
-				  filter: {
-					field: "Config_SoldToDetails",
-					operator: "neq",
-					value: "Y"
-				  },
-				  group: [
-					[{
-					  label: "FirstName",
-					  data: "SoldTo_Contact_FirstName",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form065",
-					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
-					},
-					 {
-					   label: "Surname",
-					   data: "SoldTo_Contact_LastName",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form066",
-					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Telephone",
-					   data: "SoldTo_Contact_Phone",
-					   required: false,
-					   type: "text",
-					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
-					   typing: "typePhone"
-					 },
-					 {
-					   label: "Email",
-					   data: "SoldTo_Contact_Email",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form067",
-					   validation: ["isEmail", "maxLen|96"],
-					   typing: "typeEmail"
-					 },
-					 {
-					   label: "CountryOfResidence",
-					   data: "SoldTo_Contact_Country",
-					   required: false,
-					   type: "select",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-			   ],
+	  },
+	],
 	callback: function() {
 	  callbacks.page3();
 	}
@@ -4284,7 +4446,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -4466,7 +4628,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -4950,7 +5112,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5013,7 +5175,7 @@
 					   required: true,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5368,7 +5530,7 @@
 					   required: true,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5719,7 +5881,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   validation: ["typePhone", "minLen|8", "maxLen|20"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -6326,7 +6488,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "Form161",
-			 validation: ["mixA", "minLen|1", "maxLen|60"],
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
 			 typing: "kpDefault"
 		   },
 		   {
@@ -6335,7 +6497,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|18"],
+			 validation: ["typePhone", "minLen|8", "maxLen|20"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -6956,7 +7118,7 @@
 			 required: false,
 			 type: "text",
 			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|18"],
+			 validation: ["typePhone", "minLen|8", "maxLen|20"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -7337,7 +7499,7 @@
 			 data: "ALI_Contact_Phone",
 			 required: false,
 			 type: "text",
-			 validation: ["typePhone", "minLen|8", "maxLen|18"],
+			 validation: ["typePhone", "minLen|8", "maxLen|20"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -7593,6 +7755,8 @@
 			[hpe.fn.lang("Form005", config.locale, config.localizations), "PO_Number"],
 			config.dataset.PO_Attachment ? "" : [hpe.fn.lang("Form007", config.locale, config.localizations), "PO_Currency"],
 			[hpe.fn.lang("Form335", config.locale, config.localizations), "PO_Value"],
+			[hpe.fn.lang("Form535", config.locale, config.localizations), "TaxAmount"],
+			[hpe.fn.lang("Form536", config.locale, config.localizations), "PO_Value_Tax"],
 			[hpe.fn.lang("Form334", config.locale, config.localizations), "PO_Category"],
 			[hpe.fn.lang("Form014", config.locale, config.localizations), "Rs_PO_Number"],
 			[hpe.fn.lang("Form016", config.locale, config.localizations), "Cx_PO_Number"],
@@ -8728,6 +8892,7 @@
 
 				  crud.q.stop(function() {
 					hpe.data.xref(global.data.company.party, function(d) {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  reference.xref = d;
 					  config.locale = global.data.user.locale;
 					  config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8886,6 +9051,7 @@
 
 				crud.q.stop(function() {
 				  hpe.data.xref(global.data.company.party, function(d) {
+					global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					reference.xref = d;
 					config.locale = global.data.user.locale;
 					config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8952,8 +9118,12 @@
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
+		// Don't override user's data if exist
+		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
+		}
+		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9255,6 +9425,25 @@
 		if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 		  config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
 		}
+
+		var subject = (config.dataset.CaseTitle_aaS ? config.dataset.CaseTitle_aaS : '') +
+			' ' +
+			(config.dataset.CaseReason ? config.dataset.CaseReason : 'N/A') +
+			' / ' +
+			(config.dataset.PO_Number ? config.dataset.PO_Number : 'N/A') +
+			' / NORID ' +
+			(config.dataset.EntryId ? config.dataset.EntryId : 'N/A');
+
+		if (config.dataset.CountryCode == 'JP') {
+		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A') +
+			' / End Customer ' +
+			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
+		} else {
+		  subject += ' / End Customer ' +
+			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
+		}
+
+		config.dataset.Subject = subject.length > 255 ? subject.substring(0, 255) : subject;
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
@@ -9628,6 +9817,8 @@
 
 	  if (document.querySelector('*[data-name="PO_Value"]'))
 		document.querySelector('*[data-name="PO_Value"]').closest('.row').classList.add("customFilteredClass");
+	  if (document.querySelector('*[data-name="PO_Currency"]'))
+          document.querySelector('*[data-name="PO_Currency"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="PA_NumberPlaceholder"]'))
 		document.querySelector('*[data-name="PA_NumberPlaceholder"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Rs_PO_Number"]'))
@@ -9650,6 +9841,28 @@
 		document.querySelector('*[data-name="Requestor_PO_Opp_ID"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Payment_TermsPlaceholder"]'))
 		document.querySelector('*[data-name="Payment_TermsPlaceholder"]').closest('.row').classList.add("customFilteredClass");
+	  if (document.querySelector('*[data-name="TaxAmount"]'))
+          document.querySelector('*[data-name="TaxAmount"]').closest('.row').classList.add("customFilteredClass");
+	  
+	  
+	  if (document.querySelector('input[data-name="PO_Value"]')) {
+		$('input[data-name="PO_Value"]').change(function() {
+		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
+			config.dataset.PO_Value = $(this).val();
+			config.dataset.PO_Value_Tax = (Math.round((config.dataset.TaxAmount || 0) * 10000) + Math.round((config.dataset.PO_Value || 0) * 10000)) / 10000;
+			nbsf.init(config, config.page);
+		  }
+		});
+	  }
+	  if (document.querySelector('input[data-name="TaxAmount"]')) {
+		$('input[data-name="TaxAmount"]').change(function() {
+		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
+			config.dataset.TaxAmount = $(this).val();
+			config.dataset.PO_Value_Tax = (Math.round((config.dataset.TaxAmount || 0) * 10000) + Math.round((config.dataset.PO_Value || 0) * 10000)) / 10000;
+			nbsf.init(config, config.page);
+		  }
+		});
+	  }
 
 	  if (document.querySelector('select[data-name="PO_Category"]')) {
 		$('select[data-name="PO_Category"] option').click(function() {
@@ -9769,15 +9982,26 @@
 		$(this).val(vl)
 	  });
 
-	  if (document.querySelector('select[data-name="PO_Currency"]') && document.querySelector('select[data-name="PO_Currency"]').value == config.pages[1].selectone)
-		//if($('select[data-name="PO_Currency"] option').length == 1)
-		$('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
+	  if (document.querySelector('select[data-name="PO_Currency"]') && document.querySelector('select[data-name="PO_Currency"]').value == config.pages[1].selectone) {
+		if ($('select[data-name="PO_Currency"] option').length > 1) {
+		  $('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
+		}
+	  }
 
 	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
 		if ($('select[data-name="PA_Number"] option').length > 1) {
 		  $('select[data-name="PA_Number"]').val($('select[data-name="PA_Number"] option')[1].innerText).trigger('change');
 		}
 	  }
+
+	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone) {
+		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
+		if ($('select[data-name="PO_Category"]'))  {
+		  $('select[data-name="PO_Category"]').trigger('change');
+		}
+		
+	  }
+
 
 	  //PO_CompleteDelivery LOGIC FOR KR
 	  if (document.querySelector('input[data-name="PO_CompleteDelivery"]') && !PO_CompleteDeliveryLogicCheck && (config.dataset.PO_CompleteDelivery == null || config.dataset.PO_CompleteDelivery == '' || config.dataset.PO_CompleteDelivery == 'N')) {
@@ -9875,6 +10099,8 @@
 	},
 	page3: function() {
 	  console.log('page3');
+	  if (document.querySelector('input[data-name="SoldTo_NationalID"]'))
+            $('*[data-name="SoldTo_NationalID"]').parent().parent().parent().parent().addClass('fixNationalID');
 	  $('input[data-name="SoldTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10) {
@@ -9884,7 +10110,7 @@
 			close: false
 		  })
 		  config.dataset.SoldTo_PartyId = currentVal;
-		  EMDMAddress(currentVal, 'SoldTo', false);
+		  EMDMAddress(currentVal, 'SoldTo', true);
 		}
 	  });
 
@@ -9911,6 +10137,7 @@
 			progressPercent: 10,
 			close: false
 		  })
+		  config.dataset.Payer_PartyId = currentVal;
 		  EMDMAddress(currentVal, 'Payer', false);
 		}
 	  });
@@ -10487,8 +10714,31 @@
 		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
 
+	  // clear big data
+	  const HpQuoteLineItems = quote.hpQuoteLineItemList.HpQuoteLineItems;
+	  if (HpQuoteLineItems) {
+		// check that HpQuoteLineItems is a non-empty array
+		if (Array.isArray(HpQuoteLineItems) && HpQuoteLineItems.length) {
+		  const lightHpQuoteLineItems = [];
+		  HpQuoteLineItems.forEach(el => {
+			if (el.LineType === "Config") {
+			  lightHpQuoteLineItems.push(el);
+			}
+			else if (el.PANumber) {
+			  lightHpQuoteLineItems.push({PANumber: el.PANumber});
+			}
+		  });
+		  quote.hpQuoteLineItemList.HpQuoteLineItems = lightHpQuoteLineItems;
+		}
+
+		/*else if (HpQuoteLineItems.PANumber) {
+		  quote.hpQuoteLineItemList.HpQuoteLineItems = {PANumber: HpQuoteLineItems.PANumber};
+		}*/
+	  }
+
 	  // save quote to reference
 	  quoteHelper.quote = quote;
+
 	  // quote is valid
 	  return {
 		valid: true,
@@ -10505,8 +10755,11 @@
 		  OpportunityId,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
-		  SalesOrg
+		  SalesOrg,
+		  TotalTax,
+		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
+		const po_value = config.dataset.CountryCode == 'BR' ? ((Math.round(TotalNetPricewithBenefits * 100) - Math.round(TotalTax * 100)) / 100) : TotalNetPricewithBenefits;
 
 		const filterConfig = {
 		  PO_Currency: {
@@ -10585,7 +10838,7 @@
 						}
 					   ]
 			},
-			value: TotalNetPricewithBenefits,
+			value: po_value,
 		  },
 		  Payment_Terms: {
 			filter: {
@@ -10709,6 +10962,29 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
+		  TaxAmount: {
+			filter: {
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: ["BR"]
+			},
+			value: TotalTax || "",
+		  },
+		  PO_Value_Tax: {
+			filter: {
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: ["BR"]
+			},
+			value: TotalNetPricewithBenefits || "",
+		  },
+		  PO_BackgroundGroup: {
+			filter: {
+			  logic: "and",
+			  filters: []
+			},
+			value: BusinessGroup === 'Edge' ? 'Edge' : 'Hybrid IT',
+		  }
 		};
 
 		for (key in filterConfig) {
@@ -10724,6 +11000,9 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
+	  config.dataset.TaxAmount = null;
+	  config.dataset.PO_Value_Tax = null;
+	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
 	initCountry: function(config, invalidQuoteID, force = true) {
@@ -11054,7 +11333,7 @@
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: partyId,
+				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
 				  Address_Country: d.party[0].countryName
 				};
 				let alternateName = '';
@@ -11122,6 +11401,19 @@
 					}
 				  }
 				}
+				// SoldTo NationalID 
+				if (section == 'SoldTo') {
+				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
+					var externalidentifier = d.party[0].externalIdentifier;
+					for (i = 0; i < externalidentifier.length; i++) {
+					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
+						addressObj['NationalID'] = externalidentifier[i].identifierValue;
+						config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
+						break;
+					  }
+					}
+				  }
+				}
 
 				quoteHelper.addressArr.push(addressObj);
 
@@ -11146,7 +11438,7 @@
 			config.dataset[`${section}_Address_Postal`] = existingEntry['Address_Postal'];
 			config.dataset[`${section}_Address_Street`] = existingEntry['Address_Street'];
 			config.dataset[`${section}_Address_Street2`] = existingEntry['Address_Street2'];
-			if (section == 'ShipTo' || section == 'EndCx') {
+			if (section == 'ShipTo' || section == 'EndCx' || section == 'SoldTo') {
 			  config.dataset[`${section}_NationalID`] = existingEntry['NationalID'];
 			}
 		  }
@@ -11443,8 +11735,9 @@
 			[hpe.fn.lang("StateProvince", config.locale, config.localizations), "SoldTo_Address_State"],
 			[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_Address_Postal"],
 			[hpe.fn.lang("Country", config.locale, config.localizations), "SoldTo_Address_Country"],
-			//	[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_NationalID"],
-			['', 'blank'],
+			["Brazil"].includes(config.dataset.SoldTo_Address_Country) ? [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"] : ['', 'blank'],
+			// [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
+			// ['', 'blank'],
 			[hpe.fn.lang("FirstName", config.locale, config.localizations), "SoldTo_Contact_FirstName"],
 			[hpe.fn.lang("Surname", config.locale, config.localizations), "SoldTo_Contact_LastName"],
 			[hpe.fn.lang("Telephone", config.locale, config.localizations), "SoldTo_Contact_Phone"],
@@ -11856,6 +12149,9 @@
 		validationConfig.endcx.push("EndCx_Address_Postal");
 		validationConfig.reseller.push("Reseller_Address_Postal");
 	  }
+	  if (["Brazil"].includes(config.dataset.SoldTo_Address_Country)) {
+		validationConfig.shipping.push("SoldTo_NationalID");
+	  }
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
 	  }
@@ -12043,6 +12339,7 @@
 				  hpe.data.xref(global.data.company.party, function(d) {
 					mo.fn.overlay.hide();
 					if (d.status == 'SUCCESS') {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  //d.party[0].countryCode = 'IN'; //CFI
 					  //d.party[0].countryName = 'India'; //CFI
 					  reference.xref = d;
@@ -12162,6 +12459,7 @@
 	},
 	//function that initiate kendo grid
 	grid: {
+	  filterValue: "User",
 	  load: function() {
 		mo.fn.overlay.show({
 		  loading: true,
@@ -12187,12 +12485,98 @@
 			if (e.filter) {
 			  const status = e.filter.filters.find((filter) => filter.field === 'Status');
 			  oob.grid._appStats.status = status && status.value || "";
+
+			  const submittedTimestampFilter = e.filter.filters.find((filter) => filter.field === "SubmittedTimestamp");
+			  if (submittedTimestampFilter) {
+				var date = new Date(submittedTimestampFilter.value);
+				var timezoneOffsetInHours = date.getTimezoneOffset() / 60;
+				date.setHours(date.getHours() - timezoneOffsetInHours);
+				submittedTimestampFilter.value = date;
+			  } else {
+				// Handle the scenario where the SubmittedTimestamp filter is cleared
+				this.dataSource.read();
+			  }
 			}
-		  }
+		  },
+		  toolbar: [{
+			template: '<div id="filter-type-dropdown" style="width: 200px;"></div>'
+		  }],
 		});
+
+		oob.grid.initializeDropDown();
+
 		// add grid events
 		oob.grid._events.init('div[tab-id="requests"] .grid');
 		oob.grid._overview();
+	  },
+	  initializeDropDown: function() {
+		var isHpeEmail = '[SSOData.Email]'.indexOf('@hpe.com') > -1;
+		$("#filter-type-dropdown").kendoDropDownList({
+		  dataSource: ["User", "Company"],
+		  value: oob.grid.filterValue,
+		  enable: !isHpeEmail,
+		  change: function() {
+			oob.grid.filterValue = this.value();
+			var grid = $('div[tab-id="requests"] .grid').data("kendoGrid");
+
+			// Create filter logic based on dropdown selection
+			var filter = {
+			  logic: "and",
+			  filters: [{
+				field: "PartyId",
+				operator: "eq",
+				value: global.data.company.party
+			  },
+						{
+						  field: "PartnerBRT",
+						  operator: "eq",
+						  value: global.data.brt.name
+						},
+						{
+						  logic: "or",
+						  filters: [{
+							field: "Retired",
+							operator: "neq",
+							value: "Y"
+						  },
+									{
+									  field: "Retired",
+									  operator: "isnull",
+									  value: ""
+									}
+								   ]
+						}
+					   ]
+			};
+
+			if (oob.grid.filterValue === "User") {
+			  filter.filters.push({
+				field: "Requestor_Email",
+				operator: "eq",
+				value: '[SSOData.Email]' // Replace with the actual email variable
+			  });
+			}
+
+			// Update the filterable property of columns
+			var options = $.extend(true, {}, grid.getOptions());
+			options.columns = options.columns.map(function(column) {
+			  if (column.field === "Requestor_Email") {
+				column.filterable = oob.grid.filterValue === "Company";
+			  }
+			  return column;
+			});
+
+			// Apply the updated options and filter to the grid
+			grid.setOptions(options);
+			grid.dataSource.filter(filter);
+
+			// Refresh the grid to apply changes
+			grid.dataSource.read();
+
+			// Reinitialize the dropdown
+			oob.grid.initializeDropDown();
+		  }
+		});
 	  },
 	  _datasource: function() {
 		return new kendo.data.DataSource({
@@ -12212,7 +12596,16 @@
 		  sort: {
 			field: "Modified",
 			dir: "desc"
-		  }
+		  },
+		  schema: {
+			model: {
+			  fields: {
+				SubmittedTimestamp: {
+				  type: "date"
+				}
+			  }
+			}
+		  },
 		});
 	  },
 	  _columns: function() {
@@ -12242,37 +12635,86 @@
 					 title: hpe.fn.lang('HPEOrder', config.locale, config.localizations),
 					 filterable: false,
 					 template: function(d) {
-					   var elem = "";
+					   var elem = '<div class="orderList" style="text-align: left">';
 					   if (d.PO_Order_ID != "" && d.PO_Order_ID != "N/A" && d.PO_Order_ID != null) {
 						 if (d.PO_Order_ID && d.PO_Order_ID.length > 10) {
-						   const orderIds = d.PO_Order_ID.split(';');
+						   let orderIds = d.PO_Order_ID.trim();
+						//   console.log(orderIds);
+						   if (orderIds.includes(';')) {
+							 orderIds = orderIds.split(';');
+						   } else {
+							 orderIds = orderIds.split('  ');
+						   }
 						   //const orderIds = d.Operations.Order
+						//   console.log(orderIds);
 						   orderIds.forEach(orderId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
+						//	 elem += '<span class="orderItem" title="' + orderId + '"> ' + orderId + '</span>';
+						//	 console.log(elem);
+							 if (orderId) {
+							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
+							 }
 						   });
 						 } else {
-						   //const orderId = d.Operations.Order
-						   // += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID + '" target="_blank">' + d.PO_Order_ID + '</a><br>';
+						  // elem += '<span class="orderItem" title="' + d.PO_Order_ID.trim() + '"> ' + d.PO_Order_ID.trim() + '</span>';
+						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID.trim() + '" target="_blank">' + d.PO_Order_ID.trim() + '</a><br>';
 						 }
 					   }
 					   if (d.PO_AAS_ID != "" && d.PO_AAS_ID != "N/A" && d.PO_AAS_ID != null) {
 						 if (d.PO_AAS_ID && d.PO_AAS_ID.length > 8) {
-						   const aasIds = d.PO_AAS_ID.split(';');
+						   let aasIds = d.PO_AAS_ID.trim();
+						   if (aasIds.includes(';')) {
+							 aasIds = aasIds.split(';');
+						   } else {
+							 aasIds = aasIds.split('  ');
+						   }
+						//   console.log(aasIds);
 						   aasIds.forEach(aasId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
+							// elem += '<span class="orderItem" title="' + aasId + '"> ' + aasId + '</span>';
+						//	 console.log(elem);
+							 if (aasId) {
+							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
+							 }
 						   });
 						 } else {
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID + '" target="_blank">' + d.PO_AAS_ID + '</a>';
+						 //  elem += '<span class="orderItem" title="' + d.PO_AAS_ID.trim() + '"> ' + d.PO_AAS_ID.trim() + '</span>';
+						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID.trim() + '" target="_blank">' + d.PO_AAS_ID.trim() + '</a>';
 						 }
 					   }
+					   elem += '</div>';
 
 					   if (elem == "") {
 						 elem = "N/A";
 					   }
+					//   console.log(elem);
 					   return elem;
 					 },
 					 width: "100px"
+				   },
+				/*   {
+					 field: "Requestor_Email",
+					 title: hpe.fn.lang('Submitter', config.locale, config.localizations),
+					 width: "160px",
+					 filterable: {
+					   extra: false
+					 },
+					 filterable: false
+				   },*/
+				   {
+					 field: "EndCx_CompanyName",
+					 title: hpe.fn.lang("FormEndCx", config.locale, config.localizations),
+					 width: "200px",
+					 hidden: true,
+					 filterable: true,
+					 template: function(d) {
+					   if (d.EndCx_CompanyName) {
+						 if (d.EndCx_CompanyName.length > 20)
+						   return d.EndCx_CompanyName.substring(0, 20) + '...';
+						 else
+						   return d.EndCx_CompanyName;
+					   } else {
+						 return "N/A";
+					   }
+					 }
 				   },
 				   {
 					 field: "Requestor_Email",
@@ -12317,11 +12759,20 @@
 					 field: "SubmittedTimestamp",
 					 title: hpe.fn.lang('Form44x2', config.locale, config.localizations),
 					 width: "100px",
-					 filterable: false,
+					 filterable: {
+					   cell: {
+						 template: function(d) {
+						   return util.getDateFormat(new Date(d.SubmittedTimestamp));
+						 }
+					   }
+					 },
+					 format: "{0:yyyy-MM-dd HH:mm:ss}",
+					 filterable: true,
 					 template: function(d) {
 					   if (d.SubmittedTimestamp) {
-						 let tmstmp = d.SubmittedTimestamp.split('T')[0] + " " + d.SubmittedTimestamp.split('T')[1]
-						 return tmstmp;
+						 //let tmstmp = d.SubmittedTimestamp.split('T')[0] + " " + d.SubmittedTimestamp.split('T')[1]
+						 return kendo.toString(new Date(d.SubmittedTimestamp), 'yyyy-MM-dd HH:mm:ss');
+						 //return tmstmp;
 					   } else return hpe.fn.lang('Form44x3', config.locale, config.localizations);
 					 }
 				   },
@@ -12649,6 +13100,11 @@
 						field: "PartnerBRT",
 						operator: "eq",
 						value: global.data.brt.name
+					  },
+					  {
+						field: "Requestor_Email",
+						operator: "eq",
+						value: '[SSOData.Email]'
 					  }
 					 ]
 		  },
