@@ -7521,6 +7521,76 @@
 	}
   };
 
+  // PRODUCT AND SERVICES FILE UPLOADING
+  const page13 = {
+      title: "Are you ordering stand alone products and services",
+      filter: {
+        logic: "and",
+        filters: [{
+          field: "Config_PartialOrder",
+          operator: "eq",
+          value: "Y"
+        },]
+      },
+      subtitle: "",
+      description: "",  
+      selectone: "SelectOne",
+      continue: "Continue",
+      submit: "Submit",
+      back: "Back",
+      no: "No",    
+      nav: true,
+      poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
+      structure: [
+        {
+          header: "Product and services attachment",          
+          description: "",
+          group: [
+            [
+              {
+                label: "FormCFI06",
+                data: "ProductServices_Attachment",
+                required: false,
+                type: "kUpload",
+                uploadConfig: {
+                  formId: 989,
+                  extensions: [".xlxs", ".xls", ".xlsx", ".xlsm"],
+                  maxFileSize: 1
+                }
+              },              
+            ],
+          ]
+        },
+        {
+          header: "Product and services description",
+          repeatable: "BasicRepeater",
+          repeatableLimit: 4,
+          group: [
+            [ {
+                label: "Product and services",
+                data: "ProductServices_Repeater",
+                required: false,
+                type: "text",
+                placeholder: "",
+              },
+            ]
+          ],
+          callback: function() {},
+        }, 
+      ],      
+      callback: function() {        
+        const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
+        const kendoOptAtt = $(OptAtt).data('kendoUpload');
+        kendoOptAtt.bind("upload", function(e) {            
+            if (e.files && e.files.length) {
+              helper.parseExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
+            }
+        });
+        
+        callbacks.page13();  
+      },
+    };
+ 
   // OVERVIEW PAGE
   const overviewPage = {
 	title: "Form221",
@@ -8265,7 +8335,7 @@
 	  xrefFail: 'No'
 	},
 	summary: {},
-	pages: [page1, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
+	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
 	onNext: function() {
 	  if (config.dataset.xrefFail == 'Yes') config.dataset.xrefFail = 'No';
 	  
@@ -10285,7 +10355,37 @@
 	},
 	page12: function() {
 	  console.log('page12');
-	}
+	},
+	page13: function() {
+        console.log('page13');
+        if (document.querySelector('input[data-name="ProductServices_Attachment"]')) {
+          const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
+          const kendoOptAtt = $(OptAtt).data('kendoUpload');
+          kendoOptAtt.bind("upload", function(e) {
+            if (e.files && e.files.length) {
+              // config.dataset.ProductServices_Attachment_Flag = 'Y';
+            }
+          });
+  
+          $('input[data-name="ProductServices_Attachment"]').live('change', function() {
+            if (document.querySelector('.k-upload .k-upload-files .k-file-validation-message')) {
+              mo.fn.modal.show({
+                ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+                title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+                content: hpe.fn.lang("FormACR001", config.locale, config.localizations),
+                ctaCallback: function() {
+                  mo.fn.events.closeAll();
+                },
+                contentCallback: function() {
+                  config.dataset.ProductServices_Attachment = null;
+                  $('.k-upload .k-upload-files .k-upload-status .k-icon[title="Remove"]').click();
+                }
+              });
+              // config.dataset.ProductServices_Attachment_Flag = 'N';
+            }
+          });
+        }
+      },
   };
 
   // CONFIG FORM TRANSLATIONS
