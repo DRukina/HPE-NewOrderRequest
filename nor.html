@@ -12622,6 +12622,17 @@
 				operator: "eq",
 				value: '[SSOData.Email]' // Replace with the actual email variable
 			  });
+			  // stats user
+			  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+			  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+			  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+			} else {
+			  // stats company
+			  overview.querySelector(".incomplete strong").innerText = global.requests.incomplete;
+			  overview.querySelector(".submitted strong").innerText = global.requests.submitted;
+			  overview.querySelector(".pending strong").innerText = global.requests.pending + global.requests.submitted + global.requests.failed;
+			  overview.querySelector(".completed strong").innerText = global.requests.completed;
+			  overview.querySelector(".failed strong").innerText = global.requests.failed;
 			}
 
 			// Update the filterable property of columns
@@ -12650,7 +12661,7 @@
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview_DEV/kendo/data/search",
 			  type: "POST"
 			}
 		  },
@@ -12725,7 +12736,7 @@
 					   }
 					   if (d.PO_AAS_ID != "" && d.PO_AAS_ID != "N/A" && d.PO_AAS_ID != null) {
 						 if (d.PO_AAS_ID && d.PO_AAS_ID.length > 8) {
-						   let aasIds = d.PO_AAS_ID.trim().split(';');
+						   let aasIds = d.PO_AAS_ID.trim();
 						   if (aasIds.includes(';')) {
 							 aasIds = aasIds.split(';');
 						   } else {
@@ -13177,40 +13188,37 @@
 				   ]
 		} : {
 		  logic: "and",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartyId",
-			  operator: "eq",
-			  value: global.data.company.party
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "PartyId",
+				  operator: "eq",
+				  value: global.data.company.party
+				},
+				{
+				  field: "PartnerBRT",
+				  operator: "eq",
+				  value: global.data.brt.name
+				},
+			  ]
 			},
-					  {
-						field: "PartnerBRT",
-						operator: "eq",
-						value: global.data.brt.name
-					  },
-					  {
-						field: "Requestor_Email",
-						operator: "eq",
-						value: '[SSOData.Email]'
-					  }
-					 ]
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Retired",
-						operator: "neq",
-						value: "Y"
-					  },
-								{
-								  field: "Retired",
-								  operator: "isnull",
-								  value: ""
-								}
-							   ]
-					}
-				   ]
+			{
+			  logic: "or",
+			  filters: [{
+				field: "Retired",
+				operator: "neq",
+				value: "Y"
+			  },
+						{
+						  field: "Retired",
+						  operator: "isnull",
+						  value: ""
+						}
+					   ]
+			}
+		  ]
 		};
 
 		// rollback of NOR-460. Will be done in NOR-519
@@ -13221,6 +13229,16 @@
                         value: '[SSOData.Email]'
                     });
 				}*/
+		// add user/company filter
+		
+		const typeDropdown = $("#filter-type-dropdown");
+		if (!typeDropdown || typeDropdown.val() === "User" ) {
+		  filter.filters.push({
+			field: "Requestor_Email",
+			operator: "eq",
+			value: '[SSOData.Email]'
+		  });
+		}
 
 		if (oob.grid._appStats.status) {
 		  filter.filters.push({
@@ -13295,11 +13313,10 @@
 
 		oob.grid._initStats(function(d) {
 		  global.requests = d;
-		  overview.querySelector(".incomplete strong").innerText = global.requests.incomplete;
-		  overview.querySelector(".submitted strong").innerText = global.requests.submitted;
-		  overview.querySelector(".pending strong").innerText = global.requests.pending + global.requests.submitted + global.requests.failed;
-		  overview.querySelector(".completed strong").innerText = global.requests.completed;
-		  overview.querySelector(".failed strong").innerText = global.requests.failed;
+		  // stats user
+		  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+		  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+		  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
 
 		  document.querySelector('#overview .incomplete').onclick = function() {
 			filterGrid("0");
@@ -13321,6 +13338,10 @@
 		failed: "",
 		deleted: "",
 		status: "",
+		
+		userDraft: "",
+		userInprogress: "",
+		userCompleted: "",
 	  },
 	  _getStats: function(callback) {
 		if ("[SSOData.Email]".indexOf('@hpe.com') > -1) {
@@ -13350,23 +13371,25 @@
 			payload: {
 			  filter: {
 				logic: "and",
-				filters: [{
-				  field: "PartyId",
-				  operator: "eq",
-				  value: global.data.company.party
-				},
-						  {
-							field: "PartnerBRT",
-							operator: "eq",
-							value: global.data.brt.name
-						  }
-						 ]
+				filters: [
+				  {
+					field: "PartyId",
+					operator: "eq",
+					value: global.data.company.party
+				  },
+				  {
+					field: "PartnerBRT",
+					operator: "eq",
+					value: global.data.brt.name
+				  },
+				]
 			  },
 			  take: '1'
 			}
 		  }, function(d) {
 			try {
 			  callback(d);
+			  // отфильтровать по реквестор имейлу
 			} catch (e) {
 			  console.error(e);
 			  callback(false);
@@ -13374,27 +13397,142 @@
 		  })
 		}
 	  },
-	  _initStats: function(cb) {
-		oob.grid._getStats(function(d) {
-		  if (d.Data.length > 0) {
-			oob.grid._appStats.completed = d.Data[0].Completed;
-			oob.grid._appStats.incomplete = d.Data[0].Draft;
-			oob.grid._appStats.submitted = d.Data[0].Submitted;
-			oob.grid._appStats.pending = d.Data[0].Pending;
-			oob.grid._appStats.failed = d.Data[0].Failed;
-			oob.grid._appStats.deleted = d.Data[0].Deleted;
-			oob.grid._appStats.total = d.Data[0].Completed + d.Data[0].Draft + d.Data[0].Submitted + d.Data[0].Pending + d.Data[0].Failed + d.Data[0].Deleted
+	  _getStatsByUser: function(callback) {
+		// Draft
+		const draftRequest = new Promise((resolve, reject) => {
+		  const draftFilter = Object.assign({}, oob.grid._filter());
+		  draftFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 0
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: draftFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		});
+		// Completed
+		const completedRequest = new Promise((resolve, reject) => {
+		  const completedFilter = Object.assign({}, oob.grid._filter());
+		  completedFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 3
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: completedFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		});
+		// Inprogress
+		const progressRequest = new Promise((resolve, reject) => {
+		  const progressFilter = Object.assign({}, oob.grid._filter());
+		  progressFilter.filters.push({
+			  logic: "or",
+			  filters: [
+				{
+				  field: "Status",
+				  operator: "eq",
+				  value: 1 //submitted
+				},
+				{
+				field: "Status",
+				operator: "eq",
+				value: 2 //pending
+				},
+				{
+				field: "Status",
+				operator: "eq",
+				value: 4 //failed
+				}
+			  ]
+			}
+		  );
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: progressFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		});
+		Promise.all([draftRequest, completedRequest, progressRequest])
+		  .then((values) => {
+		  if (values && values.length) {
+			const result = {
+			  Draft: values[0],
+			  Completed: values[1],
+			  Inprogress: values[2],
+			};
+			callback(result);
 		  } else {
-			oob.grid._appStats.completed = 0;
-			oob.grid._appStats.incomplete = 0;
-			oob.grid._appStats.submitted = 0;
-			oob.grid._appStats.pending = 0;
-			oob.grid._appStats.failed = 0;
-			oob.grid._appStats.deleted = 0;
-			oob.grid._appStats.total = 0;
+			callback(false);
 		  }
-		  return cb(oob.grid._appStats);
 		})
+		.catch(function(err) {
+		  console.log(err.message);
+		  callback(false);
+		});
+	  },
+	  _initStats: function(cb) {
+		oob.grid._getStatsByUser(function(d) {
+		  if (d) {
+			oob.grid._appStats.userDraft = d.Draft;
+			oob.grid._appStats.userInprogress = d.Inprogress;
+			oob.grid._appStats.userCompleted = d.Completed;
+		  } else {
+			oob.grid._appStats.userDraft = 0;
+			oob.grid._appStats.userInprogress = 0;
+			oob.grid._appStats.userCompleted = 0;
+		  }
+		  oob.grid._getStats(function(d) {
+			if (d.Data.length > 0) {
+			  oob.grid._appStats.completed = d.Data[0].Completed;
+			  oob.grid._appStats.incomplete = d.Data[0].Draft;
+			  oob.grid._appStats.submitted = d.Data[0].Submitted;
+			  oob.grid._appStats.pending = d.Data[0].Pending;
+			  oob.grid._appStats.failed = d.Data[0].Failed;
+			  oob.grid._appStats.deleted = d.Data[0].Deleted;
+			  oob.grid._appStats.total = d.Data[0].Completed + d.Data[0].Draft + d.Data[0].Submitted + d.Data[0].Pending + d.Data[0].Failed + d.Data[0].Deleted
+			} else {
+			  oob.grid._appStats.completed = 0;
+			  oob.grid._appStats.incomplete = 0;
+			  oob.grid._appStats.submitted = 0;
+			  oob.grid._appStats.pending = 0;
+			  oob.grid._appStats.failed = 0;
+			  oob.grid._appStats.deleted = 0;
+			  oob.grid._appStats.total = 0;
+			}
+			return cb(oob.grid._appStats);
+		  })
+		});
 	  }
 	}
   }
