@@ -1,3 +1,43 @@
+<style>
+#form-table {
+	max-width: 100%;
+}
+
+#form-table fieldset {
+	display: flex;
+	margin: 0;
+}
+
+#form-table fieldset label {
+	width: 140px;
+	padding: 0;
+}
+
+#form-table fieldset label .name {
+	display: block;
+	padding: 7px 11px;
+}
+
+#form-table fieldset label .name {
+	display: none;
+}
+
+#form-table fieldset:first-of-type input {
+	background: #eee !important;
+}
+
+#form-table fieldset label:not(:first-of-type) {
+	border-left: 0;
+}
+
+#form-table fieldset input {
+	padding: 7px 11px;
+	height: auto;
+	box-sizing: border-box;
+}
+</style>
+  
+
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -7576,7 +7616,96 @@
             ]
           ],
           callback: function() {},
-        }, 
+        },
+		{
+            header: "Form validation",
+            description: "",
+            id: "form-table",
+            group: [
+                [{
+					label: "HPE Product Nub",
+					data: "HPE_Product_Nub",
+					value: "HPE Product Nub",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Deal Id",
+					value: "Deal Id",
+					data: "Deal_Id",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Quantity",
+					value: "Quantity",
+					data: "Quantity",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Test",
+					value: "Test",
+					data: "Test",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Test 1",
+					value: "Test 1",
+					data: "Test1",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+			],
+			[{
+					label: "Item1_HPE_Product_Nub",
+					value: "125958935893",
+					data: "Item1_HPE_Product_Nub",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Item1_Deal_Id",
+					value: "2121",
+					data: "Item1_Deal_Id",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Item1_Quantity",
+					value: "2112",
+					data: "Item1_Quantity",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Item1_Test",
+					value: "1",
+					data: "Item1_Test",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+				{
+					label: "Item1_Test1",
+					value: "1",
+					data: "Item1_Test1",
+					required: false,
+					type: "text",
+					validation: ['minLen|1'],
+				},
+			],
+			],
+        },  
       ],      
       callback: function() {        
         const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
