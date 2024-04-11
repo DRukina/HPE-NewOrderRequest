@@ -36,8 +36,9 @@
 	box-sizing: border-box;
 }
 </style>
-  
 
+<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -1167,7 +1168,7 @@
                                values: ["N", "Y"],
                                options: ["No", "Yes"]
                            }, {*/
-			label: "Form230",
+			label: "Form230", // @TODO
 			data: "Config_Quote",
 			required: true,
 			type: "toggle",
@@ -7583,7 +7584,15 @@
       poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
       structure: [
         {
-          header: "Product and services attachment",          
+          header: "Product and services attachment",  
+		  filter: {
+			logic: "and",
+			filters: [{
+				field: "Config_Quote",
+				operator: "eq",
+				value: "N"
+			}],
+		  },
           description: "",
           group: [
             [
@@ -12188,7 +12197,65 @@
 		  fastClearAddress();
 		});
 	  }
-	}
+	},
+
+	parseExcel: function(file, callback) {				
+        var reader = new FileReader();
+        const res = {
+          success: false,
+          data: null,
+        };
+
+        reader.onload = function(e) {
+		  var data = e.target.result;
+          var workbook = XLSX.read(data, {
+            type: 'binary',
+			cellDates: true,
+          });
+		  
+		  const sheetName = workbook.SheetNames[0];
+		  const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);		  
+		  
+		  let rowsData = [];
+		  if (page.length >= 5) {
+			for (let i = 5; i < page.length; i++) {
+			  const rowInfo = Object.values(page[i]);
+			  if (rowInfo.length < 12) {
+			  	break;
+			  }			  
+			  
+			  const	row = {
+			  	'ITEM': rowInfo[0],
+				'cgfSystemName': rowInfo[1], //HPE Part Number
+				'HPE Part Description': rowInfo[2],
+				'Count': rowInfo[3], //HPE Part Quantity
+				'Deal ID': rowInfo[4],
+				'bundleId': rowInfo[5], //Config ID
+				'Unit Price': rowInfo[6],
+				'List Price': rowInfo[7],
+				'Extended Net Price': rowInfo[8],
+				'Previously Purchased Product Details': rowInfo[9],
+				'Serial number of the products': rowInfo[10],
+				'Product Purchased Date': rowInfo[11],
+			  };
+			  
+			  rowsData.push(row);
+			}
+		  }
+		  
+		  res.success = true;		  
+		  res.data = rowsData;		
+		  
+		  callback(res);
+        };
+
+        reader.onerror = function(ex) {
+          res.data = ex;
+          callback(res)
+        };
+
+        reader.readAsBinaryString(file);		
+	},
   }
 </script>
 
