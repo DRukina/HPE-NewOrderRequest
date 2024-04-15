@@ -354,7 +354,7 @@
 		}
 	  ],
 	  // onBehalfType = Company
-	  partyData: null,  
+	  partyData: null,
 	},
 	init: function(cb) {
 	  let self = this;
@@ -583,7 +583,7 @@
 		let brtCode = global.data.brts.filter(function(item) {
 		  return (item.name.toLowerCase() == global.data.brt.name.toLowerCase())
 		});
-		
+
 		/*if (global.data.brt.code !== brtCode[0].code && brtCode[0].code) {
 		  // SETTING THE CHANNEL IS IMPORTANT
 		  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -860,7 +860,7 @@
 	  xhr.open("POST", "https://hpe-rfb.it.hpe.com/resources/rs/custom/php/xaas/search.php");
 	  xhr.setRequestHeader("Content-Type", "application/json");
 	  xhr.send(JSON.stringify(payload));
-	},	
+	},
 	// CENTRAL TIMESTAMP
 	timestamp: function(callback) {
 	  var response = null;
@@ -1573,7 +1573,7 @@
 				  value: "1",
 				}
 			  ]
-			},			
+			},
 			{
 			  field: "CountryCode",
 			  operator: "in",
@@ -2127,7 +2127,7 @@
 					  field: "Config_Quote",
 					  operator: "eq",
 					  value: "Y"
-					},	  
+					},
 					{
 					  field: "Config_PartialOrder",
 					  operator: "eq",
@@ -2170,7 +2170,7 @@
 					  field: "Config_Quote",
 					  operator: "neq",
 					  value: "Y"
-					},	  
+					},
 					{
 					  field: "Config_PartialOrder",
 					  operator: "eq",
@@ -2245,7 +2245,7 @@
 								  value: "Y"
 								}
 							   ]
-					}	  
+					}
 				   ]
 		},
 		header: "",
@@ -2479,17 +2479,17 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only 00000 after '3' - 300000XXXXX 
+		  // allow only 00000 after '3' - 300000XXXXX
 		  if (this.value.length > 2 && this.value.length <= 6 && /^30/.test(this.value) && !/^3[0]{2,5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only digits after '300000' - 300000XXXXX 
+		  // allow only digits after '300000' - 300000XXXXX
 		  if (this.value.length > 6 && this.value.length <= 11 && /^30/.test(this.value) && !/^300000\d*$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // 300000XXXXX 
+		  // 300000XXXXX
 		  if (this.value.length > 11 && /^30/.test(this.value) && !/^300000\d{5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
@@ -2504,7 +2504,7 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // read quote 
+		  // read quote
 		  if (this.value) {
 			// const quotePattern = /(^(NQ|DQ)\d{8}-([0-9][0-9]))|^(300000)\d{5}$/;
 			// for testing
@@ -3322,8 +3322,8 @@
 				  },
 				  {
 					field: "CountryCode",
-					operator: "neq",
-					value: "HK"
+          operator: "nin",
+          value: ["HK", "MO"]
 				  },
 				 ]
 	  },
@@ -3421,8 +3421,8 @@
 							  },
 							  {
 								field: "CountryCode",
-								operator: "eq",
-								value: "HK"
+                operator: "in",
+                value: ["HK", "MO"]
 							  },
 							 ]
 				  },
@@ -3647,8 +3647,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "neq",
-		  value: "HK"
+      operator: "nin",
+      value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -3734,8 +3734,8 @@
 					logic: "and",
 					filters: [{
 					  field: "CountryCode",
-					  operator: "eq",
-					  value: "HK"
+            operator: "in",
+            value: ["HK", "MO"]
 					}, ]
 				  },
 				  group: [
@@ -4121,8 +4121,8 @@
 		},
 				  {
 					field: "CountryCode",
-					operator: "neq",
-					value: "HK"
+          operator: "nin",
+          value: ["HK", "MO"]
 				  },
 				  {
 					logic: "or",
@@ -4321,8 +4321,8 @@
 					},
 							  {
 								field: "CountryCode",
-								operator: "eq",
-								value: "HK"
+                operator: "in",
+                value: ["HK", "MO"]
 							  },
 							  {
 								logic: "or",
@@ -4667,8 +4667,8 @@
 		},
 				  {
 					field: "CountryCode",
-					operator: "neq",
-					value: "HK"
+          operator: "nin",
+          value: ["HK", "MO"]
 				  },
 				 ]
 	  },
@@ -4760,8 +4760,8 @@
 					},
 							  {
 								field: "CountryCode",
-								operator: "eq",
-								value: "HK"
+                operator: "in",
+                value: ["HK", "MO"]
 							  },
 							 ]
 				  },
@@ -5064,8 +5064,8 @@
 		},
 				  {
 					field: "CountryCode",
-					operator: "neq",
-					value: "HK"
+          operator: "nin",
+          value: ["HK", "MO"]
 				  },
 				 ]
 	  },
@@ -5159,8 +5159,8 @@
 					},
 							  {
 								field: "CountryCode",
-								operator: "eq",
-								value: "HK"
+                operator: "in",
+                value: ["HK", "MO"]
 							  },
 							 ]
 				  },
@@ -5358,8 +5358,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "neq",
-		  value: "HK"
+      operator: "nin",
+      value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -5443,8 +5443,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "eq",
-		  value: "HK"
+      operator: "in",
+      value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -5585,8 +5585,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "neq",
-		  value: "HK"
+      operator: "nin",
+      value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -5670,8 +5670,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "eq",
-		  value: "HK"
+      operator: "in",
+      value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -7850,7 +7850,7 @@
 		  }
 		} catch (error) {
 		  console.error("Error fetching the link:", error);
-		  //window.location = "fallbackURL"; 
+		  //window.location = "fallbackURL";
 		}
 	  });
 	}
@@ -7871,7 +7871,7 @@
 	onNext: function() {
 	  if (config.dataset.xrefFail == 'Yes') config.dataset.xrefFail = 'No';
 
-	  // check 
+	  // check
 	  const page = config.pages[config.page];
 	  const isOrderPage = page && page.orderPage;
 	  if (isOrderPage && config.dataset.Config_Quote == 'Y' && config.dataset.Config_PartialOrder == 'Y') {
@@ -7885,7 +7885,7 @@
 	  const isQuoteAddressDataChanged = quoteHelper.isAddressQuoteDataChanged(config);
 	  config.dataset.QuoteChangeFlag = isQuoteHeaderDataChanged || isQuoteAddressDataChanged ? 'Y' : null;
 	  config.dataset.Environment = appSettings.environment;
-	  
+
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
 
@@ -8154,7 +8154,7 @@
 		  else return false;
 		}
 	  }
-	  
+
 	  function emailAddressValidation(value) {
 		const addressPage = config.pages[config.page].addressPage;
 		const pageMapping = {
@@ -8169,7 +8169,7 @@
 		  }
 		}
 		return true;
-	  }	  
+	  }
 
 	  //if PartnerBRT is one of the Distributor, OEM Distributor, System Integrator and the PO_BusinessModel is Agent Model" or HPFS & Agent Model, open the optional info modal
 	  if (
@@ -8331,8 +8331,8 @@
 				  return (item.name == global.data.brt.name)
 				});
 				global.data.brt.code = brtCode[0].code;
-				
-				// new 
+
+				// new
 				let brts = view.filter(item => ['T1 Solution Provider', 'Distributor', 'OEM Distributor', 'System Integrator', 'Master Area Partner'].includes(item.BRT));
 				brts = brts.map(item => item.BRT);
 				brts = global.data.brts.filter(item => brts.includes(item.name));
@@ -8355,7 +8355,7 @@
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
 				config.dataset.Region = global.data.geo.region;
-				config.dataset.Geo = global.data.geo.geography;							 
+				config.dataset.Geo = global.data.geo.geography;
 
 				if (!global.data.brt.channel) {
 				  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -8652,9 +8652,9 @@
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
-		
+
 		quoteHelper.clearPOData(config);
-		
+
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9025,7 +9025,7 @@
 
 		config.dataset.Subject = subject.length > 255 ? subject.substring(0, 255) : subject;
 		config.dataset.Environment = appSettings.environment;
-		
+
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 
@@ -9396,7 +9396,7 @@
 		});
 	  }
 
-	  // Populate data from QuoteId 
+	  // Populate data from QuoteId
 	  if (document.querySelector('input[data-name="Requestor_PO_Quote_ID"]')) {
 		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", function(event, invalid) {
 		  let completedData = document.querySelectorAll('*[data-name]');
@@ -9596,7 +9596,7 @@
 		if ($('select[data-name="PO_Category"]'))  {
 		  $('select[data-name="PO_Category"]').trigger('change');
 		}
-		
+
 	  }
 
 
@@ -9622,7 +9622,7 @@
 		});
 	  }
 
-	  //QOD logic for not turkey and MAP 
+	  //QOD logic for not turkey and MAP
 	  if (!QODCheck) {
 		QODCheck = true;
 		var config_QuoteToggle = document.querySelector('input[data-name="Config_Quote"]');
@@ -10190,7 +10190,7 @@
 		'GET',
 		`https://hpe-rfb.it.hpe.com/resources/rs/custom/php/qids/stg/readquote.php?qid=${qid}`
 	  );
-	  // for testing: 
+	  // for testing:
 	  // xhr.timeout = qid === 'NI01062833-01' ? 1000 : 10000;
 	  xhr.timeout = 80000;
 	  const errorHandler = function() {
@@ -10221,10 +10221,10 @@
 	  xhr.send(null);
 	},
 	savePartialOrderConfig: function(config, callback, errorCallback) {
-	  if (config.dataset.EntryId && config.dataset.Config_Quote == 'Y' && config.dataset.Config_PartialOrder == 'Y' && quoteHelper.ucids.length) {		
+	  if (config.dataset.EntryId && config.dataset.Config_Quote == 'Y' && config.dataset.Config_PartialOrder == 'Y' && quoteHelper.ucids.length) {
 		crud.read("5590", "Request_Id=" +  config.dataset.EntryId, function(data) {
 		  if (data.Rows.length > 0) {
-			// delete and then create 
+			// delete and then create
 			const promises = data.Rows.map(record => {
 			  return new Promise((resolve, reject) => {
 				crud.destroy("5591", record.EntryId, function(d) {
@@ -10703,7 +10703,7 @@
 	  let quoteCurrency = null;
 	  let quoteCurrencies = null;
 
-	  // if quote is exist 
+	  // if quote is exist
 	  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
 	  const isCurrentQuote = quote && quote.quoteHeader && !config.dataset.Quote_Error && quote.quoteHeader.OriginatingSystemQuoteAndVersionID === config.dataset.Requestor_PO_Quote_ID;
 	  const quoteCountry = isCurrentQuote && quote.quoteHeader.EndCustomer && quote.quoteHeader.EndCustomer.Address && quote.quoteHeader.EndCustomer.Address.Country;
@@ -11144,7 +11144,7 @@
 			}
 		  }
 
-		  // “TradeStyleName” to “Company name” wherever available if not use the name field 
+		  // “TradeStyleName” to “Company name” wherever available if not use the name field
 		  //config.dataset[`${section}_CompanyName`] = (quoteHelper.quote.quoteHeader[quoteSection].Address && quoteHelper.quote.quoteHeader[quoteSection].Address.TradeStyleName) || quoteHelper.quote.quoteHeader[quoteSection].Company.Name;
 		}
 
@@ -11581,7 +11581,7 @@
 		}
 		document.querySelector(`input[data-name=${id}]`).parentElement.parentElement.parentElement.parentElement.classList.add('PPC', `${id}_output`);
 		var app = document.querySelector(`.${id}_output`);
-		// move config toggle to the right 
+		// move config toggle to the right
 		$(app).prev().addClass('PPC PPC_toggle');
 		const geo = config.dataset.Geo || global.data.geo.geography;
 
@@ -11590,7 +11590,7 @@
 		  validationConfig,
 		  hidebill
 		} = quoteHelper.validateAddressData(config, key);
-		// Disable toggle and open page 
+		// Disable toggle and open page
 		const toggleId = `Config_${id}`;
 		if (!valid) {
 		  if (document.querySelector(`*[data-name="${toggleId}"]`)) {
@@ -11908,7 +11908,7 @@
 		isChanged = false;
 		for (key in filterConfig) {
 		  const filter = nbsf.fn.filter(config.dataset, filterConfig[key].filter);
-		  if (filter && config.dataset[key] !== filterConfig[key].value && key !== 'PA_Number') {                 
+		  if (filter && config.dataset[key] !== filterConfig[key].value && key !== 'PA_Number') {
 			isChanged = true;
 			console.log(`quoteHelper: data was changed: ${key} field`);
 			break;
@@ -12071,7 +12071,7 @@
 	  config.dataset.Requestor_PO_Opp_ID = null;
 
 
-	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];   
+	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];
 	  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
 
 	  if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
@@ -12127,14 +12127,14 @@
 	  var app = document.querySelector('.PartialOrder_UCID .heading');
 	  if (app) {
 		$(app).empty();
-		const isOneSelected = quoteHelper.ucids.filter(item => item.Selected).length === 1;  
+		const isOneSelected = quoteHelper.ucids.filter(item => item.Selected).length === 1;
 		quoteHelper.ucids.forEach(item => {
 		  const quantity = quoteHelper.maxQuantity.get(item.CfgSystemName);
 		  const isIconId = item.CfgSystemName != item.UCID;
-		  
+
 		  app.innerHTML +=
 			'<div class="PartialOrder_UCID__item" id="' + item.CfgSystemName + '">' +
-			'<input class="checkbox" type="checkbox" id="' + item.CfgSystemName + '" name="PartialOrder_UCID__item__checkbox"' + (isOneSelected && item.Selected ? ' disabled="true" ' : '') + (item.Selected ? ' checked="" ' : '') + (quoteHelper.ucids.length === 1 ? '' : '') + '/>' + 
+			'<input class="checkbox" type="checkbox" id="' + item.CfgSystemName + '" name="PartialOrder_UCID__item__checkbox"' + (isOneSelected && item.Selected ? ' disabled="true" ' : '') + (item.Selected ? ' checked="" ' : '') + (quoteHelper.ucids.length === 1 ? '' : '') + '/>' +
 			'<div class="PartialOrder_UCID__item__data">' +
 			'<span class="ucid">' + (isIconId ? 'IconID: ' : 'UCID: ') + item.CfgSystemName + '</span>' +
 			(isIconId ? ('<span >UCID: ' + item.UCID + '</span>') : '') +
@@ -12161,10 +12161,10 @@
 			return accumulator;
 		  }, 0);
 		  newPO_Value /= 100;
-		
+
 		  // nbsf validation
 		  config.dataset.PO_Value = newPO_Value || 0;
-		  
+
 		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
 		} else {
 		  config.dataset.PO_Value = null;
@@ -12186,10 +12186,10 @@
 			  }
 			  return accumulator;
 			}, 0);
-			
+
 			newPO_Value /= 100;
 		  	config.dataset.PO_Value = newPO_Value || 0;
-			
+
 			$('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
 		  } else {
 			config.dataset.PO_Value = null;
@@ -12197,7 +12197,7 @@
 
 		  quoteHelper.ucids = newUcids;
 
-		  const isOneSelected = quoteHelper.ucids.filter(item => item.Selected).length === 1;          
+		  const isOneSelected = quoteHelper.ucids.filter(item => item.Selected).length === 1;
 		  quoteHelper.ucids.forEach((item) => {
 			const checkbox = $(`input#${item.CfgSystemName}.checkbox`);
 			if (checkbox) {
@@ -12231,10 +12231,10 @@
 			  }
 			  return accumulator;
 			}, 0);
-			
+
 			newPO_Value /= 100;
 		  	config.dataset.PO_Value = newPO_Value || 0;
-			
+
 			$('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
 		  } else {
 			config.dataset.PO_Value = null;
@@ -12370,7 +12370,7 @@
 
 
 			  crud.q.stop(function() {
-		
+
 				if (global.noPartyError) {
 				  mo.fn.modal.show({
 					ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
@@ -12379,7 +12379,7 @@
 				  });
 				  return;
 				}
-				
+
 				if (global.data.company.party) {
 				  mo.fn.overlay.show({
 					loading: true,
@@ -12507,7 +12507,7 @@
 			/*  let placeholderTranslation = hpe.fn.lang('SearchOrder', config.locale, config.localizations);
 						  let filterTranslation = hpe.fn.lang('FilterByMyOwnRequest', config.locale, config.localizations);
 						  $('div[tab-id="requests"]').append('<div id="overview"></div>' +
-								'<div class="filterByOwnRequest"><input type="checkbox" name="filterByOwnRequest_checkbox" className="filterByOwnRequest_checkbox" id="filterByOwnRequest_checkbox" />' + filterTranslation + '</div>' +							   
+								'<div class="filterByOwnRequest"><input type="checkbox" name="filterByOwnRequest_checkbox" className="filterByOwnRequest_checkbox" id="filterByOwnRequest_checkbox" />' + filterTranslation + '</div>' +
                                 '<div class="search"><input type="text" placeholder="' + placeholderTranslation + '"><span><img src="https://cdn1.prp-dxp.it.hpe.com/o/prp-theme/images/icons/search.svg"></span></div>' +
                                 '<div class="grid"></div>');
 						  document.querySelector(".search input").addEventListener('input', oob.grid._events._search);
@@ -12564,7 +12564,7 @@
 				// Handle the scenario where the SubmittedTimestamp filter is cleared
 				this.dataSource.read();
 			  }
-			} 
+			}
 		  },
 		  toolbar: [{
 			template: '<div id="filter-type-dropdown" style="width: 200px;"></div>'
@@ -13141,7 +13141,7 @@
                               field: "CountryEntity",
                               operator: "eq",
                               value: global.data.company.country
-                          }, 
+                          },
                           {
                               field: "PartnerBRT",
                               operator: "eq",
@@ -13231,7 +13231,7 @@
                     });
 				}*/
 		// add user/company filter
-		
+
 		const typeDropdown = $("#filter-type-dropdown");
 		if (!typeDropdown || typeDropdown.val() === "User" ) {
 		  filter.filters.push({
@@ -13339,7 +13339,7 @@
 		failed: "",
 		deleted: "",
 		status: "",
-		
+
 		userDraft: "",
 		userInprogress: "",
 		userCompleted: "",
