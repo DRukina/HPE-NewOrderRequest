@@ -1,5 +1,3 @@
-<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-  
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -7571,22 +7569,6 @@
             ],
           ]
         },
-        {
-          header: "Product and services description",
-          repeatable: "BasicRepeater",
-          repeatableLimit: 4,
-          group: [
-            [ {
-                label: "Product and services",
-                data: "ProductServices_Repeater",
-                required: false,
-                type: "text",
-                placeholder: "",
-              },
-            ]
-          ],
-          callback: function() {},
-        },
 		{
             header: "Form validation",
             description: "",
@@ -7682,7 +7664,7 @@
         const kendoOptAtt = $(OptAtt).data('kendoUpload');
         kendoOptAtt.bind("upload", function(e) {            
             if (e.files && e.files.length) {
-              helper.parseExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
+              helper.parseUcidsDataFromExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
             }
         });
         
@@ -12159,64 +12141,65 @@
 		});
 	  }
 	},
+    parseUcidsDataFromExcel: function(file, callback) {
+      var reader = new FileReader();
+      const res = {
+        success: false,
+        data: null,
+      };
 
-	parseExcel: function(file, callback) {				
-        var reader = new FileReader();
-        const res = {
-          success: false,
-          data: null,
-        };
+      reader.onload = function (e) {
+        var data = e.target.result;
+        var workbook = XLSX.read(data, {
+          type: 'binary',
+          cellDates: true,
+        });
 
-        reader.onload = function(e) {
-		  var data = e.target.result;
-          var workbook = XLSX.read(data, {
-            type: 'binary',
-			cellDates: true,
-          });
-		  
-		  const sheetName = workbook.SheetNames[0];
-		  const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);		  
-		  
-		  let rowsData = [];
-		  if (page.length >= 5) {
-			for (let i = 5; i < page.length; i++) {
-			  const rowInfo = Object.values(page[i]);
-			  if (rowInfo.length < 12) {
-			  	break;
-			  }			  
-			  
-			  const	row = {
-			  	'ITEM': rowInfo[0],
-				'cgfSystemName': rowInfo[1], //HPE Part Number
-				'HPE Part Description': rowInfo[2],
-				'Count': rowInfo[3], //HPE Part Quantity
-				'Deal ID': rowInfo[4],
-				'bundleId': rowInfo[5], //Config ID
-				'Unit Price': rowInfo[6],
-				'List Price': rowInfo[7],
-				'Extended Net Price': rowInfo[8],
-				'Previously Purchased Product Details': rowInfo[9],
-				'Serial number of the products': rowInfo[10],
-				'Product Purchased Date': rowInfo[11],
-			  };
-			  
-			  rowsData.push(row);
-			}
-		  }
-		  
-		  res.success = true;		  
-		  res.data = rowsData;		
-		  
-		  callback(res);
-        };
+        const sheetName = workbook.SheetNames[0];
+        const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
-        reader.onerror = function(ex) {
-          res.data = ex;
-          callback(res)
-        };
+        let rowsData = [];
+        if (page.length >= 5) {
+          for (let i = 5; i < page.length; i++) {
+            const rowInfo = Object.values(page[i]);
+            if (rowInfo.length < 12) {
+              break;
+            }
 
-        reader.readAsBinaryString(file);		
-	},
+            const row = {
+              'BundleID': rowInfo[5], //Config ID
+              'Count': rowInfo[3], //HPE Part Quantity
+              'DealId': rowInfo[4],
+              'ExtendedNetPrice': rowInfo[8],
+              'HPEPartDescription': rowInfo[2],
+              'ITEM': rowInfo[0],
+              'LineType': "Config",
+              'ListPrice': rowInfo[7],
+              'PreviouslyPurchasedProductDetails': rowInfo[9],
+              'ProductID': rowInfo[1], //HPE Part Number
+              'ProductPurchasedDate': rowInfo[11],
+              'SerialNumberOfTheProducts': rowInfo[10],
+              'UnitPrice': rowInfo[6],
+            };
+
+            rowsData.push(row);
+          }
+        }
+
+        res.success = true;
+        res.data = rowsData;
+        quoteHelper.ucids = rowsData;
+
+        callback(res);
+      };
+
+      reader.onerror = function (ex) {
+        res.data = ex;
+        callback(res)
+      };
+
+      reader.readAsBinaryString(file);
+    }, 
   }
 </script>
 
