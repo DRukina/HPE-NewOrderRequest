@@ -1,5 +1,3 @@
-<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-  
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -7543,146 +7541,130 @@
       no: "No",    
       nav: true,
       poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
-      structure: [
-        {
-          header: "Product and services attachment",  
-		  filter: {
-			logic: "and",
-			filters: [{
-				field: "Config_Quote",
-				operator: "eq",
-				value: "N"
-			}],
-		  },
-          description: "",
-          group: [
-            [
-              {
-                label: "FormCFI06",
-                data: "ProductServices_Attachment",
-                required: false,
-                type: "kUpload",
-                uploadConfig: {
-                  formId: 989,
-                  extensions: [".xlxs", ".xls", ".xlsx", ".xlsm"],
-                  maxFileSize: 1
-                }
-              },              
-            ],
-          ]
+    structure: [
+      {
+        header: "Product and services attachment",
+        filter: {
+          logic: "and",
+          filters: [{
+            field: "Config_Quote",
+            operator: "eq",
+            value: "N"
+          }],
         },
-        {
-          header: "Product and services description",
-          repeatable: "BasicRepeater",
-          repeatableLimit: 4,
-          group: [
-            [ {
-                label: "Product and services",
-                data: "ProductServices_Repeater",
-                required: false,
-                type: "text",
-                placeholder: "",
-              },
-            ]
+        description: "",
+        group: [
+          [
+            {
+              label: "FormCFI06",
+              data: "ProductServices_Attachment",
+              required: false,
+              type: "kUpload",
+              uploadConfig: {
+                formId: 989,
+                extensions: [".xlxs", ".xls", ".xlsx", ".xlsm"],
+                maxFileSize: 1
+              }
+            },
           ],
-          callback: function() {},
-        },
-		{
-            header: "Form validation",
-            description: "",
-            id: "form-table",
-            group: [
-                [{
-					label: "HPE Product Nub",
-					data: "HPE_Product_Nub",
-					value: "HPE Product Nub",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Deal Id",
-					value: "Deal Id",
-					data: "Deal_Id",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Quantity",
-					value: "Quantity",
-					data: "Quantity",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Test",
-					value: "Test",
-					data: "Test",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Test 1",
-					value: "Test 1",
-					data: "Test1",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-			],
-			[{
-					label: "Item1_HPE_Product_Nub",
-					value: "125958935893",
-					data: "Item1_HPE_Product_Nub",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Item1_Deal_Id",
-					value: "2121",
-					data: "Item1_Deal_Id",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Item1_Quantity",
-					value: "2112",
-					data: "Item1_Quantity",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Item1_Test",
-					value: "1",
-					data: "Item1_Test",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-				{
-					label: "Item1_Test1",
-					value: "1",
-					data: "Item1_Test1",
-					required: false,
-					type: "text",
-					validation: ['minLen|1'],
-				},
-			],
-			],
-        },  
-      ],      
-      callback: function() {        
+        ]
+      },
+      {
+        header: "Form validation",
+        description: "",
+        id: "form-table",
+        group: [
+          [{
+            label: "HPE Product Nub",
+            data: "HPE_Product_Nub",
+            value: "HPE Product Nub",
+            required: false,
+            type: "text",
+            validation: ['minLen|1'],
+          },
+            {
+              label: "Deal Id",
+              value: "Deal Id",
+              data: "Deal_Id",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Quantity",
+              value: "Quantity",
+              data: "Quantity",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Test",
+              value: "Test",
+              data: "Test",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Test 1",
+              value: "Test 1",
+              data: "Test1",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+          ],
+          [{
+            label: "Item1_HPE_Product_Nub",
+            value: "125958935893",
+            data: "Item1_HPE_Product_Nub",
+            required: false,
+            type: "text",
+            validation: ['minLen|1'],
+          },
+            {
+              label: "Item1_Deal_Id",
+              value: "2121",
+              data: "Item1_Deal_Id",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Item1_Quantity",
+              value: "2112",
+              data: "Item1_Quantity",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Item1_Test",
+              value: "1",
+              data: "Item1_Test",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+            {
+              label: "Item1_Test1",
+              value: "1",
+              data: "Item1_Test1",
+              required: false,
+              type: "text",
+              validation: ['minLen|1'],
+            },
+          ],
+        ],
+      },
+    ],
+    callback: function() {        
         const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
         const kendoOptAtt = $(OptAtt).data('kendoUpload');
         kendoOptAtt.bind("upload", function(e) {            
             if (e.files && e.files.length) {
-              helper.parseExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
+              helper.parseUcidsDataFromExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
             }
         });
         
@@ -12160,60 +12142,62 @@
 	  }
 	},
 
-	parseExcel: function(file, callback) {				
-        var reader = new FileReader();
-        const res = {
+  parseUcidsDataFromExcel: function(file, callback) {
+      var reader = new FileReader();
+      const res = {
           success: false,
           data: null,
-        };
+      };
 
-        reader.onload = function(e) {
-		  var data = e.target.result;
+      reader.onload = function (e) {
+          var data = e.target.result;
           var workbook = XLSX.read(data, {
-            type: 'binary',
-			cellDates: true,
+              type: 'binary',
+              cellDates: true,
           });
-		  
-		  const sheetName = workbook.SheetNames[0];
-		  const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);		  
-		  
-		  let rowsData = [];
-		  if (page.length >= 5) {
-			for (let i = 5; i < page.length; i++) {
-			  const rowInfo = Object.values(page[i]);
-			  if (rowInfo.length < 12) {
-			  	break;
-			  }			  
-			  
-			  const	row = {
-			  	'ITEM': rowInfo[0],
-				'cgfSystemName': rowInfo[1], //HPE Part Number
-				'HPE Part Description': rowInfo[2],
-				'Count': rowInfo[3], //HPE Part Quantity
-				'Deal ID': rowInfo[4],
-				'bundleId': rowInfo[5], //Config ID
-				'Unit Price': rowInfo[6],
-				'List Price': rowInfo[7],
-				'Extended Net Price': rowInfo[8],
-				'Previously Purchased Product Details': rowInfo[9],
-				'Serial number of the products': rowInfo[10],
-				'Product Purchased Date': rowInfo[11],
-			  };
-			  
-			  rowsData.push(row);
-			}
-		  }
-		  
-		  res.success = true;		  
-		  res.data = rowsData;		
-		  
-		  callback(res);
-        };
 
-        reader.onerror = function(ex) {
+          const sheetName = workbook.SheetNames[0];
+          const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+
+          let rowsData = [];
+          if (page.length >= 5) {
+              for (let i = 5; i < page.length; i++) {
+                  const rowInfo = Object.values(page[i]);
+                  if (rowInfo.length < 12) {
+                      break;
+                  }
+
+                  const row = {
+                      'BundleID': rowInfo[5], //Config ID
+                      'Count': rowInfo[3], //HPE Part Quantity
+                      'DealId': rowInfo[4],
+                      'ExtendedNetPrice': rowInfo[8],
+                      'HPEPartDescription': rowInfo[2],
+                      'ITEM': rowInfo[0],
+                      'LineType': "Config",
+                      'ListPrice': rowInfo[7],
+                      'PreviouslyPurchasedProductDetails': rowInfo[9],
+                      'ProductID': rowInfo[1], //HPE Part Number
+                      'ProductPurchasedDate': rowInfo[11],
+                      'SerialNumberOfTheProducts': rowInfo[10],
+                      'UnitPrice': rowInfo[6],
+                  };
+
+                  rowsData.push(row);
+              }
+          }
+
+          res.success = true;
+          res.data = rowsData;
+          quoteHelper.ucids = rowsData;
+
+          callback(res);
+      };
+
+      reader.onerror = function (ex) {
           res.data = ex;
           callback(res)
-        };
+      };
 
         reader.readAsBinaryString(file);		
 	},
