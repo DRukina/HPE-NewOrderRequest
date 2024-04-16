@@ -10376,99 +10376,104 @@ _modal: function (data) {
 },
 grid: {
 	_custom: function () {
-		var cusConfig = [
-			{
-				field: "EntryId",
-				title: "ID",
-				filterable: true,
-				width: "85px",
-				locked: true,
-			},
-	{
-		field: "Status",
-		title: "Status",
-		filterable: true,
-		width: "130px",
-		template: function(obj) {
-		return getStatus(obj.Status);
-		}
-	},
-			{
-				field: "PO_BackgroundGroup",
-				title: "BG",
-				filterable: true,
-				width: 90,
-				locked: false,
-			},
-			{
-				field: "Region",
-				title: "Region",
-				filterable: true,
-				width: 115,
-				locked: false,
-			},
-			{
-				field: "Geo",
-				title: "Geo",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "SoldTo_Address_Country",
-				title: "Country",
-				filterable: true,
-				width: 125,
-			},
-			{
-				field: "SoldTo_CompanyName",
-				title: "SoldTo CompanyName",
-				filterable: true,
-				width: 215,
-			},
-			{
-				field: "PartyId",
-				title: "PartyId",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "PA_Number",
-				title: "PA",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "PO_Number",
-				title: "PO",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "SubmittedTimestamp",
-				title: "Date",
-				filterable: false,
-				width: 100,
-				template: function (d) {
-					try {
-						return d.SubmittedTimestamp.split("T")[0];
-					} catch (err) {
-						return d.SubmittedTimestamp;
-					}
-				},
-			},
-			{
-				field: "SubmitterEmail",
-				title: "Submitter",
-				filterable: true,
-				width: 255,
-			},
-			{
-				field: "CaseNumber",
-				title: "Case Number",
-				filterable: true,
-				width: 155,
-			},
-		];
+    var cusConfig = [
+      {
+          field: "EntryId",
+          title: "ID",
+          filterable: true,
+          width: 100,
+          locked: true,
+      },
+      {
+          field: "SoldTo_CompanyName",
+          title: "SoldTo CompanyName",
+          filterable: true,
+          width: 215,
+      },
+      {
+          field: "SoldTo_Address_Country",
+          title: "Country",
+          filterable: true,
+          width: 125,
+      },
+      {
+          field: "PO_BackgroundGroup",
+          title: "BG",
+          filterable: true,
+          width: 90,
+          locked: false,
+      },
+      {
+          field: "SubmittedTimestamp",
+          title: "Date",
+          filterable: true,
+          width: 160,
+          template: function(d) {
+              const date = d.SubmittedTimestamp ? new Date(d.SubmittedTimestamp) : null;
+              if (date) {
+                  let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+                  let h = ("00" + date.getHours()).slice(-2);
+                  let m = ("00" + date.getMinutes()).slice(-2);
+                  let timeOfDay = [h, m].join(':');
+
+                  return `${formatedDate} ${timeOfDay}`;
+              }
+              return '';
+          },
+      },
+      {
+          field: "PO_Number",
+          title: "PO",
+          filterable: true,
+          width: 115,
+      },
+      {
+          field: "CaseNumber",
+          title: "Case Number",
+          filterable: true,
+          width: 155,
+      },
+      {
+          field: "Status",
+          title: "Status",
+          filterable: true,
+          width: "130px",
+          template: function(obj) {
+              return getStatus(obj.Status);
+          }
+      },
+      {
+          field: "PO_Order_ID",
+          title: "Order #",
+          filterable: true,
+          width: 130,
+      },
+      {
+          field: "Region",
+          title: "Region",
+          filterable: true,
+          width: 115,
+          locked: false,
+      },
+      {
+          field: "Geo",
+          title: "Geo",
+          filterable: true,
+          width: 115,
+      },
+      {
+          field: "SubmitterEmail",
+          title: "Submitter",
+          filterable: true,
+          width: 255,
+      },
+      {
+          field: "PA_Number",
+          title: "PA",
+          filterable: true,
+          width: 115,
+      },
+  ];
 		return cusConfig;
 	},
 	_default: function () {
@@ -10558,15 +10563,12 @@ grid: {
 			});
 	
 	buildFilterCombobox($(selector), "Status", {
-		dataset: [
-		{ text: "Draft", value: "0" },
-		{ text: "Sent", value: "1" },
-		{ text: "In progress", value: "2" },
-		{ text: "Completed", value: "3" },
-		{ text: "Fallout", value: "4" },
-		{ text: "Cancelled", value: "5" },
-		{ text: "Closed", value: "6" },
-		],
+    dataset: [
+        { text: "Draft", value: "0" },
+        { text: "In progress", value: "2" },
+        { text: "Completed", value: "3" },
+        { text: "Cancelled", value: "5" },
+    ],
 		dataTextField: "text",
 		dataValueField: "value",
 	});
@@ -10582,6 +10584,11 @@ grid: {
 			schema: {
 				model: {
 					id: "EntryId",
+          fields: {
+              SubmittedTimestamp: {
+                  type: "date",
+              }
+          },
 				},
 			},
 			filter: filter,
