@@ -9734,6 +9734,7 @@
 		  config.dataset.Requestor_PO_Quote_ID = null;
 		  config.dataset.Config_Quote_PartialOrder = null;
 		  quoteHelper.ucids = [];
+		  quoteHelper.maxQuantity = null;
 		  config.dataset.Config_UCID = null;
 		  config.dataset.Config_UCIDQ = null;
 		  config.dataset.Config_ConfigId = null;
@@ -9766,6 +9767,7 @@
 			quoteHelper.prepareUCIDData(config);
 		  } else {
 			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
 		  }
 		});
@@ -9812,6 +9814,7 @@
 			quoteHelper.initHeaderQuoteData(config);
 			quoteHelper.initAddressQuoteData(config);
 			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
 			quoteHelper.prepareUCIDData(config);
 			nbsf.init(config, config.page);
@@ -10579,6 +10582,7 @@
   const quoteHelper = {
 	quote: null,
 	ucids: [],
+	maxQuantity: null,
 	quotePA: [],
 	addressArr: [],
 	country: null,
@@ -12188,10 +12192,10 @@
 	  const map = new Map();
 	  ucids.forEach(ucid => map.set(ucid.ProductID, ucid.Quantity ? Number(ucid.Quantity) : 0));
 
-	  crud.read("5592", "Requestor_PO_Quote_ID=" +  quoteId, function(data) {
+	  crud.read("6018", "Requestor_PO_Quote_ID=" +  quoteId, function(data) {
 		if (data.Rows.length > 0) {
 		  data.Rows.forEach(ucid => {
-			if (ucid.Request_Id !== entryId && ucid.Selected) {
+			if (ucid.Request_Id !== entryId && ucid.Selected == "Y") {
 			  const curQ = map.get(ucid.ProductID);
 			  map.set(ucid.ProductID, curQ - ucid.Count);
 			}
@@ -12207,6 +12211,7 @@
 	  if (config.dataset.Config_Quote !== "Y" || config.dataset.Config_PartialOrder !== "Y" || !config.dataset.Requestor_PO_Quote_ID) {
 		config.dataset.Config_Quote_PartialOrder = null;
 		quoteHelper.ucids = [];
+		quoteHelper.maxQuantity = null;
 		return quoteHelper.ucids;
 	  }
 
@@ -12216,11 +12221,15 @@
 	  config.dataset.Config_ConfigId = null;
 	  config.dataset.Requestor_PO_Deal_ID = null;
 	  config.dataset.Requestor_PO_Opp_ID = null;
-
+	  
 
 	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
 	  if (currentUcids && currentUcids.length) {
 		quoteHelper.ucids = currentUcids;
+		// max quantity
+		quoteHelper.getMaxQuantity(config, currentUcids, function() {
+		  console.log('aaa');
+		});
 		return currentUcids;
 	  }
 	  
@@ -12270,6 +12279,11 @@
 		  quoteHelper.ucids[0].Selected = "Y";
 		}
 		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+		
+		// max quantity
+		quoteHelper.getMaxQuantity(config, ucidConfig, function() {
+		  console.log('aaa');
+		});
 		
 		/*
 		quoteHelper.getMaxQuantity(config, ucidConfig, function() {
