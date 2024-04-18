@@ -7665,6 +7665,7 @@
 		  const snp = document.querySelector(`textarea[data-name=SerialNumberOfProducts_${item.ID}]`);
 		  const count = document.querySelector(`input[data-name=Count_${item.ID}]`);
 		  const checkbox = document.querySelector(`input[data-name=Selected_${item.ID}]`);
+		  const maxQuantity = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || 0;
 		  if (checkbox) {
 			if (checkbox.checked) {
 			  isOneSelected = true;
@@ -7680,7 +7681,8 @@
 			  }
 			  // Count - Quantity
 			  if (count) {
-				if (count.value) {
+				const val = count.value && Number(count.value) || 0;
+				if (val && val <= maxQuantity && count.value > 0) {
 				  result.pass.push(count.closest('label'));
 				  count.closest('label').setAttribute("data-state", "");
 				} else {
@@ -7688,9 +7690,13 @@
 				  count.closest('label').setAttribute("data-state", "error");
 				}
 			  }
-			} else if (snp) {
-			  result.pass.push(snp.closest('label'));
-			  snp.closest('label').setAttribute("data-state", "");
+			} else {
+			  if (snp) {
+				result.pass.push(snp.closest('label'));
+				snp.closest('label').setAttribute("data-state", "");
+			  }
+			  result.pass.push(count.closest('label'));
+			  count.closest('label').setAttribute("data-state", "");
 			}
 		  }
 		});
@@ -8455,7 +8461,7 @@
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
 	  if (config.pages[config.page + 1].id == "PS") {
-		quoteHelper.buildProductAndServices(config, config.pages[config.page + 1]);
+		quoteHelper.configureProductAndServices(config, config.pages[config.page + 1]);
 	  }
 	  if (config.pages[config.page].id == "PS") {
 		 quoteHelper.saveProductAndServices(config);
@@ -9116,23 +9122,40 @@
 		close: false
 	  });
 	  if (config.pages[config.page - 2].id == "PS") {
-		quoteHelper.buildProductAndServices(config, config.pages[config.page - 2]);
-	  }
-	  console.log("CONFIG:", this);
-	  console.log("CURRENT:", this.page);
-	  console.log("PREV:", this.page - 1);
-	  console.log("DATA:", this.dataset);
-	  nbsf.init(config, config.page - 1);
-	  nbsf.init(config, config.page);
-	  mo.fn.overlay.hide();
+		quoteHelper.configureProductAndServices(config, config.pages[config.page - 2], function() {
+		  console.log("CONFIG:", this);
+		  console.log("CURRENT:", this.page);
+		  console.log("PREV:", this.page - 1);
+		  console.log("DATA:", this.dataset);
+		  nbsf.init(config, config.page - 1);
+		  nbsf.init(config, config.page);
+		  mo.fn.overlay.hide();
 
-	  window.scrollTo({
-		top: 0,
-		behavior: 'smooth'
-	  });
-	  window.parent.postMessage(JSON.stringify({
-		"top": true
-	  }), "*");
+		  window.scrollTo({
+			top: 0,
+			behavior: 'smooth'
+		  });
+		  window.parent.postMessage(JSON.stringify({
+			"top": true
+		  }), "*");
+		});
+	  } else {
+		console.log("CONFIG:", this);
+		console.log("CURRENT:", this.page);
+		console.log("PREV:", this.page - 1);
+		console.log("DATA:", this.dataset);
+		nbsf.init(config, config.page - 1);
+		nbsf.init(config, config.page);
+		mo.fn.overlay.hide();
+
+		window.scrollTo({
+		  top: 0,
+		  behavior: 'smooth'
+		});
+		window.parent.postMessage(JSON.stringify({
+		  "top": true
+		}), "*");
+	  }
 	},
 	onSubmit: function() {
 	  mo.fn.overlay.show({
@@ -9749,7 +9772,6 @@
 		nbsf.init(config, config.page);
 	  });
 	  if (document.querySelector('input[data-name="Config_PartialOrder"]')) {
-		quoteHelper.prepareUCIDData(config);
 		$('label[for="Config_PartialOrder"]').click(function() {
 		  $('input[name="Config_PartialOrder"]').trigger("change");
 		});
@@ -9764,7 +9786,6 @@
 		  
 		  if (config.dataset.Config_PartialOrder === "Y") {
 			config.dataset.Config_Quote_PartialOrder = null;
-			quoteHelper.prepareUCIDData(config);
 		  } else {
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
@@ -9816,7 +9837,6 @@
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
-			quoteHelper.prepareUCIDData(config);
 			nbsf.init(config, config.page);
 		  }
 
@@ -12186,6 +12206,102 @@
 		}
 	  }
 	},
+	configureProductAndServices: function(config, page, callback) {
+	  if (config.dataset.Config_Quote !== "Y" || config.dataset.Config_PartialOrder !== "Y" || !config.dataset.Requestor_PO_Quote_ID) {
+		config.dataset.Config_Quote_PartialOrder = null;
+		quoteHelper.ucids = [];
+		quoteHelper.maxQuantity = null;
+		if (callback) {
+		  callback();
+		}
+		return;
+	  }
+	  
+	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
+	  if (currentUcids && currentUcids.length) {
+		quoteHelper.ucids = currentUcids;
+		quoteHelper.getMaxQuantity(config, currentUcids, function() {
+		  // filter by max quantity and build page with new config
+		  quoteHelper.ucids = quoteHelper.maxQuantity ? currentUcids.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : currentUcids;
+		  const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
+		  if (!isSelected && quoteHelper.ucids.length) {
+			quoteHelper.ucids[0].Selected = "Y";
+		  }
+		  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+		  // build page
+		  quoteHelper.buildProductAndServices(config, page);
+		  if (callback) {
+			callback();
+		  }
+		});
+	  } else {
+		const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
+		if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
+		  let items = quote.hpQuoteLineItemList.HpQuoteLineItems;
+		  const ucidConfig = [];
+		  const productIds = [];
+
+		  items = Array.isArray(items) ? items : [items];
+		  if (Array.isArray(items)) {
+			items.forEach((item) => {
+			  if (item.LineType === "Config" || item.LineType === "Product") {
+				if (!productIds.includes(item.ProductID)) {
+				  productIds.push(item.ProductID);
+				  const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
+				  ucidConfig.push({
+					Request_Id: config.dataset.EntryId,
+					Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+					UCID: item.UCID,
+					BundleID: item.BundleID,
+					DealId: item.DealId,
+					UnitNetAmount: item.UnitNetAmount,
+					ExtendedNetAmount: item.ExtendedNetAmount,
+					Quantity: item.Quantity,
+					CfgSystemId: item.CfgSystemId,
+					CfgSystemName: item.CfgSystemName,
+					Selected: curUcid ? curUcid.Selected : null,
+					Count: curUcid ? curUcid.Count : 1,
+					ProductID: item.ProductID,
+					ProductClassificationCode: item.ProductClassificationCode,
+					LineType: item.LineType,
+					ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+					PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+					SerialNumberOfProducts: item.SerialNumberOfProducts,
+					ProductPurchasedDate: item.ProductPurchasedDate,
+				  });
+				}
+			  }
+			})
+		  }
+		  quoteHelper.ucids = ucidConfig;
+
+		  // filter by max quantity and build page with new config
+		  quoteHelper.getMaxQuantity(config, ucidConfig, function() {
+			quoteHelper.ucids = quoteHelper.maxQuantity ? ucidConfig.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : ucidConfig;
+			const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
+			if (!isSelected && quoteHelper.ucids.length) {
+			  quoteHelper.ucids[0].Selected = "Y";
+			}
+			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			// build page
+			quoteHelper.buildProductAndServices(config, page);
+			if (callback) {
+			  callback();
+			}
+			return;
+		  });		
+		} else {
+		  console.error('no quote data');
+		  config.dataset.Config_Quote_PartialOrder = null;
+		  quoteHelper.ucids = [];
+		  quoteHelper.maxQuantity = null;
+		  if (callback) {
+			callback();
+		  }
+		  return;
+		}
+	  } 
+	},
 	getMaxQuantity: function(config, ucids, callback) {
 	  const quoteId = config.dataset.Requestor_PO_Quote_ID;
 	  const entryId = config.dataset.EntryId;
@@ -12206,99 +12322,6 @@
 		  callback();
 		}
 	  });
-	},
-	prepareUCIDData: function(config) {
-	  if (config.dataset.Config_Quote !== "Y" || config.dataset.Config_PartialOrder !== "Y" || !config.dataset.Requestor_PO_Quote_ID) {
-		config.dataset.Config_Quote_PartialOrder = null;
-		quoteHelper.ucids = [];
-		quoteHelper.maxQuantity = null;
-		return quoteHelper.ucids;
-	  }
-
-	  // clear old data
-	  config.dataset.Config_UCID = null;
-	  config.dataset.Config_UCIDQ = null;
-	  config.dataset.Config_ConfigId = null;
-	  config.dataset.Requestor_PO_Deal_ID = null;
-	  config.dataset.Requestor_PO_Opp_ID = null;
-	  
-
-	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
-	  if (currentUcids && currentUcids.length) {
-		quoteHelper.ucids = currentUcids;
-		// max quantity
-		quoteHelper.getMaxQuantity(config, currentUcids, function() {
-		  console.log('aaa');
-		});
-		return currentUcids;
-	  }
-	  
-	  
-	  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
-
-	  if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
-		let items = quote.hpQuoteLineItemList.HpQuoteLineItems;
-		const ucidConfig = [];
-		const productIds = [];
-
-		items = Array.isArray(items) ? items : [items];
-		if (Array.isArray(items)) {
-		  items.forEach((item) => {
-			if (item.LineType === "Config" || item.LineType === "Product") {
-			  if (!productIds.includes(item.ProductID)) {
-				productIds.push(item.ProductID);
-				const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
-				ucidConfig.push({
-				  Request_Id: config.dataset.EntryId,
-				  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
-				  UCID: item.UCID,
-				  BundleID: item.BundleID,
-				  DealId: item.DealId,
-				  UnitNetAmount: item.UnitNetAmount,
-				  ExtendedNetAmount: item.ExtendedNetAmount,
-				  Quantity: item.Quantity,
-				  CfgSystemId: item.CfgSystemId,
-				  CfgSystemName: item.CfgSystemName,
-				  Selected: curUcid ? curUcid.Selected : null,
-				  Count: curUcid ? curUcid.Count : 1,
-				  ProductID: item.ProductID,
-				  ProductClassificationCode: item.ProductClassificationCode,
-				  LineType: item.LineType,
-				  ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
-				  PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
-				  SerialNumberOfProducts: item.SerialNumberOfProducts,
-				  ProductPurchasedDate: item.ProductPurchasedDate,
-				});
-			  }
-			}
-		  })
-		}
-		quoteHelper.ucids = ucidConfig;
-		const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
-		if (!isSelected && quoteHelper.ucids.length) {
-		  quoteHelper.ucids[0].Selected = "Y";
-		}
-		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
-		
-		// max quantity
-		quoteHelper.getMaxQuantity(config, ucidConfig, function() {
-		  console.log('aaa');
-		});
-		
-		/*
-		quoteHelper.getMaxQuantity(config, ucidConfig, function() {
-		  console.log('quoteHelper ucidConfig: ', ucidConfig);
-		  quoteHelper.ucids = quoteHelper.maxQuantity ? ucidConfig.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : ucidConfig;
-		  const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
-		  if (!isSelected && quoteHelper.ucids.length) {
-			quoteHelper.ucids[0].Selected = 1;
-		  }
-		  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
-		 // quoteHelper.buildPartialOrder(config);
-		});*/
-	  } else {
-		// quoteHelper.buildPartialOrder(config);
-	  }
 	},
 	buildProductAndServices: function(config, page) {
 	  if (quoteHelper.ucids && quoteHelper.ucids.length) {
@@ -12515,13 +12538,20 @@
 	},
 	saveProductAndServices: function(config) {
 	  if (config.dataset.Config_Quote == "Y" && config.dataset.Config_PartialOrder == "Y" && quoteHelper.ucids && quoteHelper.ucids.length) {
+		let PO_Value = 0;
 		quoteHelper.ucids.forEach(item => {
 		  item.Count = config.dataset[`Count_${item.ID}`];
 		  item.Selected = config.dataset[`Selected_${item.ID}`];
 		  item.SerialNumberOfProducts = config.dataset[`SerialNumberOfProducts_${item.ID}`];
 		  item.ProductPurchasedDate = config.dataset[`ProductPurchasedDate_${item.ID}`];
 		  item.PreviouslyPurchasedProductDetails = config.dataset[`PreviouslyPurchasedProductDetails_${item.ID}`];
+		  if (item.Selected) {
+			PO_Value += Math.round(item.Count * item.UnitNetAmount * 100);
+		  }
 		});
+		PO_Value /= 100;
+		config.dataset.PO_Value = PO_Value || 0;
+		$('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
 		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
 	  }
 	},
