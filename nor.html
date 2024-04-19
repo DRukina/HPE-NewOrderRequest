@@ -10876,7 +10876,8 @@
 		  OpportunityId,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
-		  SalesOrg
+		  SalesOrg,
+		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
 
 		const filterConfig = {
@@ -11080,6 +11081,13 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
+		  PO_BackgroundGroup: {
+			filter: {
+			  logic: "and",
+			  filters: []
+			},
+			value: BusinessGroup === 'Edge' ? 'Edge' : 'Hybrid IT',
+		  }
 		};
 
 		for (key in filterConfig) {
@@ -11095,6 +11103,7 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
+	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
 	initCountry: function(config, invalidQuoteID, force = true) {
