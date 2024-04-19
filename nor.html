@@ -12996,6 +12996,7 @@
 	},
 	//function that initiate kendo grid
 	grid: {
+	  filterValue: "User",
 	  load: function() {
 		mo.fn.overlay.show({
 		  loading: true,
@@ -13021,19 +13022,114 @@
 			if (e.filter) {
 			  const status = e.filter.filters.find((filter) => filter.field === 'Status');
 			  oob.grid._appStats.status = status && status.value || "";
+
+			  const submittedTimestampFilter = e.filter.filters.find((filter) => filter.field === "SubmittedTimestamp");
+			  if (submittedTimestampFilter) {
+				var date = new Date(submittedTimestampFilter.value);
+				var timezoneOffsetInHours = date.getTimezoneOffset() / 60;
+				date.setHours(date.getHours() - timezoneOffsetInHours);
+				submittedTimestampFilter.value = date;
+			  } else {
+				// Handle the scenario where the SubmittedTimestamp filter is cleared
+				this.dataSource.read();
+			  }
 			}
-		  }
+		  },
+		  toolbar: [{
+			template: '<div id="filter-type-dropdown" style="width: 200px;"></div>'
+		  }],
 		});
+
+		oob.grid.initializeDropDown();
+
 		// add grid events
 		oob.grid._events.init('div[tab-id="requests"] .grid');
 		oob.grid._overview();
+	  },
+	  initializeDropDown: function() {
+		var isHpeEmail = '[SSOData.Email]'.indexOf('@hpe.com') > -1;
+		$("#filter-type-dropdown").kendoDropDownList({
+		  dataSource: ["User", "Company"],
+		  value: oob.grid.filterValue,
+		  enable: !isHpeEmail,
+		  change: function() {
+			oob.grid.filterValue = this.value();
+			var grid = $('div[tab-id="requests"] .grid').data("kendoGrid");
+
+			// Create filter logic based on dropdown selection
+			var filter = {
+			  logic: "and",
+			  filters: [{
+				field: "PartyId",
+				operator: "eq",
+				value: global.data.company.party
+			  },
+						{
+						  field: "PartnerBRT",
+						  operator: "eq",
+						  value: global.data.brt.name
+						},
+						{
+						  logic: "or",
+						  filters: [{
+							field: "Retired",
+							operator: "neq",
+							value: "Y"
+						  },
+									{
+									  field: "Retired",
+									  operator: "isnull",
+									  value: ""
+									}
+								   ]
+						}
+					   ]
+			};
+
+			if (oob.grid.filterValue === "User") {
+			  filter.filters.push({
+				field: "Requestor_Email",
+				operator: "eq",
+				value: '[SSOData.Email]' // Replace with the actual email variable
+			  });
+			  // stats user
+			  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+			  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+			  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+			} else {
+			  // stats company
+			  overview.querySelector(".incomplete strong").innerText = global.requests.companyDraft;
+			  overview.querySelector(".pending strong").innerText = global.requests.companyInprogress;
+			  overview.querySelector(".completed strong").innerText = global.requests.companyCompleted;
+			}
+
+			// Update the filterable property of columns
+			var options = $.extend(true, {}, grid.getOptions());
+			options.columns = options.columns.map(function(column) {
+			  if (column.field === "Requestor_Email") {
+				column.filterable = oob.grid.filterValue === "Company";
+			  }
+			  return column;
+			});
+
+			// Apply the updated options and filter to the grid
+			grid.setOptions(options);
+			grid.dataSource.filter(filter);
+
+			// Refresh the grid to apply changes
+			grid.dataSource.read();
+
+			// Reinitialize the dropdown
+			oob.grid.initializeDropDown();
+		  }
+		});
 	  },
 	  _datasource: function() {
 		return new kendo.data.DataSource({
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview_DEV/kendo/data/search",
 			  type: "POST"
 			}
 		  },
@@ -13046,7 +13142,16 @@
 		  sort: {
 			field: "Modified",
 			dir: "desc"
-		  }
+		  },
+		  schema: {
+			model: {
+			  fields: {
+				SubmittedTimestamp: {
+				  type: "date"
+				}
+			  }
+			}
+		  },
 		});
 	  },
 	  _columns: function() {
@@ -13076,37 +13181,86 @@
 					 title: hpe.fn.lang('HPEOrder', config.locale, config.localizations),
 					 filterable: false,
 					 template: function(d) {
-					   var elem = "";
+					   var elem = '<div class="orderList" style="text-align: left">';
 					   if (d.PO_Order_ID != "" && d.PO_Order_ID != "N/A" && d.PO_Order_ID != null) {
 						 if (d.PO_Order_ID && d.PO_Order_ID.length > 10) {
-						   const orderIds = d.PO_Order_ID.split(';');
+						   let orderIds = d.PO_Order_ID.trim();
+						//   console.log(orderIds);
+						   if (orderIds.includes(';')) {
+							 orderIds = orderIds.split(';');
+						   } else {
+							 orderIds = orderIds.split('  ');
+						   }
 						   //const orderIds = d.Operations.Order
+						//   console.log(orderIds);
 						   orderIds.forEach(orderId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
+						//	 elem += '<span class="orderItem" title="' + orderId + '"> ' + orderId + '</span>';
+						//	 console.log(elem);
+							 if (orderId) {
+							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
+							 }
 						   });
 						 } else {
-						   //const orderId = d.Operations.Order
-						   // += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID + '" target="_blank">' + d.PO_Order_ID + '</a><br>';
+						  // elem += '<span class="orderItem" title="' + d.PO_Order_ID.trim() + '"> ' + d.PO_Order_ID.trim() + '</span>';
+						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID.trim() + '" target="_blank">' + d.PO_Order_ID.trim() + '</a><br>';
 						 }
 					   }
 					   if (d.PO_AAS_ID != "" && d.PO_AAS_ID != "N/A" && d.PO_AAS_ID != null) {
 						 if (d.PO_AAS_ID && d.PO_AAS_ID.length > 8) {
-						   const aasIds = d.PO_AAS_ID.split(';');
+						   let aasIds = d.PO_AAS_ID.trim();
+						   if (aasIds.includes(';')) {
+							 aasIds = aasIds.split(';');
+						   } else {
+							 aasIds = aasIds.split('  ');
+						   }
+						//   console.log(aasIds);
 						   aasIds.forEach(aasId => {
-							 elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
+							// elem += '<span class="orderItem" title="' + aasId + '"> ' + aasId + '</span>';
+						//	 console.log(elem);
+							 if (aasId) {
+							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
+							 }
 						   });
 						 } else {
-						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID + '" target="_blank">' + d.PO_AAS_ID + '</a>';
+						 //  elem += '<span class="orderItem" title="' + d.PO_AAS_ID.trim() + '"> ' + d.PO_AAS_ID.trim() + '</span>';
+						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID.trim() + '" target="_blank">' + d.PO_AAS_ID.trim() + '</a>';
 						 }
 					   }
+					   elem += '</div>';
 
 					   if (elem == "") {
 						 elem = "N/A";
 					   }
+					//   console.log(elem);
 					   return elem;
 					 },
 					 width: "100px"
+				   },
+				/*   {
+					 field: "Requestor_Email",
+					 title: hpe.fn.lang('Submitter', config.locale, config.localizations),
+					 width: "160px",
+					 filterable: {
+					   extra: false
+					 },
+					 filterable: false
+				   },*/
+				   {
+					 field: "EndCx_CompanyName",
+					 title: hpe.fn.lang("FormEndCx", config.locale, config.localizations),
+					 width: "200px",
+					 hidden: true,
+					 filterable: true,
+					 template: function(d) {
+					   if (d.EndCx_CompanyName) {
+						 if (d.EndCx_CompanyName.length > 20)
+						   return d.EndCx_CompanyName.substring(0, 20) + '...';
+						 else
+						   return d.EndCx_CompanyName;
+					   } else {
+						 return "N/A";
+					   }
+					 }
 				   },
 				   {
 					 field: "Requestor_Email",
@@ -13151,11 +13305,20 @@
 					 field: "SubmittedTimestamp",
 					 title: hpe.fn.lang('Form44x2', config.locale, config.localizations),
 					 width: "100px",
-					 filterable: false,
+					 filterable: {
+					   cell: {
+						 template: function(d) {
+						   return util.getDateFormat(new Date(d.SubmittedTimestamp));
+						 }
+					   }
+					 },
+					 format: "{0:yyyy-MM-dd HH:mm:ss}",
+					 filterable: true,
 					 template: function(d) {
 					   if (d.SubmittedTimestamp) {
-						 let tmstmp = d.SubmittedTimestamp.split('T')[0] + " " + d.SubmittedTimestamp.split('T')[1]
-						 return tmstmp;
+						 //let tmstmp = d.SubmittedTimestamp.split('T')[0] + " " + d.SubmittedTimestamp.split('T')[1]
+						 return kendo.toString(new Date(d.SubmittedTimestamp), 'yyyy-MM-dd HH:mm:ss');
+						 //return tmstmp;
 					   } else return hpe.fn.lang('Form44x3', config.locale, config.localizations);
 					 }
 				   },
@@ -13447,7 +13610,7 @@
                       ]
                   }
               },*/
-	  _filter: function() {
+	  _filter: function(isCompany = false) {
 		const filter = ('[SSOData.Email]'.indexOf('@hpe.com') > -1) ? {
 		  logic: "and",
 		  filters: [{
@@ -13472,36 +13635,58 @@
 				   ]
 		} : {
 		  logic: "and",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartyId",
-			  operator: "eq",
-			  value: global.data.company.party
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "PartyId",
+				  operator: "eq",
+				  value: global.data.company.party
+				},
+				{
+				  field: "PartnerBRT",
+				  operator: "eq",
+				  value: global.data.brt.name
+				},
+			  ]
 			},
-					  {
-						field: "PartnerBRT",
-						operator: "eq",
-						value: global.data.brt.name
-					  }
-					 ]
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Retired",
-						operator: "neq",
-						value: "Y"
-					  },
-								{
-								  field: "Retired",
-								  operator: "isnull",
-								  value: ""
-								}
-							   ]
-					}
-				   ]
+			{
+			  logic: "or",
+			  filters: [{
+				field: "Retired",
+				operator: "neq",
+				value: "Y"
+			  },
+						{
+						  field: "Retired",
+						  operator: "isnull",
+						  value: ""
+						}
+					   ]
+			}
+		  ]
 		};
+
+		// rollback of NOR-460. Will be done in NOR-519
+		/*	if (oob.grid._appStats.filterByOwnRequest) {
+				  filter.filters.push({
+                        field: "Email",
+                        operator: "eq",
+                        value: '[SSOData.Email]'
+                    });
+				}*/
+		// add user/company filter
+		
+		const typeDropdown = $("#filter-type-dropdown");
+		if ((!typeDropdown || typeDropdown.val() === "User") && !isCompany) {
+		  filter.filters.push({
+			field: "Requestor_Email",
+			operator: "eq",
+			value: '[SSOData.Email]'
+		  });
+		}
+
 		if (oob.grid._appStats.status) {
 		  filter.filters.push({
 			field: "Status",
@@ -13575,11 +13760,10 @@
 
 		oob.grid._initStats(function(d) {
 		  global.requests = d;
-		  overview.querySelector(".incomplete strong").innerText = global.requests.incomplete;
-		  overview.querySelector(".submitted strong").innerText = global.requests.submitted;
-		  overview.querySelector(".pending strong").innerText = global.requests.pending + global.requests.submitted + global.requests.failed;
-		  overview.querySelector(".completed strong").innerText = global.requests.completed;
-		  overview.querySelector(".failed strong").innerText = global.requests.failed;
+		  // stats user
+		  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+		  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+		  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
 
 		  document.querySelector('#overview .incomplete').onclick = function() {
 			filterGrid("0");
@@ -13594,6 +13778,7 @@
 		});
 	  },
 	  _appStats: {
+		// delete
 		incomplete: "",
 		submitted: "",
 		pending: "",
@@ -13601,80 +13786,159 @@
 		failed: "",
 		deleted: "",
 		status: "",
+		
+		userDraft: "",
+		userInprogress: "",
+		userCompleted: "",
+		companyDraft: "",
+		companyInprogress: "",
+		companyCompleted: "",
 	  },
 	  _getStats: function(callback) {
-		if ("[SSOData.Email]".indexOf('@hpe.com') > -1) {
+		// Draft
+		const draftOverview = function(resolve, reject, isCompany = false) {
+		  const draftFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  draftFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 0
+		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_STATS_V3_INTERNAL',
+			dataset: 'NOR_Overview_DEV',
 			payload: {
-			  filter: {
-				field: "Email",
-				operator: "eq",
-				value: "[SSOData.Email]"
-			  },
-			  take: '1'
+			  pageSize: 3000,
+			  filter: draftFilter,
 			}
 		  }, function(d) {
 			try {
-			  callback(d);
+			  resolve(d.Total || 0);
 			} catch (e) {
-			  console.error(e);
-			  callback(false);
+			  reject(e)
 			}
-		  })
-		} else {
-		  hpe.api.dataset({
-			form: '989',
-			dataset: 'NOR_STATS_V4',
-			payload: {
-			  filter: {
-				logic: "and",
-				filters: [{
-				  field: "PartyId",
-				  operator: "eq",
-				  value: global.data.company.party
-				},
-						  {
-							field: "PartnerBRT",
-							operator: "eq",
-							value: global.data.brt.name
-						  }
-						 ]
-			  },
-			  take: '1'
-			}
-		  }, function(d) {
-			try {
-			  callback(d);
-			} catch (e) {
-			  console.error(e);
-			  callback(false);
-			}
-		  })
+		  });
 		}
+		const draftUserRequest = new Promise((resolve, reject) => {
+		  draftOverview(resolve, reject);
+		});
+		const draftCompanyRequest = new Promise((resolve, reject) => {
+		  draftOverview(resolve, reject, true);
+		});
+		// Completed
+		const completedOverview  = function(resolve, reject, isCompany = false) {
+		  const completedFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  completedFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 3
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: completedFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const completedUserRequest = new Promise((resolve, reject) => {
+		  completedOverview(resolve, reject);
+		});
+		const completedCompanyRequest = new Promise((resolve, reject) => {
+		  completedOverview(resolve, reject, true);
+		});
+		// Inprogress
+		const progressOverview  = function(resolve, reject, isCompany = false) {
+		  const progressFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  progressFilter.filters.push({
+			logic: "or",
+			filters: [
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 1 //submitted
+			  },
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 2 //pending
+			  },
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 4 //failed
+			  }
+			]
+		  }
+									 );
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: progressFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const progressUserRequest = new Promise((resolve, reject) => {
+		  progressOverview(resolve, reject);
+		});
+		const progressCompanyRequest = new Promise((resolve, reject) => {
+		  progressOverview(resolve, reject, true);
+		});
+		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest])
+		  .then((values) => {
+		  if (values && values.length) {
+			const result = {
+			  UserDraft: values[0],
+			  CompanyDraft: values[1],
+			  UserCompleted: values[2],
+			  CompanyCompleted: values[3],
+			  UserInprogress: values[4],
+			  CompanyInprogress: values[5],
+			};
+			callback(result);
+		  } else {
+			callback(false);
+		  }
+		})
+		  .catch(function(err) {
+		  console.log(err.message);
+		  callback(false);
+		});
 	  },
 	  _initStats: function(cb) {
 		oob.grid._getStats(function(d) {
-		  if (d.Data.length > 0) {
-			oob.grid._appStats.completed = d.Data[0].Completed;
-			oob.grid._appStats.incomplete = d.Data[0].Draft;
-			oob.grid._appStats.submitted = d.Data[0].Submitted;
-			oob.grid._appStats.pending = d.Data[0].Pending;
-			oob.grid._appStats.failed = d.Data[0].Failed;
-			oob.grid._appStats.deleted = d.Data[0].Deleted;
-			oob.grid._appStats.total = d.Data[0].Completed + d.Data[0].Draft + d.Data[0].Submitted + d.Data[0].Pending + d.Data[0].Failed + d.Data[0].Deleted
+		  if (d) {
+			oob.grid._appStats.userDraft = d.UserDraft;
+			oob.grid._appStats.userInprogress = d.UserInprogress;
+			oob.grid._appStats.userCompleted = d.UserCompleted;
+			oob.grid._appStats.companyDraft = d.CompanyDraft;
+			oob.grid._appStats.companyInprogress = d.CompanyInprogress;
+			oob.grid._appStats.companyCompleted = d.CompanyCompleted;
+			
 		  } else {
-			oob.grid._appStats.completed = 0;
-			oob.grid._appStats.incomplete = 0;
-			oob.grid._appStats.submitted = 0;
-			oob.grid._appStats.pending = 0;
-			oob.grid._appStats.failed = 0;
-			oob.grid._appStats.deleted = 0;
-			oob.grid._appStats.total = 0;
+			oob.grid._appStats.userDraft = 0;
+			oob.grid._appStats.userInprogress = 0;
+			oob.grid._appStats.userCompleted = 0;
+			oob.grid._appStats.companyDraft = 0;
+			oob.grid._appStats.companyInprogress = 0;
+			oob.grid._appStats.companyCompleted = 0;
 		  }
 		  return cb(oob.grid._appStats);
-		})
+		});
 	  }
 	}
   }
