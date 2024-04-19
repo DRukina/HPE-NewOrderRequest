@@ -7646,7 +7646,17 @@
 		const kendoOptAtt = $(OptAtt).data('kendoUpload');
 		kendoOptAtt.bind("upload", function(e) {            
 		  if (e.files && e.files.length) {
-			helper.parseUcidsDataFromExcel(e.files[0].rawFile, (msg) => { console.log(msg)});
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
+			  if (data.success && data.data && data.data.length) {
+				config.dataset.ProductServices_Attachment =
+				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
+				// build product and services page
+				quoteHelper.buildProductAndServices(config, config.pages[config.page]);
+				nbsf.init(config, config.page);
+			  }
+			});
 		  }
 		});
 	  }
@@ -7659,6 +7669,10 @@
 		pass: []
 	  };
 	  // if selected check the required field 
+	  // ProductServices_Attachment
+	  if (config.dataset.ProductServices_Attachment) {
+		return result;
+	  }
 	  if (quoteHelper.ucids.length) {
 		var isOneSelected = false;
 		quoteHelper.ucids.forEach(item => {
@@ -8464,7 +8478,7 @@
 		quoteHelper.configureProductAndServices(config, config.pages[config.page + 1]);
 	  }
 	  if (config.pages[config.page].id == "PS") {
-		 quoteHelper.saveProductAndServices(config);
+		 quoteHelper.saveProductAndServicesConfig(config);
 	  }
 
 	  function doNext() {
@@ -9166,6 +9180,9 @@
 		// SET SUBMISSION INFO
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
+		
+		// for testing
+		config.dataset.Environment = 'STG54545';
 
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
@@ -9470,6 +9487,16 @@
 		if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 		  config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
 		}
+		
+		const errorHandler = function() {
+		  elog('Failed to update record in RFB');
+		  mo.fn.overlay.hide();
+		  mo.fn.modal.show({
+			ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+			title: hpe.fn.lang("ErrorGeneric2", config.locale, config.localizations),
+			content: '<p>' + hpe.fn.lang("ErrorSubmit", config.locale, config.localizations) + '</p>'
+		  });
+		}
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
@@ -9478,8 +9505,8 @@
 			config.dataset = data;
 			nbsf.init(config, config.page);
 			mo.fn.overlay.hide();
-
-			if (!isDraft) {
+			
+			const notDraftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 				title: hpe.fn.lang('Form226', config.locale, config.localizations),
@@ -9499,8 +9526,8 @@
 				  mo.fn.events.closeAll();
 				}
 			  });
-			} else {
-			  // DRAFT
+			}
+			const draftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 				title: hpe.fn.lang('Form228', config.locale, config.localizations) + " #" + config.dataset.EntryId,
@@ -9521,15 +9548,14 @@
 				}
 			  });
 			}
-
+			
+			if (isDraft) {
+			  draftHandler();
+			} else {
+			  quoteHelper.saveProductAndServices(config, notDraftHandler, errorHandler);
+			}
 		  } else {
-			elog('Failed to update record in RFB');
-			mo.fn.overlay.hide();
-			mo.fn.modal.show({
-			  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-			  title: hpe.fn.lang("ErrorGeneric2", config.locale, config.localizations),
-			  content: '<p>' + hpe.fn.lang("ErrorSubmit", config.locale, config.localizations) + '</p>'
-			});
+			errorHandler();
 		  }
 		});
 	  });
@@ -9768,6 +9794,8 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
+		} else {
+		  config.dataset.ProductServices_Attachment = null;
 		}
 		nbsf.init(config, config.page);
 	  });
@@ -9790,6 +9818,7 @@
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
+			config.dataset.ProductServices_Attachment = null;
 		  }
 		});
 	  }
@@ -12207,77 +12236,36 @@
 	  }
 	},
 	configureProductAndServices: function(config, page, callback) {
+	  if (config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== "Y" && config.dataset.Config_PartialOrder == "Y") {
+		const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
+		if (currentUcids && currentUcids.length) {
+		  quoteHelper.ucids = currentUcids;
+		  quoteHelper.buildProductAndServices(config, page);
+		  if (callback) {
+			callback();
+		  }
+		  return;
+		}
+	  }
+	  
 	  if (config.dataset.Config_Quote !== "Y" || config.dataset.Config_PartialOrder !== "Y" || !config.dataset.Requestor_PO_Quote_ID) {
 		config.dataset.Config_Quote_PartialOrder = null;
 		quoteHelper.ucids = [];
 		quoteHelper.maxQuantity = null;
+		quoteHelper.buildProductAndServices(config, page);
 		if (callback) {
 		  callback();
 		}
 		return;
 	  }
 	  
-	  const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
-	  if (currentUcids && currentUcids.length) {
-		quoteHelper.ucids = currentUcids;
-		quoteHelper.getMaxQuantity(config, currentUcids, function() {
-		  // filter by max quantity and build page with new config
-		  quoteHelper.ucids = quoteHelper.maxQuantity ? currentUcids.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : currentUcids;
-		  const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
-		  if (!isSelected && quoteHelper.ucids.length) {
-			quoteHelper.ucids[0].Selected = "Y";
-		  }
-		  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
-		  // build page
-		  quoteHelper.buildProductAndServices(config, page);
-		  if (callback) {
-			callback();
-		  }
-		});
-	  } else {
-		const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
-		if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
-		  let items = quote.hpQuoteLineItemList.HpQuoteLineItems;
-		  const ucidConfig = [];
-		  const productIds = [];
-
-		  items = Array.isArray(items) ? items : [items];
-		  if (Array.isArray(items)) {
-			items.forEach((item) => {
-			  if (item.LineType === "Config" || item.LineType === "Product") {
-				if (!productIds.includes(item.ProductID)) {
-				  productIds.push(item.ProductID);
-				  const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
-				  ucidConfig.push({
-					Request_Id: config.dataset.EntryId,
-					Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
-					UCID: item.UCID,
-					BundleID: item.BundleID,
-					DealId: item.DealId,
-					UnitNetAmount: item.UnitNetAmount,
-					ExtendedNetAmount: item.ExtendedNetAmount,
-					Quantity: item.Quantity,
-					CfgSystemId: item.CfgSystemId,
-					CfgSystemName: item.CfgSystemName,
-					Selected: curUcid ? curUcid.Selected : null,
-					Count: curUcid ? curUcid.Count : 1,
-					ProductID: item.ProductID,
-					ProductClassificationCode: item.ProductClassificationCode,
-					LineType: item.LineType,
-					ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
-					PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
-					SerialNumberOfProducts: item.SerialNumberOfProducts,
-					ProductPurchasedDate: item.ProductPurchasedDate,
-				  });
-				}
-			  }
-			})
-		  }
-		  quoteHelper.ucids = ucidConfig;
-
-		  // filter by max quantity and build page with new config
-		  quoteHelper.getMaxQuantity(config, ucidConfig, function() {
-			quoteHelper.ucids = quoteHelper.maxQuantity ? ucidConfig.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : ucidConfig;
+	  if (config.dataset.Config_Quote == "Y" &&  config.dataset.Config_PartialOrder == "Y" && config.dataset.Requestor_PO_Quote_ID) {
+		const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
+		if (currentUcids && currentUcids.length) {
+		  quoteHelper.ucids = currentUcids;
+		  quoteHelper.getMaxQuantity(config, currentUcids, function() {
+			// filter by max quantity and build page with new config
+			quoteHelper.ucids = quoteHelper.maxQuantity ? currentUcids.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : currentUcids;
 			const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
 			if (!isSelected && quoteHelper.ucids.length) {
 			  quoteHelper.ucids[0].Selected = "Y";
@@ -12288,19 +12276,75 @@
 			if (callback) {
 			  callback();
 			}
-			return;
-		  });		
+		  });
 		} else {
-		  console.error('no quote data');
-		  config.dataset.Config_Quote_PartialOrder = null;
-		  quoteHelper.ucids = [];
-		  quoteHelper.maxQuantity = null;
-		  if (callback) {
-			callback();
+		  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
+		  if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
+			let items = quote.hpQuoteLineItemList.HpQuoteLineItems;
+			const ucidConfig = [];
+			const productIds = [];
+
+			items = Array.isArray(items) ? items : [items];
+			if (Array.isArray(items)) {
+			  items.forEach((item) => {
+				if (item.LineType === "Config" || item.LineType === "Product") {
+				  if (!productIds.includes(item.ProductID)) {
+					productIds.push(item.ProductID);
+					const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
+					ucidConfig.push({
+					  Request_Id: config.dataset.EntryId,
+					  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+					  UCID: item.UCID,
+					  BundleID: item.BundleID,
+					  DealId: item.DealId,
+					  UnitNetAmount: item.UnitNetAmount,
+					  ExtendedNetAmount: item.ExtendedNetAmount,
+					  Quantity: item.Quantity,
+					  CfgSystemId: item.CfgSystemId,
+					  CfgSystemName: item.CfgSystemName,
+					  Selected: curUcid ? curUcid.Selected : null,
+					  Count: curUcid ? curUcid.Count : 1,
+					  ProductID: item.ProductID,
+					  ProductClassificationCode: item.ProductClassificationCode,
+					  LineType: item.LineType,
+					  ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+					  PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+					  SerialNumberOfProducts: item.SerialNumberOfProducts,
+					  ProductPurchasedDate: item.ProductPurchasedDate,
+					});
+				  }
+				}
+			  })
+			}
+			quoteHelper.ucids = ucidConfig;
+
+			// filter by max quantity and build page with new config
+			quoteHelper.getMaxQuantity(config, ucidConfig, function() {
+			  quoteHelper.ucids = quoteHelper.maxQuantity ? ucidConfig.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : ucidConfig;
+			  const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
+			  if (!isSelected && quoteHelper.ucids.length) {
+				quoteHelper.ucids[0].Selected = "Y";
+			  }
+			  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			  // build page
+			  quoteHelper.buildProductAndServices(config, page);
+			  if (callback) {
+				callback();
+			  }
+			  return;
+			});		
+		  } else {
+			console.error('no quote data');
+			config.dataset.Config_Quote_PartialOrder = null;
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			if (callback) {
+			  callback();
+			}
+			return;
 		  }
-		  return;
-		}
-	  } 
+		} 
+	  }
 	},
 	getMaxQuantity: function(config, ucids, callback) {
 	  const quoteId = config.dataset.Requestor_PO_Quote_ID;
@@ -12324,13 +12368,34 @@
 	  });
 	},
 	buildProductAndServices: function(config, page) {
-	  if (quoteHelper.ucids && quoteHelper.ucids.length) {
-		quoteHelper.ucids.forEach(item => {
-		  config.dataset[`Count_${item.ID}`] = item.Count;
-		  config.dataset[`Selected_${item.ID}`] = item.Selected;
-		  config.dataset[`SerialNumberOfProducts_${item.ID}`] = item.SerialNumberOfProducts;
-		  config.dataset[`ProductPurchasedDate_${item.ID}`] = item.ProductPurchasedDate;
-		  config.dataset[`PreviouslyPurchasedProductDetails_${item.ID}`] = item.PreviouslyPurchasedProductDetails;
+	  if (quoteHelper.ucids) {
+		const fields = [
+		  "UCID",
+		  "BundleID",
+		  "DealId",
+		  "UnitNetAmount",
+		  "ExtendedNetAmount",
+		  "Quantity",
+		  "CfgSystemId",
+		  "CfgSystemName",
+		  "Selected",
+		  "Count",
+		  "ProductID",
+		  "ProductClassificationCode",
+		  "LineType",
+		  "ID",
+		  "PreviouslyPurchasedProductDetails",
+		  "SerialNumberOfProducts",
+		  "ProductPurchasedDate",
+		  "HPEPartDescription",
+		  "ITEM",
+		  "ListPrice"
+		];
+		const isDisabled = config.dataset.Config_Quote !== "Y";
+		fields.forEach(field => {
+		  quoteHelper.ucids.forEach(item => {
+			config.dataset[`${field}_${item.ID}`] = item[field];
+		  });
 		});
 		
 		const formTable = page.structure.find(item => item.id == "form-table");
@@ -12340,7 +12405,8 @@
 		if (quoteHelper.ucids && quoteHelper.ucids.length) {
 		  quoteHelper.ucids.forEach(ucid => {
 			console.log(ucid);
-			isCarePack = ucid.LineType == "Product" && ucid.ProductClassificationCode == "ES";
+			isCarePack = ucid.LineType == "Product" && ucid.ProductClassificationCode == "ES" ||
+			  (config.dataset.Config_Quote !== "Y" && (ucid.PreviouslyPurchasedProductDetails || ucid.SerialNumberOfProducts || ucid.ProductPurchasedDate));
 			const item = [
 			  {
 				label: "Checkbox (type checkbox)",
@@ -12349,6 +12415,7 @@
 				value: ucid.Selected,
 				type: "checkbox",
 				values: ["Y"],
+				disabled: isDisabled,
 			  },
 			  {
 				label: "HPE Part Number",
@@ -12368,6 +12435,7 @@
 				validation: ['minLen|1', 'isInteger'],
 				typing: "isInteger",
 				class: "bordered-input",
+				disabled: isDisabled,
 			  },
 			  {
 				label: "Deal ID",
@@ -12426,6 +12494,7 @@
 				  label: "Previously Purchased Product Details",
 				  value: ucid.PreviouslyPurchasedProductDetails,
 				  data: "PreviouslyPurchasedProductDetails_" + ucid.ID,
+				  disabled: isDisabled,
 				  required: false,
 				  type: "textarea",
 				  validation: ['minLen|1'],
@@ -12463,6 +12532,7 @@
 				  label: "Serial number of the products:*",
 				  value: ucid.SerialNumberOfProducts,
 				  data: "SerialNumberOfProducts_" + ucid.ID,
+				  disabled: isDisabled,
 				  required: false,
 				  type: "textarea",
 				  validation: ['minLen|1'],
@@ -12504,6 +12574,7 @@
 				  required: false,
 				  type: "date",
 				  placeholder: "DD/MM/YYYY",
+				  disabled: isDisabled,
 				  class: "bordered-input",
 				  dtp: {
 					format: 'd/m/Y',
@@ -12536,8 +12607,40 @@
 		formTable.group = group;
 	  }
 	},
-	saveProductAndServices: function(config) {
-	  if (config.dataset.Config_Quote == "Y" && config.dataset.Config_PartialOrder == "Y" && quoteHelper.ucids && quoteHelper.ucids.length) {
+	saveProductAndServicesConfig: function(config) {
+	  const isPPAtt = config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== "Y" && config.dataset.Config_PartialOrder == "Y";
+	  const isPPQuote = config.dataset.Config_Quote == "Y" && config.dataset.Config_PartialOrder == "Y";
+	  const poValueFilter = {
+		logic: "or",
+		filters: [
+		  {
+			field: "CountryCode",
+			operator: "in",
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+		  },
+		  {
+			logic: "and",
+			filters: [
+			  {
+				field: "Region",
+				operator: "neq",
+				value: "APJ"
+			  },
+			  {
+				field: "SubRegion",
+				operator: "neq",
+				value: "UKI"
+			  },
+			  {
+				field: "Geo",
+				operator: "nin",
+				value: ["DACH", "Europe South", "North West Europe"]
+			  }
+			]
+		  }
+		]
+	  };
+	  if ((isPPAtt || isPPQuote) && quoteHelper.ucids && quoteHelper.ucids.length) {
 		let PO_Value = 0;
 		quoteHelper.ucids.forEach(item => {
 		  item.Count = config.dataset[`Count_${item.ID}`];
@@ -12550,9 +12653,41 @@
 		  }
 		});
 		PO_Value /= 100;
-		config.dataset.PO_Value = PO_Value || 0;
-		$('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
+		const filter = nbsf.fn.filter(config.dataset, poValueFilter);
+		if (filter) {
+		  config.dataset.PO_Value = PO_Value || 0;
+		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
+		}
 		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+	  }
+	},
+	saveProductAndServices: function(config, callback, errorCallback) {
+	  if (config.dataset.EntryId && config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote_PartialOrder && quoteHelper.ucids.length) {
+		const promises = quoteHelper.ucids.map(ucid => {
+		  return new Promise((resolve, reject) => {
+			ucid.Request_Id = config.dataset.EntryId;
+			crud.create(6020, ucid, function(data) {
+			  if (typeof(data.EntryId) === "number") {
+				console.log('Successfully saved to UCID', data);
+				resolve(data);
+			  } else {
+				elog('Failed to create record in UCID');
+				reject('Failed to create record in UCID');
+			  }
+			});
+		  });
+		});
+		Promise.all(promises).then((results) => {
+		  console.log(results);
+		  if (callback) {
+			callback();
+		  }
+		}).catch((error) => {
+		  elog('Failed to delete record in UCID');
+		  if (errorCallback) {
+			errorCallback();
+		  }
+		});
 	  }
 	},
   };
@@ -12587,65 +12722,70 @@
 		});
 	  }
 	},
-    parseUcidsDataFromExcel: function(file, callback) {
-      var reader = new FileReader();
-      const res = {
-        success: false,
-        data: null,
-      };
+	parseUcidsDataFromExcel: function(config, file, callback) {
+	  var reader = new FileReader();
+	  const res = {
+		success: false,
+		data: null,
+	  };
+	  reader.onload = function (e) {
+		var data = e.target.result;
+		var workbook = XLSX.read(data, {
+		  type: 'binary',
+		  cellDates: true,
+		});
 
-      reader.onload = function (e) {
-        var data = e.target.result;
-        var workbook = XLSX.read(data, {
-          type: 'binary',
-          cellDates: true,
-        });
+		const sheetName = workbook.SheetNames[0];
+		const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
-        const sheetName = workbook.SheetNames[0];
-        const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+		let rowsData = [];
+		if (page.length >= 5) {
+		  for (let i = 5; i < page.length; i++) {
+			const rowInfo = Object.values(page[i]);
+			if (rowInfo.length < 12) {
+			  break;
+			}
+			const row = {
+			  Request_Id: config.dataset.EntryId,
+			  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+			  UCID: "",
+			  BundleID: rowInfo[5], //Config ID
+			  DealId: rowInfo[4],
+			  UnitNetAmount: rowInfo[6],
+			  ExtendedNetAmount: rowInfo[8],
+			  Quantity: "",
+			  CfgSystemId: "",
+			  CfgSystemName: "",
+			  Selected: "Y",
+			  Count: rowInfo[3],
+			  ProductID: rowInfo[1],
+			  ProductClassificationCode: "",
+			  LineType: "Config",
+			  ID: rowInfo[1] && rowInfo[1].replace(/[\-]/g, '_') || '',
+			  PreviouslyPurchasedProductDetails: rowInfo[9],
+			  SerialNumberOfProducts: rowInfo[10],
+			  ProductPurchasedDate: rowInfo[11],
+			  //??
+			  HPEPartDescription: rowInfo[2],
+			  ITEM: rowInfo[0],
+			  ListPrice: rowInfo[7],
+			};
+			rowsData.push(row);
+		  }
+		}
 
-        let rowsData = [];
-        if (page.length >= 5) {
-          for (let i = 5; i < page.length; i++) {
-            const rowInfo = Object.values(page[i]);
-            if (rowInfo.length < 12) {
-              break;
-            }
-
-            const row = {
-              'BundleID': rowInfo[5], //Config ID
-              'Count': rowInfo[3], //HPE Part Quantity
-              'DealId': rowInfo[4],
-              'ExtendedNetPrice': rowInfo[8],
-              'HPEPartDescription': rowInfo[2],
-              'ITEM': rowInfo[0],
-              'LineType': "Config",
-              'ListPrice': rowInfo[7],
-              'PreviouslyPurchasedProductDetails': rowInfo[9],
-              'ProductID': rowInfo[1], //HPE Part Number
-              'ProductPurchasedDate': rowInfo[11],
-              'SerialNumberOfProducts': rowInfo[10],
-              'UnitPrice': rowInfo[6],
-            };
-
-            rowsData.push(row);
-          }
-	}
-
-        res.success = true;
-        res.data = rowsData;
-        quoteHelper.ucids = rowsData;
-
-        callback(res);
-      };
-
-      reader.onerror = function (ex) {
-        res.data = ex;
-        callback(res)
-      };
-
-      reader.readAsBinaryString(file);
-    }, 
+		res.success = true;
+		res.data = rowsData;
+		quoteHelper.ucids = rowsData;
+		quoteHelper.maxQuantity = null;
+		callback(res);
+	  };
+	  reader.onerror = function (ex) {
+		res.data = ex;
+		callback(res)
+	  };
+	  reader.readAsBinaryString(file);
+	}, 
   }
 </script>
 
