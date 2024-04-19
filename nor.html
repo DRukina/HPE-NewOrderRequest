@@ -12581,7 +12581,7 @@
 					formatDate: 'd/m/Y',
 					timepicker: false,
 					minDate: 0,
-					maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+					//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
 					onChangeDateTime: function(dp, $input) {
 
 					}
@@ -12742,8 +12742,16 @@
 		if (page.length >= 5) {
 		  for (let i = 5; i < page.length; i++) {
 			const rowInfo = Object.values(page[i]);
-			if (rowInfo.length < 12) {
+			// if ProductID or Quantity or UnitNetAmount doesn't exist
+			if (!rowInfo[1] || !rowInfo[3] || !rowInfo[6]) {
 			  break;
+			}
+			let productPurchasedDate = null;
+			if (rowInfo[11] && rowInfo[11].toLocaleDateString) {
+			  try {
+				productPurchasedDate = rowInfo[11].toLocaleDateString('en-GB');
+			  } catch (e) {
+			  }
 			}
 			const row = {
 			  Request_Id: config.dataset.EntryId,
@@ -12764,7 +12772,7 @@
 			  ID: rowInfo[1] && rowInfo[1].replace(/[\-]/g, '_') || '',
 			  PreviouslyPurchasedProductDetails: rowInfo[9],
 			  SerialNumberOfProducts: rowInfo[10],
-			  ProductPurchasedDate: rowInfo[11],
+			  ProductPurchasedDate: productPurchasedDate,
 			  //??
 			  HPEPartDescription: rowInfo[2],
 			  ITEM: rowInfo[0],
