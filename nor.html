@@ -37,6 +37,8 @@
 		})
 		// HIDDEN INPUT: SOLDTO
 		config.dataset[`${type}_Address_Country`] = d.party[0].countryName;
+		config.dataset[`${type}_PartyId`] = d.party[0].currentPartyID || d.party[0].submittedPartyID || currentVal;
+		$(`input[data-name="${type}_PartyId"]`).val(config.dataset[`${type}_PartyId`]);
 
 		let alternateName = '';
 		if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
@@ -8957,6 +8959,7 @@
 
 				  crud.q.stop(function() {
 					hpe.data.xref(global.data.company.party, function(d) {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  reference.xref = d;
 					  config.locale = global.data.user.locale;
 					  config.dom = document.querySelector('div[tab-id="oob"]');
@@ -9115,6 +9118,7 @@
 
 				crud.q.stop(function() {
 				  hpe.data.xref(global.data.company.party, function(d) {
+					global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					reference.xref = d;
 					config.locale = global.data.user.locale;
 					config.dom = document.querySelector('div[tab-id="oob"]');
@@ -10228,6 +10232,7 @@
 			progressPercent: 10,
 			close: false
 		  })
+		  config.dataset.Payer_PartyId = currentVal;
 		  EMDMAddress(currentVal, 'Payer', false);
 		}
 	  });
@@ -11420,7 +11425,7 @@
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: partyId,
+				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
 				  Address_Country: d.party[0].countryName
 				};
 				let alternateName = '';
@@ -12947,6 +12952,7 @@
 				  hpe.data.xref(global.data.company.party, function(d) {
 					mo.fn.overlay.hide();
 					if (d.status == 'SUCCESS') {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  //d.party[0].countryCode = 'IN'; //CFI
 					  //d.party[0].countryName = 'India'; //CFI
 					  reference.xref = d;
