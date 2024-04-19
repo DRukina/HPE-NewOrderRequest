@@ -10070,7 +10070,8 @@ const formatFilter = (field, options, type = 'or') => {
 
 	return filter;
 }
-const buildFilterCombobox = (grid, field, dataSource) => {
+
+const buildFilterCombobox = (grid, field, dataSource) => {  
 const configureDataSource = function () {
 if (Array.isArray(dataSource)) {
 	return { dataSource };
@@ -10078,7 +10079,7 @@ if (Array.isArray(dataSource)) {
 	const { dataset, form, filter, dataTextField, dataValueField } = dataSource;
 	return ({
 	dataSource: typeof dataset === 'string' ? new kendo.data.DataSource({
-		type: "rfb-v2",
+		type: "rfb-v2",		  
 		serverSorting: true,
 		sort: {
 		field: dataTextField,
@@ -10097,20 +10098,21 @@ if (Array.isArray(dataSource)) {
 	});
 }
 };
-const comboboxFilter = function (element) {
+const comboboxFilter = function (element) {	
 const dataSourceConfig = configureDataSource();
 element.kendoComboBox({
 	...dataSourceConfig,
-	filter: "contains",
+	filter: "contains",	  
 });
 };
 const addFilterToGridConfig = function () {
-const grid_data = grid.data("kendoGrid");
-const column = grid_data.columns.find(el => el.field === field);
+const grid_data = grid.data("kendoGrid");	
+const column = grid_data.columns.find(el => el.field === field);	
 if (column) {
 	column.filterable = {
 	ui: comboboxFilter,
 	}
+	
 	grid_data.setOptions({
 	columns: grid_data.columns,
 	});
@@ -10119,7 +10121,6 @@ if (column) {
 addFilterToGridConfig();
 $('#accountView .container .active .k-grid-lockedcolumns .k-grid-toolbar').hide();
 };
-
 
 const accountView = {
 config: null,
@@ -10240,7 +10241,7 @@ _getNbsfConfig: () => {
 			}
 
 			document.querySelector("#accountView .tabs").style.display = "block";
-			document.querySelector("#accountView .container").style.display = "block";
+			document.querySelector("#accountView .container").style.display = "block";		
 		},
 	};
 
@@ -10258,9 +10259,9 @@ ui: function (cb) {
 	}
 
 	if (!accountView.isFormInited) {
-		selector.querySelector(".tabs").style.display = "none";
+	selector.querySelector(".tabs").style.display = "none";
 		selector.querySelector(".container").style.display = "none";
-		
+	
 		selector.querySelector(".tabs").innerHTML += `<span tab-id="ops">Account View (<em>0</em>)</span>`;
 		selector.querySelector(".container").innerHTML += `<section tab-id="ops"><div class="grid"></div><div class="toolbar"></div></section>`;
 		document.querySelector("#accountView span[tab-id='ops']").classList.add("active");
@@ -10385,8 +10386,57 @@ grid: {
 				field: "EntryId",
 				title: "ID",
 				filterable: true,
-				width: "85px",
+				width: 100,
 				locked: true,
+			},
+			{
+				field: "SoldTo_CompanyName",
+				title: "SoldTo CompanyName",
+				filterable: true,
+				width: 215,
+			},
+			{
+				field: "SoldTo_Address_Country",
+				title: "Country",
+				filterable: true,
+				width: 125,
+			},
+			{
+				field: "PO_BackgroundGroup",
+				title: "BG",
+				filterable: true,
+				width: 90,
+				locked: false,
+			},
+			{
+				field: "SubmittedTimestamp",
+				title: "Date",
+				filterable: true,
+				width: 160,
+				template: function(d) {              
+						const date = d.SubmittedTimestamp ? new Date(d.SubmittedTimestamp) : null;
+						if (date) {
+								let formatedDate = date.getFullYear() + '-' + ("00" + (date.getMonth() + 1)).slice(-2) + '-' + ("00" + date.getDate()).slice(-2);
+								let h = ("00" + date.getHours()).slice(-2);
+								let m = ("00" + date.getMinutes()).slice(-2);
+								let timeOfDay = [h, m].join(':');
+
+								return `${formatedDate} ${timeOfDay}`;
+						}
+						return '';
+				},
+			},
+			{
+				field: "PO_Number",
+				title: "PO",
+				filterable: true,
+				width: 115,
+			},
+			{
+				field: "CaseNumber",
+				title: "Case Number",
+				filterable: true,
+				width: 155,
 			},
 	{
 		field: "Status",
@@ -10396,13 +10446,12 @@ grid: {
 		template: function(obj) {
 		return getStatus(obj.Status);
 		}
-	},
+	},        
 			{
-				field: "PO_BackgroundGroup",
-				title: "BG",
+				field: "PO_Order_ID",
+				title: "Order #",
 				filterable: true,
-				width: 90,
-				locked: false,
+				width: 130,
 			},
 			{
 				field: "Region",
@@ -10418,59 +10467,16 @@ grid: {
 				width: 115,
 			},
 			{
-				field: "SoldTo_Address_Country",
-				title: "Country",
-				filterable: true,
-				width: 125,
-			},
-			{
-				field: "SoldTo_CompanyName",
-				title: "SoldTo CompanyName",
-				filterable: true,
-				width: 215,
-			},
-			{
-				field: "PartyId",
-				title: "PartyId",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "PA_Number",
-				title: "PA",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "PO_Number",
-				title: "PO",
-				filterable: true,
-				width: 115,
-			},
-			{
-				field: "SubmittedTimestamp",
-				title: "Date",
-				filterable: false,
-				width: 100,
-				template: function (d) {
-					try {
-						return d.SubmittedTimestamp.split("T")[0];
-					} catch (err) {
-						return d.SubmittedTimestamp;
-					}
-				},
-			},
-			{
 				field: "SubmitterEmail",
 				title: "Submitter",
 				filterable: true,
 				width: 255,
 			},
 			{
-				field: "CaseNumber",
-				title: "Case Number",
+				field: "PA_Number",
+				title: "PA",
 				filterable: true,
-				width: 155,
+				width: 115,
 			},
 		];
 		return cusConfig;
@@ -10504,16 +10510,17 @@ grid: {
 		}
 		return defConfig;
 	},
-	_load: function (selector, datasource) {
+	_load: function (selector, datasource) {		  
 		var parent = document.querySelector(selector.split(" .grid")[0]);
-		let config = this._config();
-		$(selector).kendoGrid({
+		let config = this._config();	  
+	
+		$(selector).kendoGrid({		
 			toolbar: [
 				{
 					name: "excel",
 					text: "Download",
 				},
-			],
+			],		
 			excel: {
 				fileName: "Onboarding_Drafts_" + parent.getAttribute("tab-id") + "_" + new Date().getTime() + ".xlsx",
 				filterable: true,
@@ -10562,17 +10569,15 @@ grid: {
 	
 	buildFilterCombobox($(selector), "Status", {
 		dataset: [
-		{ text: "Draft", value: "0" },
-		{ text: "Sent", value: "1" },
+		{ text: "Draft", value: "0" },			
 		{ text: "In progress", value: "2" },
-		{ text: "Completed", value: "3" },
-		{ text: "Fallout", value: "4" },
-		{ text: "Cancelled", value: "5" },
-		{ text: "Closed", value: "6" },
+		{ text: "Completed", value: "3" },			
+		{ text: "Cancelled", value: "5" },			
 		],
 		dataTextField: "text",
 		dataValueField: "value",
 	});
+	
 	},
 	_datasource: function (filter) {
 		return new kendo.data.DataSource({
@@ -10585,6 +10590,11 @@ grid: {
 			schema: {
 				model: {
 					id: "EntryId",
+					fields: {
+						SubmittedTimestamp: {
+							type: "date",
+						}  
+					},
 				},
 			},
 			filter: filter,
