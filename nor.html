@@ -1193,7 +1193,7 @@
 			label: "FormCFI017",
 			data: "QECC_Country",
 			required: false,
-			disabled: true,
+			disabled: false,
 			type: "text",
 			validation: ["kpDefault"],
 			typing: "kpDefault"
@@ -3974,7 +3974,7 @@
 		   {
 			 label: "Country",
 			 data: "SoldTo_Address_Country",
-			 disabled: true,
+			 disabled: false,
 			 required: true,
 			 type: "select",
 			 values: function() {
@@ -4098,7 +4098,7 @@
 		   {
 			 label: "Country",
 			 data: "SoldTo_Address_Country",
-			 disabled: true,
+			 disabled: false,
 			 required: true,
 			 type: "select",
 			 values: function() {
@@ -4324,7 +4324,7 @@
 		   label: "Country",
 		   data: "Payer_Address_Country",
 		   required: true,
-		   disabled: true,
+		   disabled: false,
 		   type: "select",
 		   values: function() {
 			 return reference.countriesArray
@@ -10262,7 +10262,7 @@
 	  });
 
 	  // Disable some fields if quote is exist
-	  quoteHelper.disableAddressQuoteData(config);
+	  // quoteHelper.disableAddressQuoteData(config); Do not need to disable this field
 	  helper.buildFastClearAddressButton('EndCx');
 	},
 	page8: function() {
