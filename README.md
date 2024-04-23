@@ -9,7 +9,6 @@ New Order Submission
 <a name="git"></a>
 
 ## 1. Git
-![Git](/images/branching.png)
 
 <a name="some-git-rules"></a>
 
@@ -20,7 +19,7 @@ A set of rules to keep in mind:
     _Why:_
     > This way, all the work is done in isolation on a separate branch rather than on the main branch. This will allow you to create multiple pull requests without confusion. You can continue development without polluting the `stg` or `production` branch with potentially unstable and unfinished code. [To learn more...](https://www.atlassian.com/git/tutorials/comparing-workflows#feature-branch-workflow)
 
-* The branch should look like this `stage/bug/TASK` (example: `stage/bugfix/nor-111`) if it's bug; and `stage/feature/TASK` (example: `stage/bug/nor-111`) if it's feature. 
+* The branch should look like this `stage/bug/TASK` (example: `stage/bugfix/nor-111`) if it's bug; and `stage/feature/TASK` (example: `stage/feature/nor-111`) if it's feature. 
     
 
 * Never push commits directly to the `stg` or `production` branches. Create a Pull Request.
