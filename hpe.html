@@ -503,90 +503,170 @@
             }
         },
         data: {
-            xref: function(id, callback, timeout) {
-                if (typeof(id) === "string" && typeof(callback) === "function") {
-                    // check request health and set request type
-                    var type = false;
-                    if (!isNaN(id)) {
-                        if (id.length == 10) type = 'pid'; // party id
-                        else if (id.length == 8) type = 'lid'; // location id
-                        else {
-                            console.error('Unrecognized numerical id format provided; unable to submit request to EMDM PartyLookup Service');
-                            return false;
-                        }
-                    } else if (["1", "2", "3"].indexOf(id.split('-')[0]) > -1 && id.length > 4)
-                        type = 'sprm';
-                    if (!type) {
-                        console.error('Unrecognized id format provided; unable to submit request to EMDM PartyLookup Service');
-                        return false;
-                    }
-                    // submit request
-                    else {
-                        var response = null;
-                        var xhr = new XMLHttpRequest();
-                        xhr.withCredentials = true;
-                        if (!!timeout) {
-                            xhr.timeout = timeout;
-                        }
-                        xhr.addEventListener("readystatechange", function() {
-                            if (this.readyState === 4) {
-                                if (typeof(callback) === "function") {
-                                    try {
-                                        return callback(JSON.parse(this.responseText));
-                                    } catch (e) {
-                                        console.error(e);
-                                        return callback(this.responseText);
-                                    }
-                                } else
-                                    return this.responseText;
-                            }
-                        });
-                        xhr.open("GET", "https://hpe-rfb.it.hpe.com/resources/rs/custom/partyrequest.php?type=" + type + "&id=" + id);
-                        xhr.send(response);
-                    }
-                } else {
-                    console.error('Please ensure required payload is provided to call EMDM PartyLookup Service');
-                    return false;
-                }
-            },
-            user: function(email, scope, callback) {
-                if (typeof(email) !== "string" || email.indexOf("@") == -1 || typeof(callback) !== "function") {
-                    console.error("Missing or incorrectly formatted payload");
-                    return false;
-                }
-                var payload = {};
-                payload.type = "emailAddress";
-                payload.emailAddress = email;
-                payload.scope = 0;
+		  	// PARTYLOOKUP WS
+		  xref: function(id, callback, timeout) {
+			if (typeof(id) === "string" && typeof(callback) === "function") {
+			  // check request health and set request type
+			  var type = false;
+			  if (!isNaN(id)) {
+				if (id.length == 10) type = 'pid'; // party id
+				else if (id.length == 8) type = 'lid'; // location id
+				else {
+				  console.error('Unrecognized numerical id format provided; unable to submit request to EMDM PartyLookup Service');
+				  return callback(false);
+				}
+			  } else if (["1", "2", "3"].indexOf(id.split('-')[0]) > -1 && id.length > 4)
+				type = 'sprm';
+			  if (!type) {
+				console.error('Unrecognized id format provided; unable to submit request to EMDM PartyLookup Service');
+				return callback(false);
+			  } else {
+				// submit request
+				let cacheLog = [];
+				crud.read('4606','pid='+id,function(d) {
+				  let cachedMDM = false;
+				  let sourceMDM = false;
 
-                if ([0, 1, 2].indexOf(scope) > -1)
-                    payload.scope = scope;
+				  // attempt to fetch cached
+				  cacheLog.push('Cache: Attempting to fetch cached EMDM data');
+				  if(typeof(d) !== 'object' || d.Rows.length == 0)
+					cacheLog.push('Cache: Failed fetching cached EMDM data or no data available');
+				  else {
+					cachedMDM = d.Rows[0];
+					let threshold = 24 * 60 * 60 * 1000;
+					let delta = new Date().getTime() - new Date(d.Rows[0].Modified).getTime();
+					console.log(delta,threshold);
+					if(delta > threshold) // 21 days == 1814400000
+					  cacheLog.push('Cache: Fetched cached EMDM response, but is outside the cached period');
+					else {
+					  cacheLog.push('Cache: Cached EMDM response found, within window of caching');
+					  console.log(cacheLog);
+					  try {
+						let response = JSON.parse(cachedMDM.JSON);
+						if (response && response.status === "SUCCESS") {
+						  return callback(response);
+						} else {
+						  return callback(false);
+						}
+					  } catch (e) {
+						console.error(e);
+						return callback(false);
+					  }
+					}
+				  }
 
-                payload = JSON.stringify(payload);
+				  // attempt to fetch directly from EMDM
+				  cacheLog.push('Cache: Attempting to fetch EMDM data directly');
+				  var response = null;
+				  var xhr = new XMLHttpRequest();
+				  xhr.withCredentials = true;
+				  if (!!timeout) {
+					xhr.timeout = timeout;
+				  }
+				  xhr.addEventListener("readystatechange", function() {
+					if (this.readyState === 4) {
+					  try {
+						let emdm = JSON.parse(this.responseText);
+						if(
+						  typeof(emdm) === 'object' &&
+						  emdm.code && emdm.code == 'EMS000' &&
+						  emdm.party[0] && typeof(emdm.party[0]) === 'object' && 
+						  emdm.party[0].countryName && emdm.party[0].countryName.length > 0
+						) {
+						  cacheLog.push('Cache: Valid EMDM data fetched successfully, attempting to create cached response');
+						  if (cachedMDM) {
+							crud.update('4606',cachedMDM.EntryId,{
+							  JSON: JSON.stringify(emdm)
+							},function(d) {
+							  if(d.EntryId) cacheLog.push('Cache: Cached EMDM response updated successfully');
+							  else cacheLog.push('Cache: Failed to update EMDM cache');
+							});
+						  }
+						  else {
+							crud.create('4607',{
+							  PartyId: id,
+							  JSON: JSON.stringify(emdm)
+							},function(d) {
+							  if(d.EntryId) cacheLog.push('Cache: Cached EMDM response created successfully');
+							  else cacheLog.push('Cache: Failed to create EMDM cache');
+							});
+						  }
+						  sourceMDM = this.responseText;
+						}
+					  }
+					  catch(e) {
+						cacheLog.push('Cache: Critical failure parsing EMDM response for cache management');
+					  }
 
-                var xhr = new XMLHttpRequest();
-                xhr.withCredentials = true;
-                xhr.addEventListener("readystatechange", function() {
-                    if (this.readyState === 4) {
-                        try {
-                            let response = JSON.parse(this.responseText);
-                            if (response.Success)
-                                return callback(JSON.parse(response.Response));
-                        } catch (e) {
-                            console.error(e);
-                            return callback(false);
-                        }
-                    }
-                });
-                xhr.open("POST", "https://hpe-rfb.it.hpe.com/resources/rs/custom/php/dxp/userSearch.php");
-                xhr.setRequestHeader("Content-Type", "text/plain");
-                xhr.send(payload);
-            },
-            countries: function(callback) {
-                crud.read('3668', false, function(d) {
-                    callback(d.Rows);
-                });
-            }
+					  // absolute failed case
+					  if(!cachedMDM && !sourceMDM) {
+						console.log(cacheLog);
+						return callback(false);
+					  }
+					  // success or partial success
+					  else {
+						console.log(cacheLog);
+						try {
+						  let response = sourceMDM ? JSON.parse(this.responseText) : JSON.parse(cachedMDM.JSON);
+						  if (response && response.status === "SUCCESS") {
+							return callback(response);
+						  } else {
+							return callback(false);
+						  }
+						} catch (e) {
+						  console.error(e);
+						  return callback(false);
+						}
+					  }
+					}
+				  });
+				  xhr.open("GET", "https://hpe-rfb.it.hpe.com/resources/rs/custom/partyrequest.php?type=" + type + "&id=" + id);
+				  xhr.send(response);
+				});
+			  }
+			} else {
+			  console.error('Please ensure required payload is provided to call EMDM PartyLookup Service');
+			  return false;
+			}
+		  },
+		  user: function(email, scope, callback) {
+			if (typeof(email) !== "string" || email.indexOf("@") == -1 || typeof(callback) !== "function") {
+			  console.error("Missing or incorrectly formatted payload");
+			  return false;
+			}
+			var payload = {};
+			payload.type = "emailAddress";
+			payload.emailAddress = email;
+			payload.scope = 0;
+
+			if ([0, 1, 2].indexOf(scope) > -1)
+			  payload.scope = scope;
+
+			payload = JSON.stringify(payload);
+
+			var xhr = new XMLHttpRequest();
+			xhr.withCredentials = true;
+			xhr.addEventListener("readystatechange", function() {
+			  if (this.readyState === 4) {
+				try {
+				  let response = JSON.parse(this.responseText);
+				  if (response.Success)
+					return callback(JSON.parse(response.Response));
+				} catch (e) {
+				  console.error(e);
+				  return callback(false);
+				}
+			  }
+			});
+			xhr.open("POST", "https://hpe-rfb.it.hpe.com/resources/rs/custom/php/dxp/userSearch.php");
+			xhr.setRequestHeader("Content-Type", "text/plain");
+			xhr.send(payload);
+		  },
+		  countries: function(callback) {
+			crud.read('3668', false, function(d) {
+			  callback(d.Rows);
+			});
+		  }
         },
         api: {
             queue: 0,
