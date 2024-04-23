@@ -9351,7 +9351,7 @@
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "(DD/MM/YYYY)<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
@@ -9485,7 +9485,7 @@
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "(DD/MM/YYYY)<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
