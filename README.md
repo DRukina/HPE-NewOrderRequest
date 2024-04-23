@@ -4,7 +4,7 @@ New Order Submission
 - [Git](#git)
     - [Rules for working with Git](#some-git-rules)
     - [Writing a good commit message](#writing-good-commit-messages)
-- [Документация](#documentation)   
+- [Documentation](#documentation)   
 
 <a name="git"></a>
 
@@ -37,7 +37,7 @@ A set of rules to keep in mind:
 
 <a name="documentation"></a>
 
-## 2. Документация
+## 2. Documentation
 
 STAGE
 
