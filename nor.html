@@ -771,6 +771,78 @@
 		xhr.send(JSON.stringify(payload));
 	  });
 	},
+	partyAgreements: function(profile, callback) {
+	  // payload
+	  let payload = {
+		"partyId": profile.company.party,
+		"config": {
+		  "type": (profile.partyData && profile.partyData.channels) || profile.brt.channel,
+		  "brt": (profile.partyData && profile.partyData.codes) || [profile.brt.code],
+		  "status": {
+			"draft": false,
+			"pending": false,
+			"inactive": false,
+			"active": true,
+			"cancelled": false
+		  },
+		  "columns": [
+			"ICMParticipatingParties",
+			"ICMParticipatingCEs",
+			"ICMParticipatingGEs",
+			"ICMCountry",
+			"ICMPartyID",
+			"ICMS4Status",
+			"ICMPANumber",
+			"ICMBusinessRelationshipCode",
+			"ICMBusinessRelationshipDescription",
+			"status"
+		  ],
+		  "coe": false,
+		  "amendment": false,
+		  "participating": true
+		},
+		"debug": true,
+		"page": 1,
+		"pageSize": 100
+	  };
+	  // add CE
+	  if (profile.company.country)
+		payload.countryEntity = profile.company.country;
+
+	  // add GE
+	  if (profile.company.global)
+		payload.globalEntity = profile.company.global;
+
+	  // request ICM
+	  var xhr = new XMLHttpRequest();
+	  xhr.addEventListener("readystatechange", function() {
+		if (this.readyState === 4) {
+		  try {
+			let icm = JSON.parse(this.responseText);
+			if (
+			  typeof(icm) === 'object' &&
+			  icm.Code && icm.Code == 'XAAS-00' &&
+			  icm.Response && icm.Response.data
+			) {
+			  // Filtering out the inactive agreements
+			  icm.Response.data = icm.Response.data.filter(agr => agr.logical == 'Active');
+			  sourceICM = icm.Response.data;
+			}
+		  } catch (e) {
+			console.error(e);
+			callback(false);
+		  }
+		  if (!sourceICM)
+			return callback(false);
+		  // success or partial success
+		  else
+			return callback(sourceICM);
+		}
+	  });
+	  xhr.open("POST", "https://hpe-rfb.it.hpe.com/resources/rs/custom/php/xaas/search.php");
+	  xhr.setRequestHeader("Content-Type", "application/json");
+	  xhr.send(JSON.stringify(payload));
+	},
 	// CENTRAL TIMESTAMP
 	timestamp: function(callback) {
 	  var response = null;
@@ -8906,7 +8978,7 @@
 				}
 
 				// GET AGREEMENTS FROM ICM
-				request.agreements(global.data, function(data) {
+				request.partyAgreements(global.data, function(data) {
 				  console.log('request.agreements data', data);
 				  if (data) {
 					reference.agreements = data;
@@ -14067,4 +14139,14 @@
 	})
   });
   hpe.fn.resizeable();
+</script>
+
+<script>
+  const appSettings = {
+	environment: 'STG',
+	views: {
+	  prod: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-prod-qids',
+	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
+	},
+  };
 </script>
