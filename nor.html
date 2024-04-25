@@ -9268,7 +9268,7 @@
 		loading: true,
 		close: false
 	  });
-	  if (config.pages[config.page - 2].id == "PS") {
+	  if (config.page > 1 && config.pages[config.page - 2].id == "PS") {
 		quoteHelper.configureProductAndServices(config, config.pages[config.page - 2], function() {
 		  console.log("CONFIG:", this);
 		  console.log("CURRENT:", this.page);
@@ -10961,7 +10961,7 @@
 		if (Array.isArray(HpQuoteLineItems) && HpQuoteLineItems.length) {
 		  const lightHpQuoteLineItems = [];
 		  HpQuoteLineItems.forEach(el => {
-			if (el.LineType === "Config" || el.LineType == "Product") {
+			if (el.LineType === "Config" || (el.LineType == "Product" && !el.UCID)) {
 			  lightHpQuoteLineItems.push(el);
 			}
 			else if (el.PANumber) {
@@ -12474,7 +12474,7 @@
 			items = Array.isArray(items) ? items : [items];
 			if (Array.isArray(items)) {
 			  items.forEach((item) => {
-				if (item.LineType === "Config" || item.LineType === "Product") {
+				if (item.LineType === "Config" || (item.LineType === "Product" && !item.UCID)) {
 				  if (!productIds.includes(item.ProductID)) {
 					productIds.push(item.ProductID);
 					const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
