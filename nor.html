@@ -122,7 +122,7 @@
 		  config.dataset[`${type}_Address_Postal`] = null;
 		  config.dataset[`${type}_Address_Street`] = null;
 		  config.dataset[`${type}_Address_Street2`] = null;
-		  config.dataset[`${type}_Nati onalID`] = null;
+		  config.dataset[`${type}_NationalID`] = null;
 
 		  if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
 			$(`*[data-name="${type}_Address_Country"]`).val('');
@@ -4184,7 +4184,7 @@
 		   {
 			 label: "CountryOfResidence",
 			 data: "SoldTo_Contact_Country",
-			 required: false,
+			 required: true,
 			 type: "select",
 			 values: function() {
 			   return reference.countriesArray
@@ -5545,7 +5545,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "EndCx_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -5896,7 +5896,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "Reseller_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -10126,6 +10126,16 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('SoldTo');
+
+		if (config.dataset.SoldTo_Address_Country) {
+			$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		}
+		$(`[data-name="SoldTo_PartyId"]`).change(function() {
+			$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		});
+		$(`[data-name="SoldTo_Address_Country"]`).change(function() {
+			$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+		});
 	},
 	page4: function() {
 	  console.log('page4');
@@ -10264,6 +10274,14 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('EndCx');
+	  
+	  if (config.dataset.EndCx_Address_Country) {
+	  	$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
+		$(`[data-name="EndCx_Address_Country"]`).change(function() {
+			$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+		});
+	  
 	},
 	page8: function() {
 	  console.log('page8');
@@ -10304,6 +10322,13 @@
 		  $('*[data-name="Reseller_PartyId"]').val('');
 	  });
 	  helper.buildFastClearAddressButton('Reseller');
+
+		if (config.dataset.Reseller_Address_Country) {
+	  	$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
+		$(`[data-name="Reseller_Address_Country"]`).change(function() {
+			$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+		});
 	},
 	page9: function() {
 	  console.log('page9');
@@ -12555,6 +12580,15 @@
 				operator: "eq",
 				value: '[SSOData.Email]' // Replace with the actual email variable
 			  });
+			  // stats user
+			  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+			  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+			  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+			} else {
+			  // stats company
+			  overview.querySelector(".incomplete strong").innerText = global.requests.companyDraft;
+			  overview.querySelector(".pending strong").innerText = global.requests.companyInprogress;
+			  overview.querySelector(".completed strong").innerText = global.requests.companyCompleted;
 			}
 
 			// Update the filterable property of columns
@@ -13064,7 +13098,7 @@
                       ]
                   }
               },*/
-	  _filter: function() {
+	  _filter: function(isCompany = false) {
 		const filter = ('[SSOData.Email]'.indexOf('@hpe.com') > -1) ? {
 		  logic: "and",
 		  filters: [{
@@ -13089,41 +13123,58 @@
 				   ]
 		} : {
 		  logic: "and",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartyId",
-			  operator: "eq",
-			  value: global.data.company.party
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "PartyId",
+				  operator: "eq",
+				  value: global.data.company.party
+				},
+				{
+				  field: "PartnerBRT",
+				  operator: "eq",
+				  value: global.data.brt.name
+				},
+			  ]
 			},
-					  {
-						field: "PartnerBRT",
-						operator: "eq",
-						value: global.data.brt.name
-					  },
-					  {
-						field: "Requestor_Email",
-						operator: "eq",
-						value: '[SSOData.Email]'
-					  }
-					 ]
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Retired",
-						operator: "neq",
-						value: "Y"
-					  },
-								{
-								  field: "Retired",
-								  operator: "isnull",
-								  value: ""
-								}
-							   ]
-					}
-				   ]
+			{
+			  logic: "or",
+			  filters: [{
+				field: "Retired",
+				operator: "neq",
+				value: "Y"
+			  },
+						{
+						  field: "Retired",
+						  operator: "isnull",
+						  value: ""
+						}
+					   ]
+			}
+		  ]
 		};
+
+		// rollback of NOR-460. Will be done in NOR-519
+		/*	if (oob.grid._appStats.filterByOwnRequest) {
+				  filter.filters.push({
+                        field: "Email",
+                        operator: "eq",
+                        value: '[SSOData.Email]'
+                    });
+				}*/
+		// add user/company filter
+		
+		const typeDropdown = $("#filter-type-dropdown");
+		if ((!typeDropdown || typeDropdown.val() === "User") && !isCompany) {
+		  filter.filters.push({
+			field: "Requestor_Email",
+			operator: "eq",
+			value: '[SSOData.Email]'
+		  });
+		}
+
 		if (oob.grid._appStats.status) {
 		  filter.filters.push({
 			field: "Status",
@@ -13197,11 +13248,10 @@
 
 		oob.grid._initStats(function(d) {
 		  global.requests = d;
-		  overview.querySelector(".incomplete strong").innerText = global.requests.incomplete;
-		  overview.querySelector(".submitted strong").innerText = global.requests.submitted;
-		  overview.querySelector(".pending strong").innerText = global.requests.pending + global.requests.submitted + global.requests.failed;
-		  overview.querySelector(".completed strong").innerText = global.requests.completed;
-		  overview.querySelector(".failed strong").innerText = global.requests.failed;
+		  // stats user
+		  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
+		  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
+		  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
 
 		  document.querySelector('#overview .incomplete').onclick = function() {
 			filterGrid("0");
@@ -13216,6 +13266,7 @@
 		});
 	  },
 	  _appStats: {
+		// delete
 		incomplete: "",
 		submitted: "",
 		pending: "",
@@ -13223,80 +13274,159 @@
 		failed: "",
 		deleted: "",
 		status: "",
+		
+		userDraft: "",
+		userInprogress: "",
+		userCompleted: "",
+		companyDraft: "",
+		companyInprogress: "",
+		companyCompleted: "",
 	  },
 	  _getStats: function(callback) {
-		if ("[SSOData.Email]".indexOf('@hpe.com') > -1) {
+		// Draft
+		const draftOverview = function(resolve, reject, isCompany = false) {
+		  const draftFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  draftFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 0
+		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_STATS_V3_INTERNAL',
+			dataset: 'NOR_Overview',
 			payload: {
-			  filter: {
-				field: "Email",
-				operator: "eq",
-				value: "[SSOData.Email]"
-			  },
-			  take: '1'
+			  pageSize: 3000,
+			  filter: draftFilter,
 			}
 		  }, function(d) {
 			try {
-			  callback(d);
+			  resolve(d.Total || 0);
 			} catch (e) {
-			  console.error(e);
-			  callback(false);
+			  reject(e)
 			}
-		  })
-		} else {
-		  hpe.api.dataset({
-			form: '989',
-			dataset: 'NOR_STATS_V4',
-			payload: {
-			  filter: {
-				logic: "and",
-				filters: [{
-				  field: "PartyId",
-				  operator: "eq",
-				  value: global.data.company.party
-				},
-						  {
-							field: "PartnerBRT",
-							operator: "eq",
-							value: global.data.brt.name
-						  }
-						 ]
-			  },
-			  take: '1'
-			}
-		  }, function(d) {
-			try {
-			  callback(d);
-			} catch (e) {
-			  console.error(e);
-			  callback(false);
-			}
-		  })
+		  });
 		}
+		const draftUserRequest = new Promise((resolve, reject) => {
+		  draftOverview(resolve, reject);
+		});
+		const draftCompanyRequest = new Promise((resolve, reject) => {
+		  draftOverview(resolve, reject, true);
+		});
+		// Completed
+		const completedOverview  = function(resolve, reject, isCompany = false) {
+		  const completedFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  completedFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 3
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview',
+			payload: {
+			  pageSize: 3000,
+			  filter: completedFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const completedUserRequest = new Promise((resolve, reject) => {
+		  completedOverview(resolve, reject);
+		});
+		const completedCompanyRequest = new Promise((resolve, reject) => {
+		  completedOverview(resolve, reject, true);
+		});
+		// Inprogress
+		const progressOverview  = function(resolve, reject, isCompany = false) {
+		  const progressFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  progressFilter.filters.push({
+			logic: "or",
+			filters: [
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 1 //submitted
+			  },
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 2 //pending
+			  },
+			  {
+				field: "Status",
+				operator: "eq",
+				value: 4 //failed
+			  }
+			]
+		  }
+									 );
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview',
+			payload: {
+			  pageSize: 3000,
+			  filter: progressFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const progressUserRequest = new Promise((resolve, reject) => {
+		  progressOverview(resolve, reject);
+		});
+		const progressCompanyRequest = new Promise((resolve, reject) => {
+		  progressOverview(resolve, reject, true);
+		});
+		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest])
+		  .then((values) => {
+		  if (values && values.length) {
+			const result = {
+			  UserDraft: values[0],
+			  CompanyDraft: values[1],
+			  UserCompleted: values[2],
+			  CompanyCompleted: values[3],
+			  UserInprogress: values[4],
+			  CompanyInprogress: values[5],
+			};
+			callback(result);
+		  } else {
+			callback(false);
+		  }
+		})
+		  .catch(function(err) {
+		  console.log(err.message);
+		  callback(false);
+		});
 	  },
 	  _initStats: function(cb) {
 		oob.grid._getStats(function(d) {
-		  if (d.Data.length > 0) {
-			oob.grid._appStats.completed = d.Data[0].Completed;
-			oob.grid._appStats.incomplete = d.Data[0].Draft;
-			oob.grid._appStats.submitted = d.Data[0].Submitted;
-			oob.grid._appStats.pending = d.Data[0].Pending;
-			oob.grid._appStats.failed = d.Data[0].Failed;
-			oob.grid._appStats.deleted = d.Data[0].Deleted;
-			oob.grid._appStats.total = d.Data[0].Completed + d.Data[0].Draft + d.Data[0].Submitted + d.Data[0].Pending + d.Data[0].Failed + d.Data[0].Deleted
+		  if (d) {
+			oob.grid._appStats.userDraft = d.UserDraft;
+			oob.grid._appStats.userInprogress = d.UserInprogress;
+			oob.grid._appStats.userCompleted = d.UserCompleted;
+			oob.grid._appStats.companyDraft = d.CompanyDraft;
+			oob.grid._appStats.companyInprogress = d.CompanyInprogress;
+			oob.grid._appStats.companyCompleted = d.CompanyCompleted;
+			
 		  } else {
-			oob.grid._appStats.completed = 0;
-			oob.grid._appStats.incomplete = 0;
-			oob.grid._appStats.submitted = 0;
-			oob.grid._appStats.pending = 0;
-			oob.grid._appStats.failed = 0;
-			oob.grid._appStats.deleted = 0;
-			oob.grid._appStats.total = 0;
+			oob.grid._appStats.userDraft = 0;
+			oob.grid._appStats.userInprogress = 0;
+			oob.grid._appStats.userCompleted = 0;
+			oob.grid._appStats.companyDraft = 0;
+			oob.grid._appStats.companyInprogress = 0;
+			oob.grid._appStats.companyCompleted = 0;
 		  }
 		  return cb(oob.grid._appStats);
-		})
+		});
 	  }
 	}
   }
