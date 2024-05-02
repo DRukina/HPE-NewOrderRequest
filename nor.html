@@ -8432,7 +8432,7 @@
 	pages: [page1, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
 	onNext: function() {
 	  if (config.dataset.xrefFail == 'Yes') config.dataset.xrefFail = 'No';
-
+	  
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
 
@@ -9120,10 +9120,10 @@
 
 		// Don't override user's data if exist
 		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.OnBehalf_Type == 'User' && config.dataset.FirstName && config.dataset.LastName)) {
-		  config.dataset.FirstName = '[SSOData.FirstName]';
-		  config.dataset.LastName = '[SSOData.LastName]';
+		config.dataset.FirstName = '[SSOData.FirstName]';
+		config.dataset.LastName = '[SSOData.LastName]';
 		}
-
+		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9818,7 +9818,7 @@
 	  if (document.querySelector('*[data-name="PO_Value"]'))
 		document.querySelector('*[data-name="PO_Value"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="PO_Currency"]'))
-		document.querySelector('*[data-name="PO_Currency"]').closest('.row').classList.add("customFilteredClass");
+          document.querySelector('*[data-name="PO_Currency"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="PA_NumberPlaceholder"]'))
 		document.querySelector('*[data-name="PA_NumberPlaceholder"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Rs_PO_Number"]'))
@@ -9842,9 +9842,9 @@
 	  if (document.querySelector('*[data-name="Payment_TermsPlaceholder"]'))
 		document.querySelector('*[data-name="Payment_TermsPlaceholder"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="TaxAmount"]'))
-		document.querySelector('*[data-name="TaxAmount"]').closest('.row').classList.add("customFilteredClass");
-
-
+          document.querySelector('*[data-name="TaxAmount"]').closest('.row').classList.add("customFilteredClass");
+	  
+	  
 	  if (document.querySelector('input[data-name="PO_Value"]')) {
 		$('input[data-name="PO_Value"]').change(function() {
 		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
@@ -9999,7 +9999,7 @@
 		if ($('select[data-name="PO_Category"]'))  {
 		  $('select[data-name="PO_Category"]').trigger('change');
 		}
-
+		
 	  }
 
 
@@ -10100,7 +10100,7 @@
 	page3: function() {
 	  console.log('page3');
 	  if (document.querySelector('input[data-name="SoldTo_NationalID"]'))
-		$('*[data-name="SoldTo_NationalID"]').parent().parent().parent().parent().addClass('fixNationalID');
+            $('*[data-name="SoldTo_NationalID"]').parent().parent().parent().parent().addClass('fixNationalID');
 	  $('input[data-name="SoldTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10) {
@@ -10127,15 +10127,15 @@
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('SoldTo');
 
-	  if (config.dataset.SoldTo_Address_Country) {
-		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
-	  }
-	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
-		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
-	  });
-	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
-		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
-	  });
+		if (config.dataset.SoldTo_Address_Country) {
+			$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		}
+		$(`[data-name="SoldTo_PartyId"]`).change(function() {
+			$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		});
+		$(`[data-name="SoldTo_Address_Country"]`).change(function() {
+			$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+		});
 	},
 	page4: function() {
 	  console.log('page4');
@@ -10274,14 +10274,14 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('EndCx');
-
+	  
 	  if (config.dataset.EndCx_Address_Country) {
-		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  	$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
 	  }
-	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
-		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
-	  });
-
+		$(`[data-name="EndCx_Address_Country"]`).change(function() {
+			$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+		});
+	  
 	},
 	page8: function() {
 	  console.log('page8');
@@ -10323,12 +10323,12 @@
 	  });
 	  helper.buildFastClearAddressButton('Reseller');
 
-	  if (config.dataset.Reseller_Address_Country) {
-		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+		if (config.dataset.Reseller_Address_Country) {
+	  	$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
 	  }
-	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
-		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
-	  });
+		$(`[data-name="Reseller_Address_Country"]`).change(function() {
+			$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+		});
 	},
 	page9: function() {
 	  console.log('page9');
@@ -12673,23 +12673,23 @@
 					   if (d.PO_Order_ID != "" && d.PO_Order_ID != "N/A" && d.PO_Order_ID != null) {
 						 if (d.PO_Order_ID && d.PO_Order_ID.length > 10) {
 						   let orderIds = d.PO_Order_ID.trim();
-						   //   console.log(orderIds);
+						//   console.log(orderIds);
 						   if (orderIds.includes(';')) {
 							 orderIds = orderIds.split(';');
 						   } else {
 							 orderIds = orderIds.split('  ');
 						   }
 						   //const orderIds = d.Operations.Order
-						   //   console.log(orderIds);
+						//   console.log(orderIds);
 						   orderIds.forEach(orderId => {
-							 //	 elem += '<span class="orderItem" title="' + orderId + '"> ' + orderId + '</span>';
-							 //	 console.log(elem);
+						//	 elem += '<span class="orderItem" title="' + orderId + '"> ' + orderId + '</span>';
+						//	 console.log(elem);
 							 if (orderId) {
 							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + orderId + '" target="_blank">' + orderId + '</a><br>';
 							 }
 						   });
 						 } else {
-						   // elem += '<span class="orderItem" title="' + d.PO_Order_ID.trim() + '"> ' + d.PO_Order_ID.trim() + '</span>';
+						  // elem += '<span class="orderItem" title="' + d.PO_Order_ID.trim() + '"> ' + d.PO_Order_ID.trim() + '</span>';
 						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_Order_ID.trim() + '" target="_blank">' + d.PO_Order_ID.trim() + '</a><br>';
 						 }
 					   }
@@ -12701,16 +12701,16 @@
 						   } else {
 							 aasIds = aasIds.split('  ');
 						   }
-						   //   console.log(aasIds);
+						//   console.log(aasIds);
 						   aasIds.forEach(aasId => {
-							 // elem += '<span class="orderItem" title="' + aasId + '"> ' + aasId + '</span>';
-							 //	 console.log(elem);
+							// elem += '<span class="orderItem" title="' + aasId + '"> ' + aasId + '</span>';
+						//	 console.log(elem);
 							 if (aasId) {
 							   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + aasId + '" target="_blank">' + aasId + '</a><br>';
 							 }
 						   });
 						 } else {
-						   //  elem += '<span class="orderItem" title="' + d.PO_AAS_ID.trim() + '"> ' + d.PO_AAS_ID.trim() + '</span>';
+						 //  elem += '<span class="orderItem" title="' + d.PO_AAS_ID.trim() + '"> ' + d.PO_AAS_ID.trim() + '</span>';
 						   elem += '<a href="https://partner.hpe.com/group/prp/orders?p_p_id=OrderStatusWeb&status=All%20Orders&OrderStatus=All%20Orders&SearchText=' + d.PO_AAS_ID.trim() + '" target="_blank">' + d.PO_AAS_ID.trim() + '</a>';
 						 }
 					   }
@@ -12719,12 +12719,12 @@
 					   if (elem == "") {
 						 elem = "N/A";
 					   }
-					   //   console.log(elem);
+					//   console.log(elem);
 					   return elem;
 					 },
 					 width: "100px"
 				   },
-				   /*   {
+				/*   {
 					 field: "Requestor_Email",
 					 title: hpe.fn.lang('Submitter', config.locale, config.localizations),
 					 width: "160px",
@@ -13165,7 +13165,7 @@
                     });
 				}*/
 		// add user/company filter
-
+		
 		const typeDropdown = $("#filter-type-dropdown");
 		if ((!typeDropdown || typeDropdown.val() === "User") && !isCompany) {
 		  filter.filters.push({
@@ -13274,7 +13274,7 @@
 		failed: "",
 		deleted: "",
 		status: "",
-
+		
 		userDraft: "",
 		userInprogress: "",
 		userCompleted: "",
@@ -13416,7 +13416,7 @@
 			oob.grid._appStats.companyDraft = d.CompanyDraft;
 			oob.grid._appStats.companyInprogress = d.CompanyInprogress;
 			oob.grid._appStats.companyCompleted = d.CompanyCompleted;
-
+			
 		  } else {
 			oob.grid._appStats.userDraft = 0;
 			oob.grid._appStats.userInprogress = 0;
