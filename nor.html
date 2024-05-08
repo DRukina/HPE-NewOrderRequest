@@ -9451,8 +9451,10 @@
 	  if (document.querySelector('*[data-name="Invoice_SendEmail"]'))
 		document.querySelector('*[data-name="Invoice_SendEmail"]').closest('.row').classList.add("customFilteredClassToggle13");
 	  if (document.querySelector('*[data-name="Requestor_PO_Quote_ID"]')) {
-		document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("filteredClass");
 		document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("customFilteredClassToggle");
+		if (document.querySelector('*[data-name="Requestor_PO_Deal_ID"]')) {
+		  document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("filteredClass");
+		}
 	  }
 	  if (document.querySelector('*[data-name="Config_PartialOrder"]')) {
 		if (config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote != 'Y') {
