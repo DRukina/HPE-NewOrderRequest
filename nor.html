@@ -1252,6 +1252,40 @@
 		  }]
 		]
 	  },
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			/*		{
+					  field: "PartnerBRT",
+					  operator: "neq",
+					  value: "Master Area Partner"
+					},
+					{
+					  field: "CountryCode",
+					  operator: "neq",
+					  value: "TR"
+					}*/
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form021",
+			data: "Requestor_PO_Deal_ID",
+			required: false,
+			type: "text",
+			placeholder: "Form022",
+			validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
+			typing: "isIntegerAndComma"
+		  }]
+		]
+	  },
 
 	  //  END CUSTOMER COUNTRY - QUOTE
 	  {
@@ -1840,235 +1874,6 @@
 		]
 	  },
 
-	  // QOD filter - Partial order
-	  // QOD no filter ams / UCID-CONFIG NO
-	  /*{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form480",
-                            validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },*/
-
-	  // QOD with filter ams / UCID-CONFIG NO
-	  /*
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            value: "OPE-",
-                            placeholder: "Form480",
-                            validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-	  // QOD no filter no ams / UCID-CONFIG NO
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "CountryCode",
-                            operator: "neq",
-                            value: "TR"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form021",
-                        data: "Requestor_PO_Deal_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form022",
-                        validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                        typing: "isIntegerAndComma"
-                    }]
-                ]
-            },
-			*/
 	  // QOD with filter no ams / UCID-CONFIG NO
 	  {
 		filter: {
@@ -2078,7 +1883,7 @@
 			operator: "neq",
 			value: "AMS"
 		  },
-					{
+					/*			{
 					  field: "PartnerBRT",
 					  operator: "neq",
 					  value: "Master Area Partner"
@@ -2087,10 +1892,10 @@
 					  field: "CountryCode",
 					  operator: "neq",
 					  value: "TR"
-					}
+					}*/
 				   ]
 		},
-		header: "Form258",
+		header: "", //"Form258",
 		group: [
 		  [{
 			label: "Form262",
@@ -2106,12 +1911,13 @@
 	  {
 		filter: {
 		  logic: "and",
-		  filters: [{
-			field: "Region",
-			operator: "neq",
-			value: "AMS"
-		  },
-					{
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			/*		{
 					  field: "PartnerBRT",
 					  operator: "neq",
 					  value: "Master Area Partner"
@@ -2120,13 +1926,18 @@
 					  field: "CountryCode",
 					  operator: "neq",
 					  value: "TR"
-					},
-					{
-					  field: "Config_PartialOrder",
-					  operator: "eq",
-					  value: "Y"
-					}
-				   ]
+					},*/
+			{
+			  field: "Config_PartialOrder",
+			  operator: "eq",
+			  value: "Y"
+			},
+			{
+			  field: "Config_Quote",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
 		header: "",
 		group: [
@@ -2160,7 +1971,7 @@
 		  ]
 		]
 	  },
-	  {
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2192,444 +2003,10 @@
 			typing: "isIntegerAndComma"
 		  }]
 		]
-	  },
-
-	  // QOD no filter ams / UCID-CONFIG YES - QOD with filter ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form480",
-                            validation: ["ascii", "minLen|1", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-	  // QOD with filter ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        }
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            value: "OPE-",
-                            placeholder: "Form480",
-                            validation: ["ascii", "minLen|1", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-
-	  // QOD no filter no ams / UCID-CONFIG YES - QOD with filter no ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        }
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                        label: "Form021",
-                        data: "Requestor_PO_Deal_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form022",
-                        validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                        typing: "isIntegerAndComma"
-                    }]
-                ]
-            },
-			*/
+	  },*/
 
 	  // QOD with filter no ams / UCID-CONFIG YES
-	  {
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2653,7 +2030,7 @@
 					}
 				   ]
 		},
-		header: "Form258",
+		header: "", //"Form258",
 		group: [
 		  [{
 			label: "Form262",
@@ -2726,8 +2103,8 @@
 		   }
 		  ]
 		]
-	  },
-	  {
+	  },*/
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2763,40 +2140,8 @@
 			typing: "isIntegerAndComma"
 		  }]
 		]
-	  },
+	  },*/
 
-	  // QOD no filter JAPAN / Requestor_PO_Opp_ID
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "CountryCode",
-                            operator: "eq",
-                            value: "JP"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                        label: "Form479",
-                        data: "Requestor_PO_Opp_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form480",
-                        validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                        typing: "ascii"
-                    }]
-                ]
-            },
-			*/
 	  // QOD with filter JAPAN / Requestor_PO_Opp_ID
 	  {
 		filter: {
@@ -7748,6 +7093,53 @@
 		  ],
 		],
 	  },  
+	  {
+		filter: {
+		  logic: "or",
+		  filters: [
+			{
+			  field: "CountryCode",
+			  operator: "in",
+			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			},
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Region",
+				  operator: "neq",
+				  value: "APJ"
+				},
+				{
+				  field: "SubRegion",
+				  operator: "neq",
+				  value: "UKI"
+				},
+				{
+				  field: "Geo",
+				  operator: "nin",
+				  value: ["DACH", "Europe South", "North West Europe"]
+				}
+			  ]
+			}
+		  ]
+		},
+		header: "",
+		group: [
+		  [
+			{
+			  label: "Form008",
+			  data: "PO_Value",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "Form009",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping"
+			},
+		  ]
+		]
+	  },
 	],      
 	callback: function() {
 	  const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
@@ -9969,7 +9361,7 @@
 			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
 		  }
 		  config.dataset.Config_PartialOrder = $(this).val();
-		  config.dataset.PO_Value = null;
+		//  config.dataset.PO_Value = null;
 		  nbsf.init(config, config.page);
 		  
 		  if (config.dataset.Config_PartialOrder === "Y") {
@@ -10058,12 +9450,19 @@
 		document.querySelector('*[data-name="Cx_PO_Number"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Invoice_SendEmail"]'))
 		document.querySelector('*[data-name="Invoice_SendEmail"]').closest('.row').classList.add("customFilteredClassToggle13");
-	  if (document.querySelector('*[data-name="Requestor_PO_Quote_ID"]'))
+	  if (document.querySelector('*[data-name="Requestor_PO_Quote_ID"]')) {
+		document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("filteredClass");
 		document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("customFilteredClassToggle");
-	  if (document.querySelector('*[data-name="Config_PartialOrder"]'))
-		document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("filteredClass");
-	  if (document.querySelector('*[data-name="Config_UCID"]'))
-		document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
+	  }
+	  if (document.querySelector('*[data-name="Config_PartialOrder"]')) {
+		if (config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote != 'Y') {
+		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("filteredClass");
+		} else {
+		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
+		}
+	  }
+	//  if (document.querySelector('*[data-name="Config_UCID"]'))
+	//	document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
 	  if (document.querySelector('*[data-name="Requestor_PO_Opp_ID"]'))
 		document.querySelector('*[data-name="Requestor_PO_Opp_ID"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Payment_TermsPlaceholder"]'))
@@ -10751,7 +10150,19 @@
             }
           });
         }
-      },
+	  
+	  const changableInputs = document.querySelectorAll('input[data-name*="Count"], input[data-name*="Selected"]');
+	  if (changableInputs.length) {
+		for (let i = 0; i < changableInputs.length; i++) {
+		  changableInputs[i].addEventListener('change', function(e) {
+			const check = nbsf.ev.global(config);
+			if (!check.total.fail) {
+			  quoteHelper.saveProductAndServicesConfig(config);
+			}
+		  });
+		}
+	  }
+	},
   };
 
   // CONFIG FORM TRANSLATIONS
@@ -12792,6 +12203,7 @@
 		  });
 		}
 		formTable.group = group;
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 	},
 	saveProductAndServicesConfig: function(config) {
