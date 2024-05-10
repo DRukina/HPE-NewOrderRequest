@@ -514,6 +514,9 @@
 	global.data.user.locale = "[SSOData.Locale]";
 	global.data.user.language = "[SSOData.PreferredLanguageCode]";
 	global.data.user.planguage = "[SSOData.Language]";
+	
+	if (!global.data.company.party)
+	  global.error = 'FormNoParty';
 
 	profile.get({
 	  email: '[SSOData.Email]',
@@ -12372,6 +12375,20 @@
 
 	  function getAllLocalizations() {
 		if (Object.keys(config.localizations).length > 0) {
+		  
+		  if (global.error) {
+			mo.fn.modal.show({
+			  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+			  title: hpe.fn.lang(global.error, config.locale, config.localizations),
+			  content: '',
+			  ctaCallback: function() {
+				mo.fn.overlay.hide();
+				mo.fn.events.closeAll();
+			  }
+			});
+			clearInterval(localiz);
+			return;
+		  }
 
 		  oob.ui();
 		  // GET AGREEMENTS FROM ICM
