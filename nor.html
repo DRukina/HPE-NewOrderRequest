@@ -12892,12 +12892,12 @@
 						 }
 					   }
 					 },
-					 format: "{0:yyyy-MM-dd HH:mm:ss}",
+					 format: "{0:yyyy-MM-dd}",
 					 filterable: true,
 					 template: function(d) {
 					   if (d.SubmittedTimestamp) {
 						 //let tmstmp = d.SubmittedTimestamp.split('T')[0] + " " + d.SubmittedTimestamp.split('T')[1]
-						 return kendo.toString(new Date(d.SubmittedTimestamp), 'yyyy-MM-dd HH:mm:ss');
+						 return kendo.toString(new Date(d.SubmittedTimestamp), 'yyyy-MM-dd');
 						 //return tmstmp;
 					   } else return hpe.fn.lang('Form44x3', config.locale, config.localizations);
 					 }
