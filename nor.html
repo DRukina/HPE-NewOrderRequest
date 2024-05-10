@@ -353,6 +353,7 @@
 		  channel: ["ICMChannelGeneral"]
 		}
 	  ],
+	  partyData: null, 
 	},
 	init: function(cb) {
 	  let self = this;
@@ -770,6 +771,78 @@
 		xhr.setRequestHeader("Content-Type", "application/json");
 		xhr.send(JSON.stringify(payload));
 	  });
+	},
+	partyAgreements: function(profile, callback) {
+	  // payload
+	  let payload = {
+		"partyId": profile.company.party,
+		"config": {
+		  "type": (profile.partyData && profile.partyData.channels) || profile.brt.channel,
+		  "brt": (profile.partyData && profile.partyData.codes) || [profile.brt.code],
+		  "status": {
+			"draft": false,
+			"pending": false,
+			"inactive": false,
+			"active": true,
+			"cancelled": false
+		  },
+		  "columns": [
+			"ICMParticipatingParties",
+			"ICMParticipatingCEs",
+			"ICMParticipatingGEs",
+			"ICMCountry",
+			"ICMPartyID",
+			"ICMS4Status",
+			"ICMPANumber",
+			"ICMBusinessRelationshipCode",
+			"ICMBusinessRelationshipDescription",
+			"status"
+		  ],
+		  "coe": false,
+		  "amendment": false,
+		  "participating": true
+		},
+		"debug": true,
+		"page": 1,
+		"pageSize": 100
+	  };
+	  // add CE
+	  if (profile.company.country)
+		payload.countryEntity = profile.company.country;
+
+	  // add GE
+	  if (profile.company.global)
+		payload.globalEntity = profile.company.global;
+
+	  // request ICM
+	  var xhr = new XMLHttpRequest();
+	  xhr.addEventListener("readystatechange", function() {
+		if (this.readyState === 4) {
+		  try {
+			let icm = JSON.parse(this.responseText);
+			if (
+			  typeof(icm) === 'object' &&
+			  icm.Code && icm.Code == 'XAAS-00' &&
+			  icm.Response && icm.Response.data
+			) {
+			  // Filtering out the inactive agreements
+			  icm.Response.data = icm.Response.data.filter(agr => agr.logical == 'Active');
+			  sourceICM = icm.Response.data;
+			}
+		  } catch (e) {
+			console.error(e);
+			callback(false);
+		  }
+		  if (!sourceICM)
+			return callback(false);
+		  // success or partial success
+		  else
+			return callback(sourceICM);
+		}
+	  });
+	  xhr.open("POST", "https://hpe-rfb.it.hpe.com/resources/rs/custom/php/xaas/search.php");
+	  xhr.setRequestHeader("Content-Type", "application/json");
+	  xhr.send(JSON.stringify(payload));
 	},
 	// CENTRAL TIMESTAMP
 	timestamp: function(callback) {
@@ -8819,6 +8892,32 @@
 				  return (item.name == global.data.brt.name)
 				});
 				global.data.brt.code = brtCode[0].code;
+				
+				// new 
+				let brts = view.filter(item => [
+					'Virtual OEM', 
+					'T1 Solution Provider', 
+					'Distributor', 
+					'OEM Distributor', 
+					'System Integrator', 
+					'Master Area Partner', 
+					'Supplies Distributor', 
+					'Federal Reseller', 
+					'T1 Service Provider', 
+					'Remarketing Distributor'
+				].includes(item.BRT));
+				brts = brts.map(item => item.BRT);
+				brts = global.data.brts.filter(item => brts.includes(item.name));
+				let channels = [];
+				let brt_codes = [];
+				brts.forEach(item => {
+				  channels = [...channels, ...item.channel];
+				  brt_codes = [...brt_codes, item.code];
+				});
+				global.data.partyData = {
+				  channels,
+				  codes: brt_codes
+				}
 
 				//  config.locale = global.data.user.locale;
 				//  config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8839,7 +8938,7 @@
 				}
 
 				// GET AGREEMENTS FROM ICM
-				request.agreements(global.data, function(data) {
+				request.partyAgreements(global.data, function(data) {
 				  console.log('request.agreements data', data);
 				  if (data) {
 					reference.agreements = data;
@@ -12592,7 +12691,7 @@
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview_DEV/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search",
 			  type: "POST"
 			}
 		  },
@@ -13268,7 +13367,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: draftFilter,
@@ -13297,7 +13396,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: completedFilter,
@@ -13342,7 +13441,7 @@
 									 );
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: progressFilter,
