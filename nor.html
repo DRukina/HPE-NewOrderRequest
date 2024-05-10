@@ -3578,7 +3578,7 @@
 	structure: [
 	  // UPLOAD PO
 	  {
-		header: "Form261",
+		header: "Form261", 
 		group: [
 		  [{
 			label: "FormCFI06",
@@ -6448,6 +6448,7 @@
 	back: "Back",
 	no: "No",
 	poformat: "POFormat",
+  poformatjp: "POFormatJP",
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
@@ -6455,6 +6456,14 @@
 	  // optional attachment
 	  {
 		header: "FormCFI08",
+    filter: {
+      logic: "and",
+      filters: [{
+        field: "CountryCode",
+        operator: "neq",
+        value: "JP"
+      }],
+    },  
 		group: [
 		  [{
 			label: "FormCFI06",
@@ -6469,6 +6478,31 @@
 		  }],
 		]
 	  },
+    // optional attachment Japan
+    {
+      header: "FormCFI08",
+      filter: {
+        logic: "and",
+        filters: [{
+          field: "CountryCode",
+          operator: "eq",
+          value: "JP"
+        }],
+      },
+      group: [
+        [{
+          label: "FormCFI06",
+          data: "Optional_Attachment",
+          type: "kUpload",
+          required: false,
+          uploadConfig: {
+            formId: 989,
+            extensions: [".pdf", ".zip", ".xlxs", ".xlsx", ".xls", ".doc", ".docx"],
+            maxFileSize: 18
+          }
+        }],
+      ]
+    },
 	  /*  {
           filter: {
             field: "PO_Category",
@@ -10168,6 +10202,7 @@
 	},
 	page2: function() {
 	  console.log('page2');
+    
 	  quoteHelper.checkResellerAddressData(config);
 	  if (document.querySelector('label[for="Config_Tier1"]')) {
 		$('label[for="Config_Tier1"]').click(function() {
@@ -10465,6 +10500,12 @@
 	},
 	page11: function() {
 	  console.log('page11');
+    if (config.dataset.CountryCode === 'JP') {
+      const el = $('.kUpload .fmmcosmin .k-header').next('span');
+      $(el).text('');
+      $(el).text(hpe.fn.lang(page11.poformatjp, config.locale, config.localizations));
+    }
+    
 	  var tempSaveAttachment;
 	  if (document.querySelector('input[data-name="Optional_Attachment"]')) {
 		const OptAtt = document.querySelector('[data-name="Optional_Attachment"]');
