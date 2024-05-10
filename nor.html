@@ -353,6 +353,7 @@
 		  channel: ["ICMChannelGeneral"]
 		}
 	  ],
+	  partyData: null, 
 	},
 	init: function(cb) {
 	  let self = this;
@@ -8385,6 +8386,32 @@
 				  return (item.name == global.data.brt.name)
 				});
 				global.data.brt.code = brtCode[0].code;
+				
+				// new 
+				let brts = view.filter(item => [
+					'Virtual OEM', 
+					'T1 Solution Provider', 
+					'Distributor', 
+					'OEM Distributor', 
+					'System Integrator', 
+					'Master Area Partner', 
+					'Supplies Distributor', 
+					'Federal Reseller', 
+					'T1 Service Provider', 
+					'Remarketing Distributor'
+				].includes(item.BRT));
+				brts = brts.map(item => item.BRT);
+				brts = global.data.brts.filter(item => brts.includes(item.name));
+				let channels = [];
+				let brt_codes = [];
+				brts.forEach(item => {
+				  channels = [...channels, ...item.channel];
+				  brt_codes = [...brt_codes, item.code];
+				});
+				global.data.partyData = {
+				  channels,
+				  codes: brt_codes
+				}
 
 				//  config.locale = global.data.user.locale;
 				//  config.dom = document.querySelector('div[tab-id="oob"]');
@@ -8405,6 +8432,7 @@
 				}
 
 				// GET AGREEMENTS FROM ICM
+				request.partyAgreements(global.data, function(data) {
 				request.partyAgreements(global.data, function(data) {
 				  console.log('request.agreements data', data);
 				  if (data) {
@@ -12742,7 +12770,7 @@
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview_DEV/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search",
 			  type: "POST"
 			}
 		  },
@@ -13418,7 +13446,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: draftFilter,
@@ -13447,7 +13475,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: completedFilter,
@@ -13492,7 +13520,7 @@
 									 );
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview',
 			payload: {
 			  pageSize: 3000,
 			  filter: progressFilter,
