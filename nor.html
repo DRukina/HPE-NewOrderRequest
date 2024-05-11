@@ -9278,7 +9278,7 @@
 		config.dataset.Requestor_Email = '[SSOData.Email]';
 
 		// Don't override user's data if exist for case description
-		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.FirstName && config.dataset.LastName)) {
+		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
