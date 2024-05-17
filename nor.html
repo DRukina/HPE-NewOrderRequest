@@ -12058,7 +12058,7 @@
 			  },
 			  {
 				label: "HPE Part Quantity*",
-				value: ucid.Count,
+				value: quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
 				type: "text",
