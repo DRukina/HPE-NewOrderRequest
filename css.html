@@ -574,4 +574,179 @@ color: red;
 padding-left: 2px;
 }
 
+/* layout */
+
+#form-table {
+  font-size: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+}
+
+#form-table .heading h4 {
+  font-size: 48px;
+  font-weight: 300;
+}
+
+#form-table fieldset {
+  display: flex;
+  margin: 0;
+}
+
+#form-table fieldset>label {
+  &,
+  :is(input, textarea) {
+    font-size: inherit;
+  }
+}
+
+/* layout.end */
+
+/* checkbox */
+
+#form-table .checkbox,
+#form-table fieldset>label:first-child,
+#form-table .title-cell:first-child {
+  width: 40px;
+}
+
+#form-table .checkbox {
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  &[data-state=error] label span {
+    border-color: #333;
+  }
+  .fmmcosmin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    label {
+      display: block;
+      width: 24px;
+      margin: 0;
+      padding: 0;
+      font-size: 0;
+      span {
+        top: 0;
+        height: 24px;
+        width: 24px;
+        &::after {
+          box-sizing: content-box;
+        }
+      }
+    }
+  }
+}
+
+/* checkbox.end */
+
+/* basic cells */
+
+#form-table fieldset>label {
+  width: 160px;
+  margin-bottom: 0;
+  background-color: #fff;
+  border-color: transparent;
+  border-left: 0;
+  border-right: 0;
+}
+
+#form-table .wrapper:has(.fmmcosmin > [type="hidden"]) {
+  display: block !important;
+  &>* {
+    display: none;
+  }
+}
+
+#form-table fieldset>label .name {
+  display: none;
+}
+
+#form-table fieldset .wrapper .fmmcosmin {
+  &,
+  input {
+    height: 100%;
+  }
+}
+
+#form-table .bordered-input input[type="text"] {
+  text-align: center;
+}
+
+/* basic cells.end */
+
+/* cells paddings */
+
+#form-table fieldset>label {
+  padding: 0 2px;
+}
+
+#form-table fieldset :is(input, textarea) {
+  padding: 10px 11px;
+}
+
+#form-table .title-cell,
+#form-table .bolder-label :is(input, textarea) {
+  padding: 12px 13px;
+}
+
+/* cells paddings.end */
+
+/* special cells */
+
+#form-table .title-cell {
+  border-top-color: #dddddd;
+  border-bottom-color: #dddddd;
+  :is(input, textarea) {
+    padding: 0;
+  }
+}
+
+#form-table .grey-cell {
+  background: #eee;
+  :is(input, textarea) {
+    background: transparent;
+  }
+}
+
+#form-table .bolder-label {
+  padding: 0;
+  :is(input, textarea) {
+    height: 60px;
+    font-weight: 600;
+    color: #333;
+    background: transparent;
+  }
+  textarea {
+    height: 100%;
+    resize: none;
+  }
+}
+
+#form-table .bordered-input {
+  &[data-state="error"] :is(input, textarea) {
+    border-color: #ca2b4e !important;
+  }
+  :is(input, textarea) {
+    width: 100%;
+    border: 2px solid #ccc !important;
+    padding: 8px 9px;
+  }
+  textarea {
+    height: 100%;
+    resize: none;
+  }
+  &.date svg {
+    top: 50% !important;
+    transform: translate(0, -50%);
+    right: 10px !important;
+  }
+}
+
+/* special cells.end */
+
 </style>
