@@ -1878,31 +1878,6 @@
 		]
 	  },
 
-	  // testing 
-	  
-	  {
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Region",
-			operator: "eq",
-			value: "AMS"
-		  }]
-		},
-		header: "",
-		group: [
-		  [{
-			label: "Form262",
-			data: "Config_PartialOrder",
-			required: false,
-			type: "toggle",
-			value: "N",
-			values: ["N", "Y"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  
 	  // QOD with filter no ams / UCID-CONFIG NO
 	  {
 		filter: {
@@ -12122,7 +12097,7 @@
 			  },
 			  {
 				label: "HPE Part Quantity*",
-				value: ucid.Count,
+				value: quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
 				type: "text",
@@ -13847,7 +13822,7 @@
 
 <script>
   const appSettings = {
-	environment: 'STG54545',
+	environment: 'STG',
 	views: {
 	  prod: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-prod-qids',
 	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
