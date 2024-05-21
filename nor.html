@@ -7225,6 +7225,25 @@
 		  result.fail.push(checkbox.closest('label'));
 		}
 	  }
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		var isOneSelected = false;
+		const checkboxes = document.querySelectorAll(`input[data-type=checkbox]`);
+		for (const checkbox of checkboxes) {
+		  if (checkbox.checked) {
+			isOneSelected = true;
+			break;
+		  }
+		}
+		// At least one checkbox must be selected
+		if (!isOneSelected) {
+		  const checkbox = document.querySelector(`input[data-type=checkbox]`);
+		  result.fail.push(checkbox.closest('label'));
+		}
+		
+		if (!result.fail.length) {
+		  quoteHelper.saveProductAndServicesConfig(config);
+		}
+	  }
 	  return result;
 	},
   };
@@ -9042,6 +9061,9 @@
 		  config.dataset.CaseDescription = caseDescription;
 		  //  console.log("CaseDescription: " + config.dataset.CaseDescription);
 		}
+		
+		// product and services
+		quoteHelper.parseProductAndServicesRepeater(config);
 
 		if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 		  config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
@@ -9141,7 +9163,13 @@
 		  }
 		});
 	  });
-	}
+	},
+	onDeClone: function(donor, clone) {
+	  // PRODUCT AND SERVICES MODULE
+	  if (config.pages[config.page].id === 'PS') {
+		quoteHelper.saveProductAndServicesConfig(config, clone);
+	  }
+	},
   };
 
   if (global.data.user.internal) {
@@ -9378,6 +9406,7 @@
 		  quoteHelper.clearHeaderQuoteData(config);
 		} else {
 		  config.dataset.ProductServices_Attachment = null;
+		  config.dataset.ProductServicesRepeater = null;
 		}
 		nbsf.init(config, config.page);
 	  });
@@ -9401,6 +9430,7 @@
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
 			config.dataset.ProductServices_Attachment = null;
+			config.dataset.ProductServicesRepeater = null;
 		  }
 		});
 	  }
@@ -11998,6 +12028,15 @@
 	  });
 	},
 	buildProductAndServices: function(config, page) {
+	  // clear repeater node 
+	  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
+		if (currentValue.id == "form-table-repeat") {
+		  return accumulator + 1;
+		}
+		return accumulator;
+	  }, 0);
+	  page.structure.splice(2, sumRepeat);
+	  
 	  if (quoteHelper.ucids) {
 		const fields = [
 		  "UCID",
@@ -12234,11 +12273,93 @@
 			}
 		  });
 		}
+		
+		// quoteless && no upload data 
+		
+		if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		  // add repeater 
+		  const repeaterItem = [
+			{
+			  label: "Checkbox (type checkbox)",
+			  data: "Selected",
+			  required: false,
+			  type: "checkbox",
+			  value: "Y",
+			  values: ["Y"],
+			},
+			{
+			  label: "HPE Part Number",
+			  data: "ProductID",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},
+			{
+			  label: "HPE Part Quantity*",
+			  data: "Count",
+			  required: true,
+			  type: "text",
+			  validation: ['minLen|1', 'isInteger'],
+			  typing: "isInteger",
+			  class: "bordered-input",
+			},
+			{
+			  label: "Deal ID",
+			  data: "DealId",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},				
+			{
+			  label: "bundle ID / Icon ID",
+			  data: "BundleID" ,
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},
+			{
+			  label: "Unit Price",
+			  data: "UnitNetAmount",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping"
+			},
+			{
+			  label: "Extended Net Price",
+			  data: "ExtendedNetAmount",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping"
+			}];
+		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
+			if (currentValue.id == "form-table-repeat") {
+			  return accumulator + 1;
+			}
+			return accumulator;
+		  }, 0);
+
+		  page.structure.splice(2, sumRepeat, {
+			header: "",
+			repeatable: "ProductServicesRepeater",
+			repeatableLimit: 4,
+			repeatableDirection: "bottom",
+			group: [repeaterItem],
+			id: "form-table-repeat",
+		  });
+		}
+		
 		formTable.group = group;
 		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 	},
-	saveProductAndServicesConfig: function(config) {
+	saveProductAndServicesConfig: function(config, deletedRepeater = null) { // fix deletedRepeaterID
 	  const isPPAtt = config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== "Y" && config.dataset.Config_PartialOrder == "Y";
 	  const isPPQuote = config.dataset.Config_Quote == "Y" && config.dataset.Config_PartialOrder == "Y";
 	  const poValueFilter = {
@@ -12290,6 +12411,25 @@
 		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
 		}
 		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+	  } else {
+		// quoteless && no upload data 
+		let res = 0;
+		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
+		  if (!deletedRepeater || deletedRepeater && deletedRepeater !== elem) {
+			const checkbox = $(elem).find('*[data-name="Selected"]');
+			if (checkbox.prop('checked')) {
+			  const count = Number($(elem).find('*[data-name="Count"]').val() || 0);
+			  const amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
+			  res += Math.round(count * amount * 100);
+			}
+		  }
+		});
+		res /= 100;
+		const filter = nbsf.fn.filter(config.dataset, poValueFilter);
+		if (filter) {
+		  config.dataset.PO_Value = res || 0;
+		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
+		}
 	  }
 	},
 	saveProductAndServices: function(config, callback, errorCallback) {
@@ -12319,6 +12459,45 @@
 			errorCallback();
 		  }
 		});
+	  }
+	},
+	parseProductAndServicesRepeater: function (config, callback, errorCallback) {
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y' && config.dataset.ProductServicesRepeater) {
+		try {
+		  const ucids = [];
+		  const data = JSON.parse(config.dataset.ProductServicesRepeater);
+		  if (data && data.length) {
+			data.forEach(item => {
+			  ucids.push({
+				Request_Id: config.dataset.EntryId,
+				Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+				ProductID: item.ProductID,
+				BundleID: item.BundleID,
+				Selected: item.Selected,
+				DealId: item.DealId,	
+				UCID: "",	
+				UnitNetAmount: item.UnitNetAmount,
+				ExtendedNetAmount: item.ExtendedNetAmount,
+				Quantity: "",
+				CfgSystemId: "",
+				CfgSystemName: "",
+				Count: item.Count,
+				ProductClassificationCode: "",
+				LineType: "Config",
+				ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+			  });
+			});
+			quoteHelper.ucids = ucids;
+			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+		  }
+		  if (callback) {
+		  	callback(ucids);
+		  }
+		} catch(e) {
+		  if (errorCallback) {
+			errorCallback(e);
+		  }
+		}
 	  }
 	},
 	clearPOData: function(config) {
