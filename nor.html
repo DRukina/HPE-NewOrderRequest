@@ -7261,6 +7261,12 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	review: {
+	  editable: true, // @TODO
+	  layout: "spa",
+	  collapsible: true,
+	  collapsed: true,
+	},
 	structure: [{
 	  hidden: false,
 	  group: [
@@ -7274,7 +7280,7 @@
 	  // POPULATE ORID
 	  var orid = document.querySelectorAll(".header .ORID");
 	  for (i = 0; i < orid.length; i++) orid[i].innerText = config.dataset.EntryId;
-	  document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.classList.add("output");
+	  // document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.classList.add("output"); // @TODO
 	  //document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.innerHTML = '';
 
 	  //empty ship to if the config is toggled yes but the quote still has info
@@ -7680,7 +7686,10 @@
 		  ]
 		}
 	  };
-	  var app = document.querySelector(".output");
+	  
+	  /*
+	  var app = document.querySelector(".nbsf-review-page");
+	  
 	  const geo = config.dataset.Geo || global.data.geo.geography;
 	  document.querySelector(".output").innerHTML += '<div id="msg" class="active nfo"><p>' + hpe.fn.lang("InfoCurrent", config.locale, config.localizations) + '</p><span>' +
 		`<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="close" width="16px" height="16px">
@@ -7688,10 +7697,10 @@
   </path>
   </svg>` +
 		'</span></div>';
-	  $('#msg.nfo').show();
+	  $('#msg.nfo').show();*/
 
 	  let objK = Object.keys(reviewSetup);
-	  for (i = 0; i < objK.length; i++) {
+	  /*for (i = 0; i < objK.length; i++) {
 		let key = objK[i];
 		if (key == "customershipto") {
 		  var main = reviewSetup[key];
@@ -7815,6 +7824,7 @@
 		if (typeof(reviewSetup[key].filter) === "object") filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
 		if (reviewSetup[key].fieldset.length > 0 && filter) {
 		  console.log('reviewSetup[key]', reviewSetup[key]);
+		  /*
 		  if (app.querySelector(".row[review-id=" + key + "]") == null)
 			app.innerHTML += '<div class="row" review-id="' + key + '"><h4>' + reviewSetup[key].title + '</h4></div>';
 		  var row = app.querySelector(".row[review-id=" + key + "]");
@@ -7944,9 +7954,12 @@
 				row.innerHTML = "";
 			}
 		  }
+		  // old comment finish/
 		}
 	  }
-	  $('#msg.nfo span').click(function() {
+	  */
+	  // Buttons logic
+  	  $('#msg.nfo span').click(function() {
 		$('#msg.nfo').hide();
 	  });
 	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));
@@ -7980,6 +7993,7 @@
 	  });
 	}
   };
+  
 </script>
 <script>
   // MAIN CONFIG
@@ -7991,6 +8005,7 @@
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
 	},
+	helper: true,
 	summary: {},
 	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
 	onNext: function() {
