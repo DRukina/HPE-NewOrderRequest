@@ -7147,10 +7147,10 @@
 		]
 	  },
 	],      
-	callback: function() {
-	  const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
-	  if (OptAtt) {
-		const kendoOptAtt = $(OptAtt).data('kendoUpload');
+	callback: function() {  
+	  const PS_Att = document.querySelector('[data-name="ProductServices_Attachment"]');
+	  if (PS_Att) {
+		const kendoOptAtt = $(PS_Att).data('kendoUpload');
 		kendoOptAtt.bind("upload", function(e) {            
 		  if (e.files && e.files.length) {
 			quoteHelper.ucids = [];
@@ -7166,6 +7166,12 @@
 			});
 		  }
 		});
+		
+		const row = PS_Att.closest('.row');
+		const heading = $(row).find('.heading');
+		if (heading) {
+		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services.xlsx'>Download the template</a>`);
+		}
 	  }
 
 	  callbacks.page13();  
@@ -12324,7 +12330,7 @@
 			{
 			  label: "Deal ID",
 			  data: "DealId",
-			  required: true,
+			  required: false,
 			  type: "text",
 			  class: "bordered-input",
 			  validation: ['minLen|1'],
@@ -12332,7 +12338,7 @@
 			{
 			  label: "bundle ID / Icon ID",
 			  data: "BundleID" ,
-			  required: true,
+			  required: false,
 			  type: "text",
 			  class: "bordered-input",
 			  validation: ['minLen|1'],
