@@ -2425,8 +2425,10 @@
 		pass: []
 	  };
 	  var Notification_CC = document.querySelector('input[data-name=Notification_CC]');
-	  if (Notification_CC.value && (!nbsf.vld.isCarbonCC(Notification_CC.value) || !nbsf.vld.maxLen(Notification_CC.value, 255))) {
-		result.fail.push(Notification_CC.closest('label'));
+	  if (Notification_CC) {
+		if (Notification_CC.value && (!nbsf.vld.isCarbonCC(Notification_CC.value) || !nbsf.vld.maxLen(Notification_CC.value, 255))) {
+		  result.fail.push(Notification_CC.closest('label'));
+		}
 	  }
 
 	  // check if quote ID respects the format
@@ -6900,7 +6902,7 @@
 		pass: []
 	  };
 	  var Optional_Attachment = document.querySelector('input[data-name=Optional_Attachment]');
-	  if (Optional_Attachment.value) result.pass.push(Optional_Attachment);
+	  if (Optional_Attachment && Optional_Attachment.value) result.pass.push(Optional_Attachment);
 	  return result;
 	}
   };
