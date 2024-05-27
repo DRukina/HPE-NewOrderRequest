@@ -377,8 +377,8 @@
 	  }
 	},
 	sso: function() {
-	  global.data.brt.code = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeCode;
-	  global.data.brt.name = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
+	  global.data.brt.code = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeCode;
+	  global.data.brt.name = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
 	  //global.data.brt.channel = [];
 	  // SETTING THE CHANNEL IS IMPORTANT
 	  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -391,8 +391,8 @@
 	  global.data.company.party = "[SSOData.PartyId]";
 	  global.data.company.country = "[SSOData.CountryEntityId]";
 	  global.data.company.global = "[SSOData.GlobalEntityId]";
-	  global.data.company.brt = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
-	  global.data.company.PreferredBusinessRelationship = JSON.parse(`[SSOData.PreferredBusinessRelationship]`);
+	  global.data.company.brt = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
+	  global.data.company.PreferredBusinessRelationship = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`);
 	  global.data.company.name = "[SSOData.PartnerName]";
 
 	  global.data.geo.name = "[SSOData.PhysCountry]"; //CFI
@@ -483,8 +483,8 @@
   else global.data.user.internal = false;
 
   if (!global.data.user.internal) {
-	global.data.brt.code = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeCode;
-	global.data.brt.name = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
+	global.data.brt.code = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeCode;
+	global.data.brt.name = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
 	//global.data.brt.channel = [];
 	// SETTING THE CHANNEL IS IMPORTANT
 	// IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -497,8 +497,8 @@
 	global.data.company.party = "[SSOData.PartyId]";
 	global.data.company.country = "[SSOData.CountryEntityId]";
 	global.data.company.global = "[SSOData.GlobalEntityId]";
-	global.data.company.brt = JSON.parse(`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
-	global.data.company.PreferredBusinessRelationship = JSON.parse(`[SSOData.PreferredBusinessRelationship]`);
+	global.data.company.brt = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`).businessRelationshipTypeName;
+	global.data.company.PreferredBusinessRelationship = JSON.parse(String.raw`[SSOData.PreferredBusinessRelationship]`);
 	global.data.company.name = "[SSOData.PartnerName]";
 
 	global.data.geo.name = "[SSOData.PhysCountry]"; //CFI
