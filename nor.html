@@ -7157,6 +7157,8 @@
 			quoteHelper.maxQuantity = null;
 			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
 			  if (data.success && data.data && data.data.length) {
+				config.dataset.ProductServicesRepeater = null;
+				config.dataset.Config_Quote_PartialOrder = null;
 				config.dataset.ProductServices_Attachment =
 				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
 				// build product and services page
@@ -8021,11 +8023,13 @@
 	  
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
+
 	  if (config.pages[config.page + 1].id == "PS") {
 		quoteHelper.configureProductAndServices(config, config.pages[config.page + 1]);
 	  }
 	  if (config.pages[config.page].id == "PS") {
-		 quoteHelper.saveProductAndServicesConfig(config);
+		quoteHelper.parseProductAndServicesRepeater(config);
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 
 	  function doNext() {
@@ -9187,11 +9191,11 @@
 		});
 	  });
 	},
+	onClone: function(donor, clone) {
+	  quoteHelper.onCloneProductAndServices(config, clone);
+	},
 	onDeClone: function(donor, clone) {
-	  // PRODUCT AND SERVICES MODULE
-	  if (config.pages[config.page].id === 'PS') {
-		quoteHelper.saveProductAndServicesConfig(config, clone);
-	  }
+	  quoteHelper.onDeCloneProductAndServices(config, clone);
 	},
   };
 
@@ -10246,6 +10250,10 @@
 			}
 		  });
 		}
+	  }
+	  
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		quoteHelper.onCloneProductAndServices(config, document);
 	  }
 	},
   };
@@ -12120,7 +12128,7 @@
 			  },
 			  {
 				label: "HPE Part Quantity*",
-				value: quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
+				value: quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
 				type: "text",
@@ -12301,7 +12309,153 @@
 		
 		if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
 		  // add repeater 
-		  const repeaterItem = [
+		  const PPPD = [
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "checkbox-hidden",
+			},
+			{
+			  label: "Previously Purchased Product Details:",
+			  value: "Previously Purchased Product Details:",
+			  data: "PPPD",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Previously Purchased Product Details",
+			  data: "PreviouslyPurchasedProductDetails",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+		  ];
+		  const SNP = [
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "checkbox-hidden",
+			},
+			{
+			  label: "Serial number of the products:*",
+			  value: "Serial number of the products:*",
+			  data: "SNP",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Serial number of the products:*",
+			  data: "SerialNumberOfProducts",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+		  ];
+		  const PPD = [
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "checkbox-hidden",
+			},
+			{
+			  label: "Product Purchased Date:",
+			  value: "Product Purchased Date:",
+			  data: "PPD",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Product Purchased Date:",
+			  placeholder: "Form040",
+			  data: "ProductPurchasedDate",
+			  required: false,
+			  type: "date",
+			  placeholder: "DD/MM/YYYY",
+			  class: "bordered-input",
+			  dtp: {
+				format: 'd/m/Y',
+				formatDate: 'd/m/Y',
+				timepicker: false,
+				minDate: 0,
+				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				onChangeDateTime: function(dp, $input) {
+
+				}
+			  }
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+		  ];
+		  let repeaterItem = [
 			{
 			  label: "Checkbox (type checkbox)",
 			  data: "Selected",
@@ -12360,7 +12514,17 @@
 			  class: "bordered-input",
 			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
 			  typing: "povaluetyping"
+			},
+			{
+			  label: "Carepack",
+			  data: "Carepack",
+			  required: false,
+			  type: "toggle",
+			  values: ["N", "Y"],
+			  options: ["Carepack", "Carepack"],
+			  class: "ps-toggle",
 			}];
+		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
 		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
 			if (currentValue.id == "form-table-repeat") {
 			  return accumulator + 1;
@@ -12491,6 +12655,11 @@
 		  const data = JSON.parse(config.dataset.ProductServicesRepeater);
 		  if (data && data.length) {
 			data.forEach(item => {
+			  if (item.Carepack !== 'Y') {
+				item.PreviouslyPurchasedProductDetails = null;
+				item.SerialNumberOfProducts = null;
+				item.ProductPurchasedDate = null;
+			  }
 			  ucids.push({
 				Request_Id: config.dataset.EntryId,
 				Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
@@ -12508,10 +12677,14 @@
 				ProductClassificationCode: "",
 				LineType: "Config",
 				ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+				PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+				SerialNumberOfProducts: item.SerialNumberOfProducts,
+				ProductPurchasedDate: item.ProductPurchasedDate,
 			  });
 			});
 			quoteHelper.ucids = ucids;
 			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			config.dataset.ProductServicesRepeater = JSON.stringify(data);
 		  }
 		  if (callback) {
 		  	callback(ucids);
@@ -12521,6 +12694,51 @@
 			errorCallback(e);
 		  }
 		}
+	  }
+	},
+	onCloneProductAndServices: function(config, clone) {
+	  if (clone.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = clone.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		const initCarepackConfig = function(node) {
+		  var parent;
+		  if (node.nodeName.toLowerCase() == "span")
+			parent = node.parentNode.parentNode.parentNode.parentNode;
+		  else
+			parent = node.parentNode.parentNode.parentNode;
+
+		  var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+		  var target = parent.querySelector(".fmmcosmin label");
+
+		  var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+		  const fieldset = target.closest('fieldset');
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 7) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
+		  }
+		}
+		
+		for (i = 0; i < toggles.length; i++) {
+		  // initial state
+		  initCarepackConfig( toggles[i]);
+
+		  // click listener
+		  toggles[i].addEventListener("click", function(e) {
+			initCarepackConfig(e.target);
+		  });
+		}
+	  }
+	},
+	onDeCloneProductAndServices: function(config, clone) {
+	  // PRODUCT AND SERVICES MODULE
+	  if (config.pages[config.page].id === 'PS') {
+		quoteHelper.saveProductAndServicesConfig(config, clone);
 	  }
 	},
 	clearPOData: function(config) {
