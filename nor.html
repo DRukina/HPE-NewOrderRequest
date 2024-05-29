@@ -955,64 +955,64 @@
 	nav: true,
 	structure: [
 	  {
-		header: "FormCFI01",
-		description: "FormCFI02",
-		group: [
+	  header: "FormCFI01",
+	  description: "FormCFI02",
+	  group: [
 		  [
 			{
-			  label: "Email",
-			  data: "OnBehalf_CreatedBy",
-			  required: true,
-			  type: "text",
-			  tooltip: true,
-			  disabled: true,
-			  minLen: 6,
-			  maxLen: 256,
-			  minVal: 6,
-			  maxVal: 23,
-			  decimals: 4,
-			  placeholder: "",
-			  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
-			  typing: "kpDefault"
-			},
-			{
-			  label: "FirstName",
-			  data: "FirstName",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "LastName",
-			  data: "LastName",
-			  required: true,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "FormCFI05",
-			  data: "Language",
-			  required: false,
-			  disabled: true,
-			  type: "select",
-			  placeholder: "",
-			  options: [],
-			  values: []
-			}
-		  ]
+		  label: "Email",
+		  data: "OnBehalf_CreatedBy",
+		  required: true,
+		  type: "text",
+		  tooltip: true,
+		  disabled: true,
+		  minLen: 6,
+		  maxLen: 256,
+		  minVal: 6,
+		  maxVal: 23,
+		  decimals: 4,
+		  placeholder: "",
+		  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
+		  typing: "kpDefault"
+		},
+		 {
+		   label: "FirstName",
+		   data: "FirstName",
+		   required: false,
+		   disabled: true,
+		   type: "text",
+		   placeholder: ""
+		 },
+		 {
+		   label: "LastName",
+		   data: "LastName",
+		   required: true,
+		   disabled: true,
+		   type: "text",
+		   placeholder: ""
+		 },
+		 {
+		   label: "FormCFI05",
+		   data: "Language",
+		   required: false,
+		   disabled: true,
+		   type: "select",
+		   placeholder: "",
+		   options: [],
+		   values: []
+		 }
 		]
-	  },
-	  {
+	  ]
+	},
+				{
 		filter: {
 		  field: "OnBehalf_Type",
 		  operator: "eq",
 		  value: "Company"
 		},
-		header: "FormCFI03",
-		description: "FormCFI04",
-		group: [
+				  header: "FormCFI03",
+				  description: "FormCFI04",
+				  group: [
 		  [
 			{
 			  label: "Country Entity",
@@ -1090,69 +1090,69 @@
 		group: [
 		  [
 			{
-			  label: "Country Entity",
-			  data: "CountryEntity",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: "",
-			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-			  typing: "partnerIds"
-			},
-			{
-			  label: "PartyId",
-			  data: "PartyId",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: "",
-			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-			  typing: "partnerIds"
-			},
-			{
-			  label: "Business Relationship Type",
-			  data: "PartnerBRT",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Partner name",
-			  data: "PartnerName",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Country",
-			  data: "Country",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Region",
-			  data: "Region",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "GEO",
-			  data: "Geo",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			}
-		  ]
-		]
-	  }
-	],
+					  label: "Country Entity",
+					  data: "CountryEntity",
+					  required: false,
+					  disabled: true,
+					  type: "text",
+					  placeholder: "",
+					  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+					  typing: "partnerIds"
+					},
+					 {
+					   label: "PartyId",
+					   data: "PartyId",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: "",
+					   validation: ["partnerIds", "minLen|1", "maxLen|50"],
+					   typing: "partnerIds"
+					 },
+					 {
+					   label: "Business Relationship Type",
+					   data: "PartnerBRT",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Partner name",
+					   data: "PartnerName",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Country",
+					   data: "Country",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Region",
+					   data: "Region",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "GEO",
+					   data: "Geo",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 }
+					]
+				  ]
+				}
+			   ],
 	callback: function() {
 	  callbacks.page0();
 	},
@@ -8536,7 +8536,7 @@
 				config.dataset.CountryEntity = global.data.company.country;
 				config.dataset.PartyId = document.querySelector("input[data-name=OnBehalf_PartyId]").value;
 				if (!config.dataset.PartnerBRT) {
-				  config.dataset.PartnerBRT = partyData.BRT;
+				config.dataset.PartnerBRT = partyData.BRT;
 				}
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
@@ -8880,7 +8880,7 @@
 			var cStructure = cPage.structure;
 			var cFilter = true;
 			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
-			if (cPage.quotePreview) cFilter = false;
+			if (cPage.quotePreview || cPage.review) cFilter = false;
 
 			if (
 			  config.dataset.Config_Quote == 'Y' &&
@@ -8901,67 +8901,121 @@
 				ttl: "page-" + i,
 				val: hpe.fn.lang(cPage.title, config.locale, config.localizations)
 			  };
-			  if (global.data.user.internal) {
-				if (hdr.ttl != "page-0")
-				  pairs.push(hdr);
-			  } else pairs.push(hdr);
-			  for (j = 0; j < cStructure.length; j++) {
-				var cFilter = true;
-				if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
-				if (cFilter) {
-				  for (k = 0; k < cStructure[j].group.length; k++) {
-					var cGroup = cStructure[j].group[k];
-					for (l = 0; l < cGroup.length; l++) {
-					  var cInput = cGroup[l];
-					  if (cInput.type != "hidden") {
-						var obj = {
-						  ttl: "N/A",
-						  val: "N/A",
-						  data: "N/A"
-						}
-						if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
-						else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
-						if (
-						  typeof(cInput.data) !== "undefined" &&
-						  typeof(config.dataset[cInput.data]) !== "undefined" &&
-						  config.dataset[cInput.data] != null &&
-						  config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
-						) {
-						  if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
-						  else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
-						  else obj.val = config.dataset[cInput.data];
-						}
-						if (obj.val != "N/A") {
-						  obj.data = cInput.data;
-						  pairs.push(obj);
+			  if (cPage.id == "PS") {
+				pairs.push(hdr);
+				let PSTable = ''; 
+				if (config.dataset.Config_Quote_PartialOrder) {
+					try {
+					  let PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+					  PSData = PSData.filter(item => item.Selected == "Y");
+					  if (PSData.length) {
+						// headers
+						const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+						PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
+<tr>
+    <th style="${stylePS}">HPE Part Number</th>
+    <th style="${stylePS}">HPE Part Quantity</th>
+    <th style="${stylePS}">Deal ID</th>
+    <th style="${stylePS}">bundle ID / Icon ID</th>
+    <th style="${stylePS}">Unit Price</th>
+    <th style="${stylePS}">Extended Net Price</th>
+    <th style="${stylePS}">Previously Purchased Product Details</th>
+    <th style="${stylePS}">Serial number of the products</th>
+    <th style="${stylePS}">Product Purchased Date</th>
+</tr>`;
+						PSData.forEach(item => {
+						  PSTable = PSTable + `<tr>
+	<td style="${stylePS}">${item.ProductID  || ''}</td>
+	<td style="${stylePS}">${item.Count  || ''}</td>
+	<td style="${stylePS}">${item.DealId  || ''}</td>
+	<td style="${stylePS}">${item.BundleID  || ''}</td>
+	<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
+	<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>
+	<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+	<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
+	<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>
+  </tr>`;
+						});
+						PSTable = PSTable + `</table>`;
+					  }
+					} catch(e) {}
+				  var obj = {
+					ttl: "",
+					val: PSTable,
+					data: "ProductAndServices",
+					id: cPage.id,
+				  };
+				  pairs.push(obj);
+				}
+				
+			  } else {
+				if (global.data.user.internal) {
+				  if (hdr.ttl != "page-0")
+					pairs.push(hdr);
+				} else pairs.push(hdr);
+
+				for (j = 0; j < cStructure.length; j++) {
+				  var cFilter = true;
+				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  if (cFilter) {
+					for (k = 0; k < cStructure[j].group.length; k++) {
+					  var cGroup = cStructure[j].group[k];
+					  for (l = 0; l < cGroup.length; l++) {
+						var cInput = cGroup[l];
+						if (cInput.type != "hidden") {
+						  var obj = {
+							ttl: "N/A",
+							val: "N/A",
+							data: "N/A"
+						  }
+						  if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
+						  else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
+						  if (
+							typeof(cInput.data) !== "undefined" &&
+							typeof(config.dataset[cInput.data]) !== "undefined" &&
+							config.dataset[cInput.data] != null &&
+							config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
+						  ) {
+							if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
+							else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
+							else obj.val = config.dataset[cInput.data];
+						  }
+						  if (obj.val != "N/A") {
+							obj.data = cInput.data;
+							pairs.push(obj);
+						  }
 						}
 					  }
 					}
 				  }
 				}
-			  }
-			  var obj = pairs[pairs.length - 1];
-			  //  console.log("obj", obj);
-			  if (obj.ttl.indexOf("page-") > -1) {
-				pairs.pop();
-			  }
-			  if (obj.data == "OnBehalf_CreatedBy") {
-				// Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
-				pairs.shift();
-				const secondPair = pairs.shift();
-				if (secondPair.data == "OnBehalf_PartyId") {
+				var obj = pairs[pairs.length - 1];
+				//  console.log("obj", obj);
+				if (obj.ttl.indexOf("page-") > -1) {
+				  pairs.pop();
+				}
+				if (obj.data == "OnBehalf_CreatedBy") {
+				  // Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
 				  pairs.shift();
+				  const secondPair = pairs.shift();
+				  if (secondPair.data == "OnBehalf_PartyId") {
+					pairs.shift();
+				  }
 				}
 			  }
-
 			}
 		  }
 		  //  console.log("pairs", pairs);
 		  var caseDescription = "";
 		  for (i = 0; i < pairs.length; i++) {
-			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
+			if (pairs[i].id === "PS") {
+			  caseDescription = caseDescription + "<br><br>";
+			  caseDescription = caseDescription + "<strong>" + "Stand alone products and services" + "</strong><br>";
+			  caseDescription = caseDescription + pairs[i].val + "<br>";
+			  
+			} else if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI018", config.locale, config.localizations) + "</strong><br>";
@@ -8973,7 +9027,8 @@
 				else
 				  caseDescription = caseDescription + "<strong>" + pairs[i].val + "</strong><br>";
 			  }
-			} else {
+			}
+			else {
 			  if (["PA_Number"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form023", config.locale, config.localizations) + "</strong><br>";
@@ -9150,6 +9205,9 @@
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form529", config.locale, config.localizations) + "</strong><br>";
 				}
 				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+			  } else if (["Config_Quote_PartialOrder"].indexOf(pairs[i].data) > -1) {
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				console.log(caseDescription);
 			  } else {
 				if (["NA", "N/A", " ", "", "OPE-", "Select one"].indexOf(pairs[i].val) == -1)
 				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
