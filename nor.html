@@ -955,64 +955,64 @@
 	nav: true,
 	structure: [
 	  {
-	  header: "FormCFI01",
-	  description: "FormCFI02",
-	  group: [
+		header: "FormCFI01",
+		description: "FormCFI02",
+		group: [
 		  [
 			{
-		  label: "Email",
-		  data: "OnBehalf_CreatedBy",
-		  required: true,
-		  type: "text",
-		  tooltip: true,
-		  disabled: true,
-		  minLen: 6,
-		  maxLen: 256,
-		  minVal: 6,
-		  maxVal: 23,
-		  decimals: 4,
-		  placeholder: "",
-		  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
-		  typing: "kpDefault"
-		},
-		 {
-		   label: "FirstName",
-		   data: "FirstName",
-		   required: false,
-		   disabled: true,
-		   type: "text",
-		   placeholder: ""
-		 },
-		 {
-		   label: "LastName",
-		   data: "LastName",
-		   required: true,
-		   disabled: true,
-		   type: "text",
-		   placeholder: ""
-		 },
-		 {
-		   label: "FormCFI05",
-		   data: "Language",
-		   required: false,
-		   disabled: true,
-		   type: "select",
-		   placeholder: "",
-		   options: [],
-		   values: []
-		 }
+			  label: "Email",
+			  data: "OnBehalf_CreatedBy",
+			  required: true,
+			  type: "text",
+			  tooltip: true,
+			  disabled: true,
+			  minLen: 6,
+			  maxLen: 256,
+			  minVal: 6,
+			  maxVal: 23,
+			  decimals: 4,
+			  placeholder: "",
+			  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "FirstName",
+			  data: "FirstName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "LastName",
+			  data: "LastName",
+			  required: true,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "FormCFI05",
+			  data: "Language",
+			  required: false,
+			  disabled: true,
+			  type: "select",
+			  placeholder: "",
+			  options: [],
+			  values: []
+			}
+		  ]
 		]
-	  ]
-	},
-				{
+	  },
+	  {
 		filter: {
 		  field: "OnBehalf_Type",
 		  operator: "eq",
 		  value: "Company"
 		},
-				  header: "FormCFI03",
-				  description: "FormCFI04",
-				  group: [
+		header: "FormCFI03",
+		description: "FormCFI04",
+		group: [
 		  [
 			{
 			  label: "Country Entity",
@@ -1090,69 +1090,69 @@
 		group: [
 		  [
 			{
-					  label: "Country Entity",
-					  data: "CountryEntity",
-					  required: false,
-					  disabled: true,
-					  type: "text",
-					  placeholder: "",
-					  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-					  typing: "partnerIds"
-					},
-					 {
-					   label: "PartyId",
-					   data: "PartyId",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: "",
-					   validation: ["partnerIds", "minLen|1", "maxLen|50"],
-					   typing: "partnerIds"
-					 },
-					 {
-					   label: "Business Relationship Type",
-					   data: "PartnerBRT",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Partner name",
-					   data: "PartnerName",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Country",
-					   data: "Country",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Region",
-					   data: "Region",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "GEO",
-					   data: "Geo",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 }
-					]
-				  ]
-				}
-			   ],
+			  label: "Country Entity",
+			  data: "CountryEntity",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "PartyId",
+			  data: "PartyId",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "Business Relationship Type",
+			  data: "PartnerBRT",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Partner name",
+			  data: "PartnerName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Country",
+			  data: "Country",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Region",
+			  data: "Region",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "GEO",
+			  data: "Geo",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			}
+		  ]
+		]
+	  }
+	],
 	callback: function() {
 	  callbacks.page0();
 	},
