@@ -953,123 +953,206 @@
 	savedraft: "Form208",
 	internal: true,
 	nav: true,
-	structure: [{
-	  header: "FormCFI01",
-	  description: "FormCFI02",
-	  group: [
-		[{
-		  label: "Email",
-		  data: "OnBehalf_CreatedBy",
-		  required: true,
-		  type: "text",
-		  tooltip: true,
-		  disabled: true,
-		  minLen: 6,
-		  maxLen: 256,
-		  minVal: 6,
-		  maxVal: 23,
-		  decimals: 4,
-		  placeholder: "",
-		  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
-		  typing: "kpDefault"
-		},
-		 {
-		   label: "FirstName",
-		   data: "FirstName",
-		   required: false,
-		   disabled: true,
-		   type: "text",
-		   placeholder: ""
-		 },
-		 {
-		   label: "LastName",
-		   data: "LastName",
-		   required: true,
-		   disabled: true,
-		   type: "text",
-		   placeholder: ""
-		 },
-		 {
-		   label: "FormCFI05",
-		   data: "Language",
-		   required: false,
-		   disabled: true,
-		   type: "select",
-		   placeholder: "",
-		   options: [],
-		   values: []
-		 }
+	structure: [
+	  {
+		header: "FormCFI01",
+		description: "FormCFI02",
+		group: [
+		  [
+			{
+			  label: "Email",
+			  data: "OnBehalf_CreatedBy",
+			  required: true,
+			  type: "text",
+			  tooltip: true,
+			  disabled: true,
+			  minLen: 6,
+			  maxLen: 256,
+			  minVal: 6,
+			  maxVal: 23,
+			  decimals: 4,
+			  placeholder: "",
+			  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "FirstName",
+			  data: "FirstName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "LastName",
+			  data: "LastName",
+			  required: true,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "FormCFI05",
+			  data: "Language",
+			  required: false,
+			  disabled: true,
+			  type: "select",
+			  placeholder: "",
+			  options: [],
+			  values: []
+			}
+		  ]
 		]
-	  ]
-	},
-				{
-				  header: "FormCFI03",
-				  description: "FormCFI04",
-				  group: [
-					[{
-					  label: "Country Entity",
-					  data: "CountryEntity",
-					  required: false,
-					  disabled: true,
-					  type: "text",
-					  placeholder: "",
-					  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-					  typing: "partnerIds"
-					},
-					 {
-					   label: "PartyId",
-					   data: "PartyId",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: "",
-					   validation: ["partnerIds", "minLen|1", "maxLen|50"],
-					   typing: "partnerIds"
-					 },
-					 {
-					   label: "Business Relationship Type",
-					   data: "PartnerBRT",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Partner name",
-					   data: "PartnerName",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Country",
-					   data: "Country",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "Region",
-					   data: "Region",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 },
-					 {
-					   label: "GEO",
-					   data: "Geo",
-					   required: false,
-					   disabled: true,
-					   type: "text",
-					   placeholder: ""
-					 }
-					]
-				  ]
-				}
-			   ],
+	  },
+	  {
+		filter: {
+		  field: "OnBehalf_Type",
+		  operator: "eq",
+		  value: "Company"
+		},
+		header: "FormCFI03",
+		description: "FormCFI04",
+		group: [
+		  [
+			{
+			  label: "Country Entity",
+			  data: "CountryEntity",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "PartyId",
+			  data: "PartyId",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "Business Relationship Type",
+			  data: "PartnerBRT",
+			  required: false,
+			  disabled: false,
+			  type: "select",
+			  values: function() {
+				return global.data.partyData.brts || [];
+			  }
+			},
+			{
+			  label: "Partner name",
+			  data: "PartnerName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Country",
+			  data: "Country",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Region",
+			  data: "Region",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "GEO",
+			  data: "Geo",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			}
+		  ]
+		]
+	  },
+	  {
+		filter: {
+		  field: "OnBehalf_Type",
+		  operator: "neq",
+		  value: "Company"
+		},
+		header: "FormCFI03",
+		description: "FormCFI04",
+		group: [
+		  [
+			{
+			  label: "Country Entity",
+			  data: "CountryEntity",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "PartyId",
+			  data: "PartyId",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "Business Relationship Type",
+			  data: "PartnerBRT",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Partner name",
+			  data: "PartnerName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Country",
+			  data: "Country",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Region",
+			  data: "Region",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "GEO",
+			  data: "Geo",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			}
+		  ]
+		]
+	  }
+	],
 	callback: function() {
 	  callbacks.page0();
 	},
@@ -8413,7 +8496,7 @@
 			  });
 			} else {
 
-			  const partyData = view.find(item => ['T1 Solution Provider', 'Distributor', 'OEM Distributor', 'System Integrator', 'Master Area Partner'].includes(item.BRT));
+			  const partyData = view.find(item => global.data.brts.find(brt => brt.name === item.BRT));
 			  console.log('partyData', partyData);
 			  if (partyData) {
 				global.data.company.country = partyData.CountryEntity;
@@ -8433,20 +8516,9 @@
 				global.data.brt.code = brtCode[0].code;
 				
 				// new 
-				let brts = view.filter(item => [
-					'Virtual OEM', 
-					'T1 Solution Provider', 
-					'Distributor', 
-					'OEM Distributor', 
-					'System Integrator', 
-					'Master Area Partner', 
-					'Supplies Distributor', 
-					'Federal Reseller', 
-					'T1 Service Provider', 
-					'Remarketing Distributor'
-				].includes(item.BRT));
-				brts = brts.map(item => item.BRT);
-				brts = global.data.brts.filter(item => brts.includes(item.name));
+				let brts = view.filter(item => global.data.brts.find(brt => brt.name === item.BRT));
+				const brts_names = brts.map(item => item.BRT);
+				brts = global.data.brts.filter(item => brts_names.includes(item.name));
 				let channels = [];
 				let brt_codes = [];
 				brts.forEach(item => {
@@ -8454,6 +8526,7 @@
 				  brt_codes = [...brt_codes, item.code];
 				});
 				global.data.partyData = {
+				  brts: brts_names || [],
 				  channels,
 				  codes: brt_codes
 				}
@@ -8462,7 +8535,9 @@
 				//  config.dom = document.querySelector('div[tab-id="oob"]');
 				config.dataset.CountryEntity = global.data.company.country;
 				config.dataset.PartyId = document.querySelector("input[data-name=OnBehalf_PartyId]").value;
-				config.dataset.PartnerBRT = partyData.BRT;
+				if (!config.dataset.PartnerBRT) {
+				  config.dataset.PartnerBRT = partyData.BRT;
+				}
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
 				config.dataset.Region = global.data.geo.region;
