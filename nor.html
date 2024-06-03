@@ -4261,7 +4261,7 @@
 		   {
 			 label: "CountryOfResidence",
 			 data: "SoldTo_Contact_Country",
-			 required: false,
+			 required: true,
 			 type: "select",
 			 values: function() {
 			   return reference.countriesArray
@@ -5622,7 +5622,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "EndCx_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -5973,7 +5973,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "Reseller_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -10290,6 +10290,16 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('SoldTo');
+
+	  if (config.dataset.SoldTo_Address_Country) {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  }
+	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  });
+	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page4: function() {
 	  console.log('page4');
@@ -10428,6 +10438,14 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('EndCx');
+
+	  if (config.dataset.EndCx_Address_Country) {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
+	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+	  });
+
 	},
 	page8: function() {
 	  console.log('page8');
@@ -10468,6 +10486,13 @@
 		  $('*[data-name="Reseller_PartyId"]').val('');
 	  });
 	  helper.buildFastClearAddressButton('Reseller');
+
+	  if (config.dataset.Reseller_Address_Country) {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
+	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page9: function() {
 	  console.log('page9');
