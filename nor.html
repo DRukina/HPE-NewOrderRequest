@@ -3257,290 +3257,316 @@
 				},
 			   ]
 	},
-	structure: [{
-	  //header: "Form056",
-	  header: "Address",
-	  filter: {
-		logic: "and",
-		filters: [{
+	structure: [
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "No"
+					},
+					{
+					  field: "CountryCode",
+            operator: "nin",
+            value: ["HK", "MO"]
+					},
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }],
+		  [{
+			label: "Form058",
+			data: "SoldTo_CompanyName",
+			required: true,
+			type: "text",
+			//placeholder: "Form059",
+			validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Address",
+			 data: "SoldTo_Address_Street",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form216",
+			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "AddressLineOptional",
+			 data: "SoldTo_Address_Street2",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form061",
+			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "City",
+			 data: "SoldTo_Address_City",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form062",
+			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "StateProvince",
+			 data: "SoldTo_Address_State",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form063",
+			 validation: ["kpDefault", "minLen|2"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Postal code",
+			 data: "SoldTo_Address_Postal",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form087",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Country",
+			 data: "SoldTo_Address_Country",
+			 disabled: true,
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   }
+		  ]
+		]
+	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  }, {
+			field: "SoldTo_Address_Country",
+			operator: "in",
+			value: ["Brazil"]
+		  }]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: true,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID"
+		  }]
+		]
+	  },
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "No"
+					},
+					{
+					  field: "CountryCode",
+            operator: "in",
+            value: ["HK", "MO"]
+					},
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }],
+		  [{
+			label: "Form058",
+			data: "SoldTo_CompanyName",
+			required: true,
+			type: "text",
+			//placeholder: "Form059",
+			validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Address",
+			 data: "SoldTo_Address_Street",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form216",
+			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "AddressLineOptional",
+			 data: "SoldTo_Address_Street2",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form061",
+			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "City",
+			 data: "SoldTo_Address_City",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form062",
+			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "StateProvince",
+			 data: "SoldTo_Address_State",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form063",
+			 validation: ["kpDefault", "minLen|2"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Postal code",
+			 data: "SoldTo_Address_Postal",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form087",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Country",
+			 data: "SoldTo_Address_Country",
+			 disabled: true,
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   }
+		  ]
+		]
+	  },
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "Yes"
+					}
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }]
+		]
+	  },
+	  {
+		header: "Contact",
+		filter: {
 		  field: "Config_SoldToDetails",
 		  operator: "neq",
 		  value: "Y"
 		},
-				  {
-					field: "xrefFail",
-					operator: "eq",
-					value: "No"
-				  },
-				  {
-					field: "CountryCode",
-					operator: "nin",
-					value: ["HK", "MO"]
-				  },
-				 ]
-	  },
-	  group: [
-		[{
-		  label: "Form086",
-		  data: "SoldTo_PartyId",
-		  required: false,
-		  type: "text",
-		  //placeholder: "Form057",
-		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-		  typing: "kpDefault"
-		}],
-		[{
-		  label: "Form058",
-		  data: "SoldTo_CompanyName",
-		  required: true,
-		  type: "text",
-		  //placeholder: "Form059",
-		  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-		  typing: "kpDefault"
-		},
-		 {
-		   label: "Address",
-		   data: "SoldTo_Address_Street",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form216",
-		   validation: ["kpDefault", "minLen|2", "maxLen|55"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "AddressLineOptional",
-		   data: "SoldTo_Address_Street2",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form061",
-		   validation: ["kpDefault", "minLen|2", "maxLen|50"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "City",
-		   data: "SoldTo_Address_City",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form062",
-		   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "StateProvince",
-		   data: "SoldTo_Address_State",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form063",
-		   validation: ["kpDefault", "minLen|2"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Postal code",
-		   data: "SoldTo_Address_Postal",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form087",
-		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Country",
-		   data: "SoldTo_Address_Country",
-		   disabled: true,
-		   required: true,
-		   type: "select",
-		   values: function() {
-			 return reference.countriesArray
+		group: [
+		  [{
+			label: "FirstName",
+			data: "SoldTo_Contact_FirstName",
+			required: false,
+			type: "text",
+			//placeholder: "Form065",
+			validation: ["kpDefault", "minLen|1"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Surname",
+			 data: "SoldTo_Contact_LastName",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form066",
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Telephone",
+			 data: "SoldTo_Contact_Phone",
+			 required: false,
+			 type: "text",
+			 //placeholder: "1-888-666-5555",
+			 validation: ["typePhone", "minLen|8", "maxLen|20"],
+			 typing: "typePhone"
+		   },
+		   {
+			 label: "Email",
+			 data: "SoldTo_Contact_Email",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form067",
+			 validation: ["isEmail", "maxLen|96"],
+			 typing: "typeEmail"
+		   },
+		   {
+			 label: "CountryOfResidence",
+			 data: "SoldTo_Contact_Country",
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
 		   }
-		 }
+		  ]
 		]
-	  ]
-	},
-				{
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "No"
-							  },
-							  {
-								field: "CountryCode",
-								operator: "in",
-								value: ["HK", "MO"]
-							  },
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}],
-					[{
-					  label: "Form058",
-					  data: "SoldTo_CompanyName",
-					  required: true,
-					  type: "text",
-					  //placeholder: "Form059",
-					  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-					  typing: "kpDefault"
-					},
-					 {
-					   label: "Address",
-					   data: "SoldTo_Address_Street",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form216",
-					   validation: ["kpDefault", "minLen|2", "maxLen|55"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "AddressLineOptional",
-					   data: "SoldTo_Address_Street2",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form061",
-					   validation: ["kpDefault", "minLen|2", "maxLen|50"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "City",
-					   data: "SoldTo_Address_City",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form062",
-					   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "StateProvince",
-					   data: "SoldTo_Address_State",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form063",
-					   validation: ["kpDefault", "minLen|2"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Postal code",
-					   data: "SoldTo_Address_Postal",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form087",
-					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Country",
-					   data: "SoldTo_Address_Country",
-					   disabled: true,
-					   required: true,
-					   type: "select",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-				{
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "Yes"
-							  }
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}]
-				  ]
-				},
-				{
-				  header: "Contact",
-				  filter: {
-					field: "Config_SoldToDetails",
-					operator: "neq",
-					value: "Y"
-				  },
-				  group: [
-					[{
-					  label: "FirstName",
-					  data: "SoldTo_Contact_FirstName",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form065",
-					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
-					},
-					 {
-					   label: "Surname",
-					   data: "SoldTo_Contact_LastName",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form066",
-					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Telephone",
-					   data: "SoldTo_Contact_Phone",
-					   required: false,
-					   type: "text",
-					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
-					   typing: "typePhone"
-					 },
-					 {
-					   label: "Email",
-					   data: "SoldTo_Contact_Email",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form067",
-					   validation: ["isEmail", "maxLen|96"],
-					   typing: "typeEmail"
-					 },
-					 {
-					   label: "CountryOfResidence",
-					   data: "SoldTo_Contact_Country",
-					   required: false,
-					   type: "select",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-			   ],
+	  },
+	],
 	callback: function() {
 	  callbacks.page3();
 	}
@@ -4892,7 +4918,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "EndCx_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -5243,7 +5269,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "Reseller_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -9894,6 +9920,16 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('SoldTo');
+
+	  if (config.dataset.SoldTo_Address_Country) {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  }
+	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  });
+	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page4: function() {
 	  console.log('page4');
@@ -10032,6 +10068,14 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('EndCx');
+
+	  if (config.dataset.EndCx_Address_Country) {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
+	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+	  });
+
 	},
 	page8: function() {
 	  console.log('page8');
@@ -10072,6 +10116,13 @@
 		  $('*[data-name="Reseller_PartyId"]').val('');
 	  });
 	  helper.buildFastClearAddressButton('Reseller');
+
+	  if (config.dataset.Reseller_Address_Country) {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
+	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page9: function() {
 	  console.log('page9');
