@@ -7232,7 +7232,9 @@
 		// At least one checkbox must be selected
 		if (!isOneSelected) {
 		  const checkbox = document.querySelector(`input[data-name=Selected_${quoteHelper.ucids[0].ID}]`);
-		  result.fail.push(checkbox.closest('label'));
+		  if (checkbox) {
+			result.fail.push(checkbox.closest('label'));
+		  }
 		}
 	  }
 	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
@@ -7247,7 +7249,9 @@
 		// At least one checkbox must be selected
 		if (!isOneSelected) {
 		  const checkbox = document.querySelector(`input[data-type=checkbox]`);
-		  result.fail.push(checkbox.closest('label'));
+		  if (checkbox) {
+			 result.fail.push(checkbox.closest('label'));
+		  }
 		}
 		
 		if (!result.fail.length) {
@@ -10253,7 +10257,8 @@
 	  }
 	  
 	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
-		quoteHelper.onCloneProductAndServices(config, document);
+		 quoteHelper.onInitProductAndServices(config);
+	//	quoteHelper.onCloneProductAndServices(config, document);
 	  }
 	},
   };
@@ -12114,7 +12119,7 @@
 				required: false,
 				value: ucid.Selected,
 				type: "checkbox",
-				values: ["Y"],
+				values: ["Y",],
 				disabled: isDisabled,
 			  },
 			  {
@@ -12311,11 +12316,6 @@
 		  // add repeater 
 		  const PPPD = [
 			{
-			  data: "Field",
-			  type: "hidden",
-			  class: "checkbox-hidden",
-			},
-			{
 			  label: "Previously Purchased Product Details:",
 			  value: "Previously Purchased Product Details:",
 			  data: "PPPD",
@@ -12352,14 +12352,10 @@
 			{
 			  data: "Field",
 			  type: "hidden",
+			  class: "ps-toggle",
 			},
 		  ];
 		  const SNP = [
-			{
-			  data: "Field",
-			  type: "hidden",
-			  class: "checkbox-hidden",
-			},
 			{
 			  label: "Serial number of the products:*",
 			  value: "Serial number of the products:*",
@@ -12397,14 +12393,10 @@
 			{
 			  data: "Field",
 			  type: "hidden",
+			  class: "ps-toggle",
 			},
 		  ];
 		  const PPD = [
-			{
-			  data: "Field",
-			  type: "hidden",
-			  class: "checkbox-hidden",
-			},
 			{
 			  label: "Product Purchased Date:",
 			  value: "Product Purchased Date:",
@@ -12453,17 +12445,10 @@
 			{
 			  data: "Field",
 			  type: "hidden",
+			  class: "ps-toggle",
 			},
 		  ];
 		  let repeaterItem = [
-			{
-			  label: "Checkbox (type checkbox)",
-			  data: "Selected",
-			  required: false,
-			  type: "checkbox",
-			  value: "Y",
-			  values: ["Y"],
-			},
 			{
 			  label: "HPE Part Number",
 			  data: "ProductID",
@@ -12498,7 +12483,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "Unit Price",
+			  label: "Unit Price*",
 			  data: "UnitNetAmount",
 			  required: true,
 			  type: "text",
@@ -12507,7 +12492,7 @@
 			  typing: "povaluetyping"
 			},
 			{
-			  label: "Extended Net Price",
+			  label: "Extended Net Price*",
 			  data: "ExtendedNetAmount",
 			  required: true,
 			  type: "text",
@@ -12531,7 +12516,9 @@
 			}
 			return accumulator;
 		  }, 0);
-
+		  
+		  page.structure[1].group[0].shift();
+		  page.structure[1].group[0][0].class += " ftr-cell"; 
 		  page.structure.splice(2, sumRepeat, {
 			header: "",
 			repeatable: "ProductServicesRepeater",
@@ -12660,6 +12647,7 @@
 				item.SerialNumberOfProducts = null;
 				item.ProductPurchasedDate = null;
 			  }
+			  item.Selected = 'Y';
 			  ucids.push({
 				Request_Id: config.dataset.EntryId,
 				Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
@@ -12714,7 +12702,7 @@
 		  const fieldset = target.closest('fieldset');
 		  const wrappers = fieldset.querySelectorAll('label.wrapper');
 		  for (j = 0; j < wrappers.length; j++) {
-			if (j > 7) {
+			if (j > 6) {
 			  if (isInactive) {
 				$(wrappers[j]).addClass('ps-hidden');
 			  } else {
@@ -12739,6 +12727,58 @@
 	  // PRODUCT AND SERVICES MODULE
 	  if (config.pages[config.page].id === 'PS') {
 		quoteHelper.saveProductAndServicesConfig(config, clone);
+	  }
+	},
+	onInitProductAndServices: function(config) {
+	  if (document.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = document.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		for (i = 0; i < toggles.length; i++) {
+
+		  const initCarepackConfig = function(node) {
+			var parent;
+			if (node.nodeName.toLowerCase() == "span")
+			  parent = node.parentNode.parentNode.parentNode.parentNode;
+			else
+			  parent = node.parentNode.parentNode.parentNode;
+
+			var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+			var target = parent.querySelector(".fmmcosmin label");
+
+			var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+			const fieldset = target.closest('fieldset');
+			const wrappers = fieldset.querySelectorAll('label.wrapper');
+			for (j = 0; j < wrappers.length; j++) {
+			  if (j > 6) {
+				if (isInactive) {
+				  $(wrappers[j]).addClass('ps-hidden');
+				} else {
+				  $(wrappers[j]).removeClass('ps-hidden');
+				}
+			  }
+			}
+		  }
+				  
+		  if (i == 0) {
+			toggles[0].addEventListener("click", function(e) {
+			  initCarepackConfig(e.target);
+			});
+		  }
+		  
+		  const fieldset = toggles[i].closest('fieldset');
+		  const label = toggles[i].closest('label');
+		  var isInactive = label.getAttribute("class") == null || label.getAttribute("class") == "";
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 6) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
+		  }
+		}
 	  }
 	},
 	clearPOData: function(config) {
