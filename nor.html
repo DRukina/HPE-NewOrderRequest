@@ -7151,9 +7151,9 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "HPE Part Number",
+			  label: "HPE Part Number*",
 			  data: "HPE_Product_Nub",
-			  value: "HPE Part Number",
+			  value: "HPE Part Number*",
 			  required: false,
 			  type: "text",
 			  validation: ['minLen|1'],
@@ -7188,8 +7188,8 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Unit Price",
-			  value: "Unit Price",
+			  label: "Unit Price*",
+			  value: "Unit Price*",
 			  data: "UnitPrice",
 			  required: false,
 			  type: "text",
@@ -7197,8 +7197,8 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Extended Net Price",
-			  value: "Extended Net Price",
+			  label: "Extended Net Price*",
+			  value: "Extended Net Price*",
 			  data: "ExtendedNetPrice",
 			  required: false,
 			  type: "text",
@@ -7266,6 +7266,8 @@
 			quoteHelper.maxQuantity = null;
 			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
 			  if (data.success && data.data && data.data.length) {
+				config.dataset.ProductServicesRepeater = null;
+				config.dataset.Config_Quote_PartialOrder = null;
 				config.dataset.ProductServices_Attachment =
 				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
 				// build product and services page
@@ -7339,7 +7341,9 @@
 		// At least one checkbox must be selected
 		if (!isOneSelected) {
 		  const checkbox = document.querySelector(`input[data-name=Selected_${quoteHelper.ucids[0].ID}]`);
-		  result.fail.push(checkbox.closest('label'));
+		  if (checkbox) {
+			result.fail.push(checkbox.closest('label'));
+		  }
 		}
 	  }
 	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
@@ -7354,7 +7358,9 @@
 		// At least one checkbox must be selected
 		if (!isOneSelected) {
 		  const checkbox = document.querySelector(`input[data-type=checkbox]`);
-		  result.fail.push(checkbox.closest('label'));
+		  if (checkbox) {
+			 result.fail.push(checkbox.closest('label'));
+		  }
 		}
 		
 		if (!result.fail.length) {
@@ -8130,11 +8136,13 @@
 	  
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
+
 	  if (config.pages[config.page + 1].id == "PS") {
 		quoteHelper.configureProductAndServices(config, config.pages[config.page + 1]);
 	  }
 	  if (config.pages[config.page].id == "PS") {
-		 quoteHelper.saveProductAndServicesConfig(config);
+		quoteHelper.parseProductAndServicesRepeater(config);
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 
 	  function doNext() {
@@ -9294,11 +9302,11 @@
 		});
 	  });
 	},
+	onClone: function(donor, clone) {
+	  quoteHelper.onCloneProductAndServices(config, clone);
+	},
 	onDeClone: function(donor, clone) {
-	  // PRODUCT AND SERVICES MODULE
-	  if (config.pages[config.page].id === 'PS') {
-		quoteHelper.saveProductAndServicesConfig(config, clone);
-	  }
+	  quoteHelper.onDeCloneProductAndServices(config, clone);
 	},
   };
 
@@ -10378,6 +10386,11 @@
 			}
 		  });
 		}
+	  }
+	  
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		 quoteHelper.onInitProductAndServices(config);
+	//	quoteHelper.onCloneProductAndServices(config, document);
 	  }
 	},
   };
@@ -12238,7 +12251,7 @@
 				required: false,
 				value: ucid.Selected,
 				type: "checkbox",
-				values: ["Y"],
+				values: ["Y",],
 				disabled: isDisabled,
 			  },
 			  {
@@ -12252,7 +12265,7 @@
 			  },
 			  {
 				label: "HPE Part Quantity*",
-				value: quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
+				value: quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
 				type: "text",
@@ -12433,15 +12446,141 @@
 		
 		if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
 		  // add repeater 
-		  const repeaterItem = [
+		  const PPPD = [
 			{
-			  label: "Checkbox (type checkbox)",
-			  data: "Selected",
+			  label: "Previously Purchased Product Details:",
+			  value: "Previously Purchased Product Details:",
+			  data: "PPPD",
 			  required: false,
-			  type: "checkbox",
-			  value: "Y",
-			  values: ["Y"],
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
 			},
+			{
+			  label: "Previously Purchased Product Details",
+			  data: "PreviouslyPurchasedProductDetails",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  const SNP = [
+			{
+			  label: "Serial number of the products:*",
+			  value: "Serial number of the products:*",
+			  data: "SNP",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Serial number of the products:*",
+			  data: "SerialNumberOfProducts",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  const PPD = [
+			{
+			  label: "Product Purchased Date:",
+			  value: "Product Purchased Date:",
+			  data: "PPD",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Product Purchased Date:",
+			  placeholder: "Form040",
+			  data: "ProductPurchasedDate",
+			  required: false,
+			  type: "date",
+			  placeholder: "DD/MM/YYYY",
+			  class: "bordered-input",
+			  dtp: {
+				format: 'd/m/Y',
+				formatDate: 'd/m/Y',
+				timepicker: false,
+				minDate: 0,
+				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				onChangeDateTime: function(dp, $input) {
+
+				}
+			  }
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  let repeaterItem = [
 			{
 			  label: "HPE Part Number",
 			  data: "ProductID",
@@ -12476,7 +12615,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "Unit Price",
+			  label: "Unit Price*",
 			  data: "UnitNetAmount",
 			  required: true,
 			  type: "text",
@@ -12485,21 +12624,33 @@
 			  typing: "povaluetyping"
 			},
 			{
-			  label: "Extended Net Price",
+			  label: "Extended Net Price*",
 			  data: "ExtendedNetAmount",
 			  required: true,
 			  type: "text",
 			  class: "bordered-input",
 			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
 			  typing: "povaluetyping"
+			},
+			{
+			  label: "Carepack",
+			  data: "Carepack",
+			  required: false,
+			  type: "toggle",
+			  values: ["N", "Y"],
+			  options: ["Carepack", "Carepack"],
+			  class: "ps-toggle",
 			}];
+		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
 		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
 			if (currentValue.id == "form-table-repeat") {
 			  return accumulator + 1;
 			}
 			return accumulator;
 		  }, 0);
-
+		  
+		  page.structure[1].group[0].shift();
+		  page.structure[1].group[0][0].class += " ftr-cell"; 
 		  page.structure.splice(2, sumRepeat, {
 			header: "",
 			repeatable: "ProductServicesRepeater",
@@ -12623,6 +12774,12 @@
 		  const data = JSON.parse(config.dataset.ProductServicesRepeater);
 		  if (data && data.length) {
 			data.forEach(item => {
+			  if (item.Carepack !== 'Y') {
+				item.PreviouslyPurchasedProductDetails = null;
+				item.SerialNumberOfProducts = null;
+				item.ProductPurchasedDate = null;
+			  }
+			  item.Selected = 'Y';
 			  ucids.push({
 				Request_Id: config.dataset.EntryId,
 				Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
@@ -12640,10 +12797,14 @@
 				ProductClassificationCode: "",
 				LineType: "Config",
 				ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+				PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+				SerialNumberOfProducts: item.SerialNumberOfProducts,
+				ProductPurchasedDate: item.ProductPurchasedDate,
 			  });
 			});
 			quoteHelper.ucids = ucids;
 			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			config.dataset.ProductServicesRepeater = JSON.stringify(data);
 		  }
 		  if (callback) {
 		  	callback(ucids);
@@ -12651,6 +12812,103 @@
 		} catch(e) {
 		  if (errorCallback) {
 			errorCallback(e);
+		  }
+		}
+	  }
+	},
+	onCloneProductAndServices: function(config, clone) {
+	  if (clone.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = clone.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		const initCarepackConfig = function(node) {
+		  var parent;
+		  if (node.nodeName.toLowerCase() == "span")
+			parent = node.parentNode.parentNode.parentNode.parentNode;
+		  else
+			parent = node.parentNode.parentNode.parentNode;
+
+		  var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+		  var target = parent.querySelector(".fmmcosmin label");
+
+		  var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+		  const fieldset = target.closest('fieldset');
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 6) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
+		  }
+		}
+		
+		for (i = 0; i < toggles.length; i++) {
+		  // initial state
+		  initCarepackConfig( toggles[i]);
+
+		  // click listener
+		  toggles[i].addEventListener("click", function(e) {
+			initCarepackConfig(e.target);
+		  });
+		}
+	  }
+	},
+	onDeCloneProductAndServices: function(config, clone) {
+	  // PRODUCT AND SERVICES MODULE
+	  if (config.pages[config.page].id === 'PS') {
+		quoteHelper.saveProductAndServicesConfig(config, clone);
+	  }
+	},
+	onInitProductAndServices: function(config) {
+	  if (document.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = document.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		for (i = 0; i < toggles.length; i++) {
+
+		  const initCarepackConfig = function(node) {
+			var parent;
+			if (node.nodeName.toLowerCase() == "span")
+			  parent = node.parentNode.parentNode.parentNode.parentNode;
+			else
+			  parent = node.parentNode.parentNode.parentNode;
+
+			var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+			var target = parent.querySelector(".fmmcosmin label");
+
+			var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+			const fieldset = target.closest('fieldset');
+			const wrappers = fieldset.querySelectorAll('label.wrapper');
+			for (j = 0; j < wrappers.length; j++) {
+			  if (j > 6) {
+				if (isInactive) {
+				  $(wrappers[j]).addClass('ps-hidden');
+				} else {
+				  $(wrappers[j]).removeClass('ps-hidden');
+				}
+			  }
+			}
+		  }
+				  
+		  if (i == 0) {
+			toggles[0].addEventListener("click", function(e) {
+			  initCarepackConfig(e.target);
+			});
+		  }
+		  
+		  const fieldset = toggles[i].closest('fieldset');
+		  const label = toggles[i].closest('label');
+		  var isInactive = label.getAttribute("class") == null || label.getAttribute("class") == "";
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 6) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
 		  }
 		}
 	  }

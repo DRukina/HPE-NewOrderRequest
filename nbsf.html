@@ -2810,18 +2810,21 @@
 															parent = e.target.parentNode.parentNode.parentNode;
 
 													var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
-
-													var target = parent.querySelector(".fmmcosmin label");
-													if (target.getAttribute("class") == null || target.getAttribute("class") == "") {
-															target.setAttribute("class", "active");
-															parent.querySelector(".fmmcosmin input").value = values[1];
-													} else {
-															target.setAttribute("class", "");
-															parent.querySelector(".fmmcosmin input").value = values[0];
-													}
+							var row = parent.closest(".row");
+							if (!row.getAttribute("data-clone")) {
+							var target = parent.querySelector(".fmmcosmin label");
+							if (target.getAttribute("class") == null || target.getAttribute("class") == "") {
+							target.setAttribute("class", "active");
+							parent.querySelector(".fmmcosmin input").value = values[1];
+						} else {
+							target.setAttribute("class", "");
+							parent.querySelector(".fmmcosmin input").value = values[0];
+						}
 
 													// run gloal event
 													nbsf.ev.global(config, false);
+						}
+													
 											});
 									}
 							}
@@ -2886,7 +2889,9 @@
 			},
 			nav: {
 					next: function(config, page) {
-							var fail = config.pages[page + 1] && config.pages[page + 1].review ? nbsf.ev.reviewGlobal(config, true).total.fail : nbsf.ev.global(config, true).total.fail;
+							var fail = nbsf.ev.global(config, true).total.fail;
+		 // disabled due to bugs
+					 //   var fail = config.pages[page + 1] && config.pages[page + 1].review ? nbsf.ev.reviewGlobal(config, true).total.fail : nbsf.ev.global(config, true).total.fail;
 							if (fail > 0)
 									nbsf.c.w("Unable to move to next page, errors on current page");
 							else {
@@ -3253,6 +3258,34 @@
 													// TO DO!!!
 											}
 									}
+							}
+			
+				// ADD TOGGLE EVENT LISTENERS 
+				if (clone.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+									var toggles = clone.querySelectorAll("label.wrapper.toggle .toggle")
+									for (i = 0; i < toggles.length; i++) {
+					toggles[i].addEventListener("click", function(e) {
+					var parent;
+					if (e.target.nodeName.toLowerCase() == "span")
+						parent = e.target.parentNode.parentNode.parentNode.parentNode;
+					else
+						parent = e.target.parentNode.parentNode.parentNode;
+
+					var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+					var target = parent.querySelector(".fmmcosmin label");
+					if (target.getAttribute("class") == null || target.getAttribute("class") == "") {
+						target.setAttribute("class", "active");
+						parent.querySelector(".fmmcosmin input").value = values[1];
+					} else {
+						target.setAttribute("class", "");
+						parent.querySelector(".fmmcosmin input").value = values[0];
+					}
+
+					// run gloal event
+					nbsf.ev.global(config, false);
+					});
+				}
 							}
 
 							// ADD DATE EVENT LISTENERS
