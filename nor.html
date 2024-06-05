@@ -9382,6 +9382,9 @@
 		  //  console.log("pairs", pairs);
 		  var caseDescription = "";
 		  for (i = 0; i < pairs.length; i++) {
+			let pairVal = pairs[i].val;
+			if (pairVal) pairVal = pairVal.trim();
+			
 			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
@@ -9392,54 +9395,54 @@
 				else if (pairs[i].ttl == "page-3")
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI019", config.locale, config.localizations) + "</strong><br>";
 				else
-				  caseDescription = caseDescription + "<strong>" + pairs[i].val + "</strong><br>";
+				  caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			  }
 			} else {
 			  if (["PA_Number"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form023", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["Config_Quote", "Config_aaS"].indexOf(pairs[i].data) > -1) {
 				if (["North America"].indexOf(global.data.geo.geography) > -1) {
 				  /*  if (pairs[i].data == "Config_aaS") {
                                           caseDescription = caseDescription + "<br><br>";
                                           caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form075", config.locale, config.localizations) + "</strong><br>";
-                                          caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+                                          caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
                                       } else */
 				  if (pairs[i].data == "Config_Quote") {
-					caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+					caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 				  }
 				} else {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form075", config.locale, config.localizations) + "</strong><br>";
-				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 				}
 
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form519", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["EntPrty_PartyId", "EntPrty_CompanyName", "EntPrty_Address_Street", "EntPrty_Address_Street2", "EntPrty_Address_City", "EntPrty_Address_State", "EntPrty_Address_Postal", "EntPrty_Address_Country", "EntPrty_Contact_FirstName", "EntPrty_Contact_LastName", "EntPrty_Contact_Phone", "EntPrty_Contact_Email", "EntPrty_Contact_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form520", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form520", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["PSP_PartyId", "PSP_CompanyName", "PSP_Address_Street", "PSP_Address_Street2", "PSP_Address_City", "PSP_Address_State", "PSP_Address_Postal", "PSP_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form529", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form529", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else {
-				if (["NA", "N/A", " ", "", "OPE-", "Select one"].indexOf(pairs[i].val) == -1)
-				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				if (["NA", "N/A", " ", "", "OPE-", "Select one"].indexOf(pairVal) == -1)
+				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  }
 			}
 		  }
@@ -9522,58 +9525,61 @@
 		  //  console.log("pairs", pairs);
 		  var caseDescription = "";
 		  for (i = 0; i < pairs.length; i++) {
+			let pairVal = pairs[i].val;
+			if (pairVal) pairVal = pairVal.trim();
+
 			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
 			  } else
-				caseDescription = caseDescription + "<strong>" + pairs[i].val + "</strong><br>";
+				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			} else {
 			  if (["PA_Number"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form023", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["Config_Quote", "Config_aaS"].indexOf(pairs[i].data) > -1) {
 				if (["North America"].indexOf(global.data.geo.geography) > -1) {
 				  /*   if (pairs[i].data == "Config_aaS") {
                                            caseDescription = caseDescription + "<br><br>";
                                            caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form075", config.locale, config.localizations) + "</strong><br>";
-                                           caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+                                           caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
                                        } else */
 				  if (pairs[i].data == "Config_Quote") {
-					caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+					caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 				  }
 				} else {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form075", config.locale, config.localizations) + "</strong><br>";
-				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 				}
 
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form519", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["EntPrty_PartyId", "EntPrty_CompanyName", "EntPrty_Address_Street", "EntPrty_Address_Street2", "EntPrty_Address_City", "EntPrty_Address_State", "EntPrty_Address_Postal", "EntPrty_Address_Country", "EntPrty_Contact_FirstName", "EntPrty_Contact_LastName", "EntPrty_Contact_Phone", "EntPrty_Contact_Email", "EntPrty_Contact_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form520", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form520", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else if (["PSP_PartyId", "PSP_CompanyName", "PSP_Address_Street", "PSP_Address_Street2", "PSP_Address_City", "PSP_Address_State", "PSP_Address_Postal", "PSP_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form529", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form529", config.locale, config.localizations) + "</strong><br>";
 				}
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  } else {
-				if (["NA", "N/A", " ", "", "OPE-", "Select one"].indexOf(pairs[i].val) == -1)
-				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairs[i].val + "<br>";
+				if (["NA", "N/A", " ", "", "OPE-", "Select one"].indexOf(pairVal) == -1)
+				  caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
 			  }
 			}
 		  }
