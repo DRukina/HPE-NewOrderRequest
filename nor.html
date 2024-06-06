@@ -955,64 +955,64 @@
 	nav: true,
 	structure: [
 	  {
-		header: "FormCFI01",
-		description: "FormCFI02",
-		group: [
+	  header: "FormCFI01",
+	  description: "FormCFI02",
+	  group: [
 		  [
 			{
-			  label: "Email",
-			  data: "OnBehalf_CreatedBy",
-			  required: true,
-			  type: "text",
-			  tooltip: true,
-			  disabled: true,
-			  minLen: 6,
-			  maxLen: 256,
-			  minVal: 6,
-			  maxVal: 23,
-			  decimals: 4,
-			  placeholder: "",
-			  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
-			  typing: "kpDefault"
-			},
-			{
-			  label: "FirstName",
-			  data: "FirstName",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "LastName",
-			  data: "LastName",
-			  required: true,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "FormCFI05",
-			  data: "Language",
-			  required: false,
-			  disabled: true,
-			  type: "select",
-			  placeholder: "",
-			  options: [],
-			  values: []
-			}
-		  ]
+		  label: "Email",
+		  data: "OnBehalf_CreatedBy",
+		  required: true,
+		  type: "text",
+		  tooltip: true,
+		  disabled: true,
+		  minLen: 6,
+		  maxLen: 256,
+		  minVal: 6,
+		  maxVal: 23,
+		  decimals: 4,
+		  placeholder: "",
+		  validation: ["isEmail", "minLen|6", "maxLen|256", "noBlanksv2"],
+		  typing: "kpDefault"
+		},
+		 {
+		   label: "FirstName",
+		   data: "FirstName",
+		   required: false,
+		   disabled: true,
+		   type: "text",
+		   placeholder: ""
+		 },
+		 {
+		   label: "LastName",
+		   data: "LastName",
+		   required: true,
+		   disabled: true,
+		   type: "text",
+		   placeholder: ""
+		 },
+		 {
+		   label: "FormCFI05",
+		   data: "Language",
+		   required: false,
+		   disabled: true,
+		   type: "select",
+		   placeholder: "",
+		   options: [],
+		   values: []
+		 }
 		]
-	  },
-	  {
+	  ]
+	},
+				{
 		filter: {
 		  field: "OnBehalf_Type",
 		  operator: "eq",
 		  value: "Company"
 		},
-		header: "FormCFI03",
-		description: "FormCFI04",
-		group: [
+				  header: "FormCFI03",
+				  description: "FormCFI04",
+				  group: [
 		  [
 			{
 			  label: "Country Entity",
@@ -1090,69 +1090,69 @@
 		group: [
 		  [
 			{
-			  label: "Country Entity",
-			  data: "CountryEntity",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: "",
-			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-			  typing: "partnerIds"
-			},
-			{
-			  label: "PartyId",
-			  data: "PartyId",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: "",
-			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
-			  typing: "partnerIds"
-			},
-			{
-			  label: "Business Relationship Type",
-			  data: "PartnerBRT",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Partner name",
-			  data: "PartnerName",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Country",
-			  data: "Country",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "Region",
-			  data: "Region",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			},
-			{
-			  label: "GEO",
-			  data: "Geo",
-			  required: false,
-			  disabled: true,
-			  type: "text",
-			  placeholder: ""
-			}
-		  ]
-		]
-	  }
-	],
+					  label: "Country Entity",
+					  data: "CountryEntity",
+					  required: false,
+					  disabled: true,
+					  type: "text",
+					  placeholder: "",
+					  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+					  typing: "partnerIds"
+					},
+					 {
+					   label: "PartyId",
+					   data: "PartyId",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: "",
+					   validation: ["partnerIds", "minLen|1", "maxLen|50"],
+					   typing: "partnerIds"
+					 },
+					 {
+					   label: "Business Relationship Type",
+					   data: "PartnerBRT",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Partner name",
+					   data: "PartnerName",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Country",
+					   data: "Country",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "Region",
+					   data: "Region",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 },
+					 {
+					   label: "GEO",
+					   data: "Geo",
+					   required: false,
+					   disabled: true,
+					   type: "text",
+					   placeholder: ""
+					 }
+					]
+				  ]
+				}
+			   ],
 	callback: function() {
 	  callbacks.page0();
 	},
@@ -3259,105 +3259,105 @@
 	},
 	structure: [
 	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "No"
-					},
-					{
-					  field: "CountryCode",
-            operator: "nin",
-            value: ["HK", "MO"]
-					},
-				   ]
+	  //header: "Form056",
+	  header: "Address",
+	  filter: {
+		logic: "and",
+		filters: [{
+		  field: "Config_SoldToDetails",
+		  operator: "neq",
+		  value: "Y"
 		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
-		  [{
-			label: "Form058",
-			data: "SoldTo_CompanyName",
-			required: true,
-			type: "text",
-			//placeholder: "Form059",
-			validation: ["kpDefault", "minLen|2", "maxLen|140"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Address",
-			 data: "SoldTo_Address_Street",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form216",
-			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "AddressLineOptional",
-			 data: "SoldTo_Address_Street2",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form061",
-			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "City",
-			 data: "SoldTo_Address_City",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form062",
-			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "StateProvince",
-			 data: "SoldTo_Address_State",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form063",
-			 validation: ["kpDefault", "minLen|2"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Postal code",
-			 data: "SoldTo_Address_Postal",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form087",
-			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Country",
-			 data: "SoldTo_Address_Country",
-			 disabled: true,
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
+				  {
+					field: "xrefFail",
+					operator: "eq",
+					value: "No"
+				  },
+				  {
+					field: "CountryCode",
+					operator: "nin",
+					value: ["HK", "MO"]
+				  },
+				 ]
 	  },
-	  {
+	  group: [
+		[{
+		  label: "Form086",
+		  data: "SoldTo_PartyId",
+		  required: false,
+		  type: "text",
+		  //placeholder: "Form057",
+		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+		  typing: "kpDefault"
+		}],
+		[{
+		  label: "Form058",
+		  data: "SoldTo_CompanyName",
+		  required: true,
+		  type: "text",
+		  //placeholder: "Form059",
+		  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+		  typing: "kpDefault"
+		},
+		 {
+		   label: "Address",
+		   data: "SoldTo_Address_Street",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form216",
+		   validation: ["kpDefault", "minLen|2", "maxLen|55"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "AddressLineOptional",
+		   data: "SoldTo_Address_Street2",
+		   required: false,
+		   type: "text",
+		   //placeholder: "Form061",
+		   validation: ["kpDefault", "minLen|2", "maxLen|50"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "City",
+		   data: "SoldTo_Address_City",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form062",
+		   validation: ["kpDefault", "minLen|2", "maxLen|35"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "StateProvince",
+		   data: "SoldTo_Address_State",
+		   required: false,
+		   type: "text",
+		   //placeholder: "Form063",
+		   validation: ["kpDefault", "minLen|2"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "Postal code",
+		   data: "SoldTo_Address_Postal",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form087",
+		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "Country",
+		   data: "SoldTo_Address_Country",
+		   disabled: true,
+		   required: true,
+		   type: "select",
+		   values: function() {
+			 return reference.countriesArray
+		   }
+		 }
+		]
+	  ]
+	},
+				{
 		header: "",
 		filter: {
 		  logic: "and",
@@ -3383,190 +3383,190 @@
 		]
 	  },
 	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "No"
+				  //header: "Form056",
+				  header: "Address",
+				  filter: {
+					logic: "and",
+					filters: [{
+					  field: "Config_SoldToDetails",
+					  operator: "neq",
+					  value: "Y"
 					},
-					{
-					  field: "CountryCode",
-            operator: "in",
-            value: ["HK", "MO"]
+							  {
+								field: "xrefFail",
+								operator: "eq",
+								value: "No"
+							  },
+							  {
+								field: "CountryCode",
+								operator: "in",
+								value: ["HK", "MO"]
+							  },
+							 ]
+				  },
+				  group: [
+					[{
+					  label: "Form086",
+					  data: "SoldTo_PartyId",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form057",
+					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					  typing: "kpDefault"
+					}],
+					[{
+					  label: "Form058",
+					  data: "SoldTo_CompanyName",
+					  required: true,
+					  type: "text",
+					  //placeholder: "Form059",
+					  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+					  typing: "kpDefault"
 					},
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
-		  [{
-			label: "Form058",
-			data: "SoldTo_CompanyName",
-			required: true,
-			type: "text",
-			//placeholder: "Form059",
-			validation: ["kpDefault", "minLen|2", "maxLen|140"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Address",
-			 data: "SoldTo_Address_Street",
+					 {
+					   label: "Address",
+					   data: "SoldTo_Address_Street",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form216",
+					   validation: ["kpDefault", "minLen|2", "maxLen|55"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "AddressLineOptional",
+					   data: "SoldTo_Address_Street2",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form061",
+					   validation: ["kpDefault", "minLen|2", "maxLen|50"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "City",
+					   data: "SoldTo_Address_City",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form062",
+					   validation: ["kpDefault", "minLen|2", "maxLen|35"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "StateProvince",
+					   data: "SoldTo_Address_State",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form063",
+					   validation: ["kpDefault", "minLen|2"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Postal code",
+					   data: "SoldTo_Address_Postal",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form087",
+					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Country",
+					   data: "SoldTo_Address_Country",
+					   disabled: true,
+					   required: true,
+					   type: "select",
+					   values: function() {
+						 return reference.countriesArray
+					   }
+					 }
+					]
+				  ]
+				},
+				{
+				  //header: "Form056",
+				  header: "Address",
+				  filter: {
+					logic: "and",
+					filters: [{
+					  field: "Config_SoldToDetails",
+					  operator: "neq",
+					  value: "Y"
+					},
+							  {
+								field: "xrefFail",
+								operator: "eq",
+								value: "Yes"
+							  }
+							 ]
+				  },
+				  group: [
+					[{
+					  label: "Form086",
+					  data: "SoldTo_PartyId",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form057",
+					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					  typing: "kpDefault"
+					}]
+				  ]
+				},
+				{
+				  header: "Contact",
+				  filter: {
+					field: "Config_SoldToDetails",
+					operator: "neq",
+					value: "Y"
+				  },
+				  group: [
+					[{
+					  label: "FirstName",
+					  data: "SoldTo_Contact_FirstName",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form065",
+					  validation: ["kpDefault", "minLen|1"],
+					  typing: "kpDefault"
+					},
+					 {
+					   label: "Surname",
+					   data: "SoldTo_Contact_LastName",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form066",
+					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Telephone",
+					   data: "SoldTo_Contact_Phone",
+					   required: false,
+					   type: "text",
+					   //placeholder: "1-888-666-5555",
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   typing: "typePhone"
+					 },
+					 {
+					   label: "Email",
+					   data: "SoldTo_Contact_Email",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form067",
+					   validation: ["isEmail", "maxLen|96"],
+					   typing: "typeEmail"
+					 },
+					 {
+					   label: "CountryOfResidence",
+					   data: "SoldTo_Contact_Country",
 			 required: true,
-			 type: "text",
-			 //placeholder: "Form216",
-			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "AddressLineOptional",
-			 data: "SoldTo_Address_Street2",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form061",
-			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "City",
-			 data: "SoldTo_Address_City",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form062",
-			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "StateProvince",
-			 data: "SoldTo_Address_State",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form063",
-			 validation: ["kpDefault", "minLen|2"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Postal code",
-			 data: "SoldTo_Address_Postal",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form087",
-			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Country",
-			 data: "SoldTo_Address_Country",
-			 disabled: true,
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
-	  },
-	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "Yes"
-					}
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }]
-		]
-	  },
-	  {
-		header: "Contact",
-		filter: {
-		  field: "Config_SoldToDetails",
-		  operator: "neq",
-		  value: "Y"
-		},
-		group: [
-		  [{
-			label: "FirstName",
-			data: "SoldTo_Contact_FirstName",
-			required: false,
-			type: "text",
-			//placeholder: "Form065",
-			validation: ["kpDefault", "minLen|1"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Surname",
-			 data: "SoldTo_Contact_LastName",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form066",
-			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Telephone",
-			 data: "SoldTo_Contact_Phone",
-			 required: false,
-			 type: "text",
-			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|20"],
-			 typing: "typePhone"
-		   },
-		   {
-			 label: "Email",
-			 data: "SoldTo_Contact_Email",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form067",
-			 validation: ["isEmail", "maxLen|96"],
-			 typing: "typeEmail"
-		   },
-		   {
-			 label: "CountryOfResidence",
-			 data: "SoldTo_Contact_Country",
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
-	  },
-	],
+					   type: "select",
+					   values: function() {
+						 return reference.countriesArray
+					   }
+					 }
+					]
+				  ]
+				},
+			   ],
 	callback: function() {
 	  callbacks.page3();
 	}
@@ -7346,23 +7346,7 @@
 		  }
 		}
 	  }
-	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
-		var isOneSelected = false;
-		const checkboxes = document.querySelectorAll(`input[data-type=checkbox]`);
-		for (const checkbox of checkboxes) {
-		  if (checkbox.checked) {
-			isOneSelected = true;
-			break;
-		  }
-		}
-		// At least one checkbox must be selected
-		if (!isOneSelected) {
-		  const checkbox = document.querySelector(`input[data-type=checkbox]`);
-		  if (checkbox) {
-			 result.fail.push(checkbox.closest('label'));
-		  }
-		}
-		
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {		
 		if (!result.fail.length) {
 		  quoteHelper.saveProductAndServicesConfig(config);
 		}
@@ -8570,7 +8554,7 @@
 				config.dataset.CountryEntity = global.data.company.country;
 				config.dataset.PartyId = document.querySelector("input[data-name=OnBehalf_PartyId]").value;
 				if (!config.dataset.PartnerBRT) {
-				  config.dataset.PartnerBRT = partyData.BRT;
+				config.dataset.PartnerBRT = partyData.BRT;
 				}
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
@@ -8914,7 +8898,7 @@
 			var cStructure = cPage.structure;
 			var cFilter = true;
 			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
-			if (cPage.quotePreview) cFilter = false;
+			if (cPage.quotePreview || cPage.review) cFilter = false;
 
 			if (
 			  config.dataset.Config_Quote == 'Y' &&
@@ -8935,70 +8919,123 @@
 				ttl: "page-" + i,
 				val: hpe.fn.lang(cPage.title, config.locale, config.localizations)
 			  };
-			  if (global.data.user.internal) {
-				if (hdr.ttl != "page-0")
-				  pairs.push(hdr);
-			  } else pairs.push(hdr);
-			  for (j = 0; j < cStructure.length; j++) {
-				var cFilter = true;
-				if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
-				if (cFilter) {
-				  for (k = 0; k < cStructure[j].group.length; k++) {
-					var cGroup = cStructure[j].group[k];
-					for (l = 0; l < cGroup.length; l++) {
-					  var cInput = cGroup[l];
-					  if (cInput.type != "hidden") {
-						var obj = {
-						  ttl: "N/A",
-						  val: "N/A",
-						  data: "N/A"
-						}
-						if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
-						else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
-						if (
-						  typeof(cInput.data) !== "undefined" &&
-						  typeof(config.dataset[cInput.data]) !== "undefined" &&
-						  config.dataset[cInput.data] != null &&
-						  config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
-						) {
-						  if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
-						  else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
-						  else obj.val = config.dataset[cInput.data];
-						}
-						if (obj.val != "N/A") {
-						  obj.data = cInput.data;
-						  pairs.push(obj);
+			  if (cPage.id == "PS") {
+				pairs.push(hdr);
+				let PSTable = ''; 
+				if (config.dataset.Config_Quote_PartialOrder) {
+					try {
+					  let PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+					  PSData = PSData.filter(item => item.Selected == "Y");
+					  if (PSData.length) {
+						// headers
+						const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+						PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
+<tr>
+    <th style="${stylePS}">HPE Part Number</th>
+    <th style="${stylePS}">HPE Part Quantity</th>
+    <th style="${stylePS}">Deal ID</th>
+    <th style="${stylePS}">bundle ID / Icon ID</th>
+    <th style="${stylePS}">Unit Price</th>
+    <th style="${stylePS}">Extended Net Price</th>
+    <th style="${stylePS}">Previously Purchased Product Details</th>
+    <th style="${stylePS}">Serial number of the products</th>
+    <th style="${stylePS}">Product Purchased Date</th>
+</tr>`;
+						PSData.forEach(item => {
+						  PSTable = PSTable + `<tr>
+	<td style="${stylePS}">${item.ProductID  || ''}</td>
+	<td style="${stylePS}">${item.Count  || ''}</td>
+	<td style="${stylePS}">${item.DealId  || ''}</td>
+	<td style="${stylePS}">${item.BundleID  || ''}</td>
+	<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
+	<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>
+	<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+	<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
+	<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>
+  </tr>`;
+						});
+						PSTable = PSTable + `</table>`;
+					  }
+					} catch(e) {}
+				  var obj = {
+					ttl: "",
+					val: PSTable,
+					data: "ProductAndServices",
+					id: cPage.id,
+				  };
+				  pairs.push(obj);
+				}
+				
+			  } else {
+				if (global.data.user.internal) {
+				  if (hdr.ttl != "page-0")
+					pairs.push(hdr);
+				} else pairs.push(hdr);
+
+				for (j = 0; j < cStructure.length; j++) {
+				  var cFilter = true;
+				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  if (cFilter) {
+					for (k = 0; k < cStructure[j].group.length; k++) {
+					  var cGroup = cStructure[j].group[k];
+					  for (l = 0; l < cGroup.length; l++) {
+						var cInput = cGroup[l];
+						if (cInput.type != "hidden") {
+						  var obj = {
+							ttl: "N/A",
+							val: "N/A",
+							data: "N/A"
+						  }
+						  if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
+						  else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
+						  if (
+							typeof(cInput.data) !== "undefined" &&
+							typeof(config.dataset[cInput.data]) !== "undefined" &&
+							config.dataset[cInput.data] != null &&
+							config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
+						  ) {
+							if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
+							else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
+							else obj.val = config.dataset[cInput.data];
+						  }
+						  if (obj.val != "N/A") {
+							obj.data = cInput.data;
+							pairs.push(obj);
+						  }
 						}
 					  }
 					}
 				  }
 				}
-			  }
-			  var obj = pairs[pairs.length - 1];
-			  //  console.log("obj", obj);
-			  if (obj.ttl.indexOf("page-") > -1) {
-				pairs.pop();
-			  }
-			  if (obj.data == "OnBehalf_CreatedBy") {
-				// Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
-				pairs.shift();
-				const secondPair = pairs.shift();
-				if (secondPair.data == "OnBehalf_PartyId") {
+				var obj = pairs[pairs.length - 1];
+				//  console.log("obj", obj);
+				if (obj.ttl.indexOf("page-") > -1) {
+				  pairs.pop();
+				}
+				if (obj.data == "OnBehalf_CreatedBy") {
+				  // Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
 				  pairs.shift();
+				  const secondPair = pairs.shift();
+				  if (secondPair.data == "OnBehalf_PartyId") {
+					pairs.shift();
+				  }
 				}
 			  }
-
 			}
 		  }
 		  //  console.log("pairs", pairs);
 		  var caseDescription = "";
 		  for (i = 0; i < pairs.length; i++) {
-			let pairVal = pairs[i].val;
-			if (pairVal) pairVal = pairVal.trim();
-			
-			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
+				let pairVal = pairs[i].val;
+				if (pairVal) pairVal = pairVal.trim();
+			if (pairs[i].id === "PS") {
+			  caseDescription = caseDescription + "<br><br>";
+			  caseDescription = caseDescription + "<strong>" + "Stand alone products and services" + "</strong><br>";
+			  caseDescription = caseDescription + pairVal + "<br>";
+			  
+			} else if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI018", config.locale, config.localizations) + "</strong><br>";
@@ -9010,7 +9047,8 @@
 				else
 				  caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			  }
-			} else {
+			}
+			else {
 			  if (["PA_Number"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form023", config.locale, config.localizations) + "</strong><br>";
@@ -12722,12 +12760,9 @@
 		let res = 0;
 		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
 		  if (!deletedRepeater || deletedRepeater && deletedRepeater !== elem) {
-			const checkbox = $(elem).find('*[data-name="Selected"]');
-			if (checkbox.prop('checked')) {
-			  const count = Number($(elem).find('*[data-name="Count"]').val() || 0);
-			  const amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
-			  res += Math.round(count * amount * 100);
-			}
+			const count = Number($(elem).find('*[data-name="Count"]').val() || 0);
+			const amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
+			res += Math.round(count * amount * 100);
 		  }
 		});
 		res /= 100;
