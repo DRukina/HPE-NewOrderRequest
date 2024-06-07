@@ -8109,14 +8109,74 @@
 </script>
 <script>
   // MAIN CONFIG
+  const datasetHandler = {
+	set(target, property, value) {
+	  if (property === 'PA_Number' && value !== null && value !== undefined) {
+		console.log(`PA_Number changed to: ${value}`);
+		mo.fn.overlay.show({
+		  loading: true,
+		  close: false
+		});
+		(async () => {
+		  const ds = new kendo.data.DataSource({
+			type: "rfb-v2",
+			transport: {
+			  read: {
+				url: `https://hpe-rfb.it.hpe.com/form/data-set-provider/v2/989/Partner_Preferences/kendo/data/search`,
+				type: 'POST'
+			  },
+			},
+			schema: {
+			  model: {
+				id: "EntryId",
+				fields: {
+				  
+				}
+			  }
+			},
+			serverFiltering: true,
+			filter: {
+			  field: 'PANumber',
+			  operator: 'eq',
+			  value
+			},
+			serverSorting: true,
+			sort: {
+			  field: "EntryId",
+			  dir: "desc"
+			},
+			serverPaging: true,
+			pageSize: 1000
+		  });
+		  ds.read().then(function() {
+			mo.fn.overlay.hide();
+			const data = ds.view();
+			if (!data || !data[0] || !data[0].Preferences || data[0].Preferences == '') {
+			  return; 
+			}
+			const preferences = JSON.parse(data[0].Preferences);
+			Object.entries(preferences).forEach(([fieldName, fieldValue]) => {
+			  if (!target[fieldName]) { 
+				target[fieldName] = fieldValue;
+				$(`[data-name='${fieldName}']`).val(fieldValue);
+			  }
+			});
+		  });
+		})();
+	  }
+	  target[property] = value;
+	  $(`[data-name='${property}']`).val(value);
+	  return true;
+	}
+  };
   const config = {
 	dom: null,
 	locale: global.data.user.locale,
 	localizations: {},
-	dataset: {
+	dataset: new Proxy({
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
-	},
+	}, datasetHandler),
 	helper: true,
 	summary: {},
 	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
