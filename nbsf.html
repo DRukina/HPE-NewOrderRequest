@@ -3400,7 +3400,7 @@
                 if (item.type == "select") {
                     try {
                         // IF VALUES KEY IS FUNCTION
-                        if (item.required || el[0].value != "Select one") {
+                        if (item.required || el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations)) {
                             if (typeof(item.values) === "function" && item.values().indexOf(el[0].value) == -1) count++;
                             // IF VALUES KEY IS ARRAY
                             else if (typeof(item.values) === "object" && item.values.indexOf(el[0].value) == -1) count++;
@@ -3682,7 +3682,7 @@
                                 if (nbsf.ev.openedTiles[collapseRow.getAttribute("review-id")] == 'up')
                                     $(collapseBtn).trigger('click');
                             });
-                            config.collapsibleDefaults = true;
+                            config.collapsibleDefaults = false;
                         } else {
                             $('.row').each(function() {
                                 const reviewId = $(this).attr('review-id');
