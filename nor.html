@@ -6944,7 +6944,8 @@
 	validation: function() {
 	  var result = {
 		fail: [],
-		pass: []
+		pass: [],
+		tooltips: {},
 	  };
 	  // if selected check the required field 
 	  // ProductServices_Attachment
@@ -6958,6 +6959,7 @@
 		  const count = document.querySelector(`input[data-name=Count_${item.ID}]`);
 		  const checkbox = document.querySelector(`input[data-name=Selected_${item.ID}]`);
 		  const maxQuantity = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || 0;
+		  const consumedQuantity = item.Quantity - maxQuantity;
 		  if (checkbox) {
 			if (checkbox.checked) {
 			  isOneSelected = true;
@@ -6974,11 +6976,14 @@
 			  // Count - Quantity
 			  if (count) {
 				const val = count.value && Number(count.value) || 0;
-				if (val && val <= maxQuantity && count.value > 0) {
+				if (val && val <= maxQuantity && val > 0) {
 				  result.pass.push(count.closest('label'));
 				  count.closest('label').setAttribute("data-state", "");
 				} else {
 				  result.fail.push(count.closest('label'));
+				  if (val > 0) {
+					result.tooltips[`Count_${item.ID}`] = consumedQuantity == 0 ? ['Max Quantity is ' + item.Quantity] : [consumedQuantity + ' Quantities already consumed'];
+				  }
 				  count.closest('label').setAttribute("data-state", "error");
 				}
 			  }
@@ -11934,12 +11939,12 @@
 					  BundleID: item.BundleID,
 					  DealId: item.DealId,
 					  UnitNetAmount: item.UnitNetAmount,
+					  Count: curUcid ? curUcid.Count : 1,
 					  ExtendedNetAmount: item.ExtendedNetAmount,
 					  Quantity: item.Quantity,
 					  CfgSystemId: item.CfgSystemId,
 					  CfgSystemName: item.CfgSystemName,
 					  Selected: curUcid ? curUcid.Selected : null,
-					  Count: curUcid ? curUcid.Count : 1,
 					  ProductID: item.ProductID,
 					  ProductClassificationCode: item.ProductClassificationCode,
 					  LineType: item.LineType,
@@ -11961,6 +11966,10 @@
 			  if (!isSelected && quoteHelper.ucids.length) {
 				quoteHelper.ucids[0].Selected = "Y";
 			  }
+			  quoteHelper.ucids.forEach(item => {
+				item.Count = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || item.Count;
+				item.ExtendedNetAmount = item.UnitNetAmount * item.Count || 0;
+			  });
 			  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
 			  // build page
 			  quoteHelper.buildProductAndServices(config, page);
@@ -12073,13 +12082,14 @@
 			  },
 			  {
 				label: "HPE Part Quantity*",
-				value: quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(ucid.ProductID) || ucid.Count,
+				value: ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
 				type: "text",
 				validation: ['minLen|1', 'isInteger'],
 				typing: "isInteger",
 				class: "bordered-input",
+				
 				disabled: isDisabled,
 			  },
 			  {
@@ -12112,9 +12122,9 @@
 			  {
 				label: "Extended Net Price",
 				value: ucid.ExtendedNetAmount,
-				disabled: true,
 				data: "ExtendedNetAmount_" + ucid.ID,
-				required: false,
+				required: true,
+				disabled: true,
 				type: "text",
 				validation: ['minLen|1'],
 			  }];
@@ -12435,10 +12445,11 @@
 			  label: "Extended Net Price*",
 			  data: "ExtendedNetAmount",
 			  required: true,
+			  disabled: true,
 			  type: "text",
-			  class: "bordered-input",
 			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
-			  typing: "povaluetyping"
+			  typing: "povaluetyping",
+			  class: "bordered-input-disabled",
 			},
 			{
 			  label: "Carepack",
@@ -12457,7 +12468,10 @@
 			return accumulator;
 		  }, 0);
 		  
-		  page.structure[1].group[0].shift();
+		  if (page.structure[1].group[0][0].data == "Field") {
+			// delete checkbox for repeater
+			page.structure[1].group[0].shift();
+		  }
 		  page.structure[1].group[0][0].class += " ftr-cell"; 
 		  page.structure.splice(2, sumRepeat, {
 			header: "",
@@ -12511,12 +12525,19 @@
 		quoteHelper.ucids.forEach(item => {
 		  item.Count = config.dataset[`Count_${item.ID}`];
 		  item.Selected = config.dataset[`Selected_${item.ID}`];
+		  item.UnitNetAmount = config.dataset[`UnitNetAmount_${item.ID}`];
 		  item.SerialNumberOfProducts = config.dataset[`SerialNumberOfProducts_${item.ID}`];
 		  item.ProductPurchasedDate = config.dataset[`ProductPurchasedDate_${item.ID}`];
 		  item.PreviouslyPurchasedProductDetails = config.dataset[`PreviouslyPurchasedProductDetails_${item.ID}`];
 		  if (item.Selected) {
 			PO_Value += Math.round(item.Count * item.UnitNetAmount * 100);
 		  }
+		  
+		  item.ExtendedNetAmount = (item.Count || 0) * (item.UnitNetAmount || 0);
+		  config.dataset[`ExtendedNetAmount_${item.ID}`] = item.ExtendedNetAmount;
+		  if ($(`*[data-name="ExtendedNetAmount_${item.ID}"]`)) {
+			$(`*[data-name="ExtendedNetAmount_${item.ID}"]`).val(item.ExtendedNetAmount);
+		  }	  
 		});
 		PO_Value /= 100;
 		const filter = nbsf.fn.filter(config.dataset, poValueFilter);
@@ -12530,8 +12551,17 @@
 		let res = 0;
 		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
 		  if (!deletedRepeater || deletedRepeater && deletedRepeater !== elem) {
-			const count = Number($(elem).find('*[data-name="Count"]').val() || 0);
-			const amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
+			let count = Number($(elem).find('*[data-name="Count"]').val() || 0);
+			let amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
+			if (isNaN(amount)) {
+			  amount = 0;
+			}
+			if (isNaN(count)) {
+			  count = 0;
+			}
+			if ($(elem).find('*[data-name="ExtendedNetAmount"]')) {
+			  $(elem).find('*[data-name="ExtendedNetAmount"]').val(count * amount);
+			}	 
 			res += Math.round(count * amount * 100);
 		  }
 		});
@@ -12594,7 +12624,7 @@
 				DealId: item.DealId,	
 				UCID: "",	
 				UnitNetAmount: item.UnitNetAmount,
-				ExtendedNetAmount: item.ExtendedNetAmount,
+				ExtendedNetAmount: (item.Count || 0) * item.UnitNetAmount,
 				Quantity: "",
 				CfgSystemId: "",
 				CfgSystemName: "",
