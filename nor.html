@@ -953,6 +953,7 @@
 	savedraft: "Form208",
 	internal: true,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  {
 	  header: "FormCFI01",
@@ -1181,6 +1182,7 @@
 	goExternal: true,
 	isValidQuote: true,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // HIDDEN INPUTS
 	  {
@@ -2548,286 +2550,44 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
-	quotePreview: true,
+	review: {
+		editable: true,
+		layout: "spa",
+		collapsible: true,
+		collapsed: true,
+	},
+	quotePreview: true,    
 	filter: {
-	  logic: "and",
-	  filters: [{
-		field: "Config_Quote",
-		operator: "eq",
-		value: "Y"
-	  },
+		logic: "or",
+		filters: [
+			{
+			field: "Geo",
+			operator: "in",
+			value: ["CERTA", "CETA", "Latin America", "North America"]
+			},
 				{
-				  field: "Quote_Error",
-				  operator: "neq",
-				  value: "Y"
+					field: "SubRegion",
+					operator: "eq",
+					value: "MESA"
 				},
 				{
-				  logic: "or",
-				  filters: [{
-					field: "Geo",
+					field: "internalUser",
+					operator: "eq",
+					value: true
+				},
+				{
+					field: "CountryCode",
 					operator: "in",
-					value: ["CERTA", "CETA", "Latin America", "North America"]
-				  },
-							{
-							  field: "SubRegion",
-							  operator: "eq",
-							  value: "MESA"
-							},
-							{
-							  field: "internalUser",
-							  operator: "eq",
-							  value: true
-							},
-							{
-							  field: "CountryCode",
-							  operator: "in",
-							  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
-							},
-						   ]
-				}
-			   ]
-	},
-	structure: [
-	  // SoldTo Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_SoldTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }],
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_SoldTo",
-			type: "hidden"
-		  }],
-		]
-	  },
-	  // Payer Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_Payer",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_Payer",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // BillTo Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_BillTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_BillTo",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // ShipTo Config
-	  {
-		header: "Form045",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_ShipTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form045",
-		group: [
-		  [{
-			data: "PPC_ShipTo",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // End Customer Config
-	  {
-		header: "End Customer Information",
-		filter: {
-		  field: "PO_Category",
-		  operator: "neq",
-		  value: "Stock"
-		},
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_EndCx",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "End Customer Information",
-		filter: {
-		  field: "PO_Category",
-		  operator: "neq",
-		  value: "Stock"
-		},
-		group: [
-		  [{
-			data: "PPC_EndCx",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // Reseller Config
-	  {
-		header: "Reseller Information",
-		filter: {
-		  logic: "or",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartnerBRT",
-			  operator: "in",
-			  value: ["Distributor", "OEM Distributor", "System Integrator"]
-			},
-					  {
-						field: "PO_BusinessModel",
-						operator: "nin",
-						value: ["Agent Model", "HPFS & Agent Model"]
-					  },
-					  {
-						field: "PO_Category",
-						operator: "neq",
-						value: "Stock"
-					  }
-					 ]
-		  },
-					{
-					  logic: "and",
-					  filters: [{
-						field: "PartnerBRT",
-						operator: "eq",
-						value: "T1 Solution Provider"
-					  },
-								{
-								  field: "CountryCode",
-								  operator: "eq",
-								  value: "KR"
-								},
-								{
-								  field: "PO_Category",
-								  operator: "neq",
-								  value: "Stock"
-								}
-							   ]
-					}
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_Reseller",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Reseller Information",
-		filter: {
-		  logic: "or",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartnerBRT",
-			  operator: "in",
-			  value: ["Distributor", "OEM Distributor", "System Integrator"]
-			},
-					  {
-						field: "PO_BusinessModel",
-						operator: "nin",
-						value: ["Agent Model", "HPFS & Agent Model"]
-					  },
-					  {
-						field: "PO_Category",
-						operator: "neq",
-						value: "Stock"
-					  }
-					 ]
-		  },
-					{
-					  logic: "and",
-					  filters: [{
-						field: "PartnerBRT",
-						operator: "eq",
-						value: "T1 Solution Provider"
-					  },
-								{
-								  field: "CountryCode",
-								  operator: "eq",
-								  value: "KR"
-								},
-								{
-								  field: "PO_Category",
-								  operator: "neq",
-								  value: "Stock"
-								}
-							   ]
-					}
-				   ]
-		},
-		group: [
-		  [{
-			data: "PPC_Reseller",
-			type: "hidden"
-		  }]
-		]
-	  },
-	],
+					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				},
+				]
+	},  
+	structure: [{
+		hidden: false,
+		group: []
+	}],
 	callback: function() {
+	  callbacks.quotePreview();
 	  quoteHelper.checkResellerAddressData(config);
 	  quoteHelper.buildQuotePreviewPage(config);
 	}
@@ -2847,6 +2607,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	filter: {
 	  logic: "and",
 	  filters: [{
@@ -3224,38 +2985,18 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'soldto',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		field: "Config_SoldToDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_SoldTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  filters: [
+		{
+		  field: "Config_SoldToDetails",
+		  operator: "neq",
+		  value: "Y"
+		},
+	  ]
 	},
 	structure: [
 	  {
@@ -3586,38 +3327,18 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'payer',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		field: "Config_PayerDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_Payer",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  filters: [
+		{
+		  field: "Config_PayerDetails",
+		  operator: "neq",
+		  value: "Y"
+		},
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -3863,39 +3584,19 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'billto',
-	filter: {
-	  logic: "and",
-	  filters: [{
-		field: "Config_BillToDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_BillTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
-	},
+    filter: {
+      logic: "and",
+      filters: [
+        {
+          field: "Config_BillToDetails",
+          operator: "neq",
+          value: "Y"
+        },
+      ]
+    },
 	structure: [{
 	  header: "Address",
 	  group: [
@@ -4046,47 +3747,28 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'shipping',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		logic: "or",
-		filters: [{
-		  field: "Config_ShipToDetails",
-		  operator: "neq",
-		  value: "Y"
+	  filters: [
+		{
+		  logic: "or",
+		  filters: [
+			{
+			  field: "Config_ShipToDetails",
+			  operator: "neq",
+			  value: "Y"
+			},
+			{
+			  field: "Config_ShipToDetails_Contact",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
-				  {
-					field: "Config_ShipToDetails_Contact",
-					operator: "neq",
-					value: "Y"
-				  }
-				 ]
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_ShipTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -4592,47 +4274,28 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'endcx',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		logic: "or",
-		filters: [{
-		  field: "Config_EndCxDetails",
-		  operator: "neq",
-		  value: "Y"
+	  filters: [
+		{
+		  logic: "or",
+		  filters: [
+			{
+			  field: "Config_EndCxDetails",
+			  operator: "neq",
+			  value: "Y"
+			},
+			{
+			  field: "Config_EndCxDetails_Contact",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
-				  {
-					field: "Config_EndCxDetails_Contact",
-					operator: "neq",
-					value: "Y"
-				  }
-				 ]
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_EndCx",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -4947,89 +4610,73 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'reseller',
 	filter: {
 	  logic: 'or',
-	  filters: [{
-		logic: "and",
-		filters: [{
-		  field: "PartnerBRT",
-		  operator: "in",
-		  value: ["Distributor", "OEM Distributor", "System Integrator"]
-		},
-				  {
-					logic: "and",
-					filters: [{
-					  logic: "or",
-					  filters: [{
-						field: "Config_ResellerDetails",
-						operator: "neq",
-						value: "Y"
-					  },
-								{
-								  field: "Config_ResellerDetails_Contact",
-								  operator: "neq",
-								  value: "Y"
-								}
-							   ]
-					},
-							  {
-								logic: "or",
-								filters: [{
-								  field: "Config_Quote",
-								  operator: "neq",
-								  value: "Y"
-								},
-										  {
-											logic: "and",
-											filters: [{
-											  field: "Config_Quote",
-											  operator: "eq",
-											  value: "Y"
-											},
-													  {
-														field: "Config_PPC_Reseller",
-														operator: "neq",
-														value: "Y"
-													  },
-													 ]
-										  },
-										 ]
-							  },
-							 ]
-				  },
-				  {
-					field: "PO_BusinessModel",
-					operator: "nin",
-					value: ["Agent Model", "HPFS & Agent Model"]
-				  },
-				  {
-					field: "PO_Category",
-					operator: "neq",
-					value: "Stock"
-				  }
-				 ]
-	  },
+	  filters: [
+		{
+		  logic: "and",
+		  filters: [
+			{
+			  field: "PartnerBRT",
+			  operator: "in",
+			  value: ["Distributor", "OEM Distributor", "System Integrator"]
+			},
+			{
+			  logic: "and",
+			  filters: [
 				{
-				  logic: "and",
-				  filters: [{
-					field: "PartnerBRT",
-					operator: "eq",
-					value: "T1 Solution Provider"
-				  },
-							{
-							  field: "CountryCode",
-							  operator: "eq",
-							  value: "KR"
-							},
-							{
-							  field: "PO_Category",
-							  operator: "neq",
-							  value: "Stock"
-							}
-						   ]
-				}
-			   ]
+				  logic: "or",
+				  filters: [
+					{
+					  field: "Config_ResellerDetails",
+					  operator: "neq",
+					  value: "Y"
+					},
+					{
+					  field: "Config_ResellerDetails_Contact",
+					  operator: "neq",
+					  value: "Y"
+					}
+				  ]
+				},
+			  ]
+			},
+			{
+			  field: "PO_BusinessModel",
+			  operator: "nin",
+			  value: ["Agent Model", "HPFS & Agent Model"]
+			},
+			{
+			  field: "PO_Category",
+			  operator: "neq",
+			  value: "Stock"
+			}
+		  ]
+		},
+		{
+		  logic: "and",
+		  filters: [
+			{
+			  field: "PartnerBRT",
+			  operator: "eq",
+			  value: "T1 Solution Provider"
+			},
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "KR"
+			},
+			{
+			  field: "PO_Category",
+			  operator: "neq",
+			  value: "Stock"
+			}
+		  ]
+		}
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -5298,6 +4945,8 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	filter: {
 	  logic: "or",
 	  filters: [{
@@ -5520,6 +5169,8 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	filter: {
 	  logic: "and",
 	  filters: [{
@@ -5748,6 +5399,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // optional attachment
 	  {
@@ -7030,6 +6682,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // COMMENTS
 	  {
@@ -7110,6 +6763,7 @@
 	back: "Back",
 	no: "No",    
 	nav: true,
+	showOnReview: false,
 	poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
 	structure: [
 	  {
@@ -7368,27 +7022,14 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
-	review: {
-	  editable: true, // @TODO
-	  layout: "spa",
-	  collapsible: true,
-	  collapsed: true,
-	},
-	structure: [{
-	  hidden: false,
-	  group: [
-		[{
-		  data: "CFI",
-		  type: "hidden"
-		}]
-	  ]
-	}],
+  structure: [{
+    hidden: false,
+    group: []
+  }],
 	callback: function() {
 	  // POPULATE ORID
 	  var orid = document.querySelectorAll(".header .ORID");
 	  for (i = 0; i < orid.length; i++) orid[i].innerText = config.dataset.EntryId;
-	  // document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.classList.add("output"); // @TODO
-	  //document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.innerHTML = '';
 
 	  //empty ship to if the config is toggled yes but the quote still has info
 	  if (config.dataset.Config_ShipToDetails == 'Y') {
@@ -7794,6 +7435,8 @@
 		}
 	  };
 	  
+	  var app = document.querySelector(".nbsf .row");
+	  const geo = config.dataset.Geo || global.data.geo.geography;
 	  /*
 	  var app = document.querySelector(".nbsf-review-page");
 	  
@@ -7807,7 +7450,7 @@
 	  $('#msg.nfo').show();*/
 
 	  let objK = Object.keys(reviewSetup);
-	  /*for (i = 0; i < objK.length; i++) {
+	  for (i = 0; i < objK.length; i++) {
 		let key = objK[i];
 		if (key == "customershipto") {
 		  var main = reviewSetup[key];
@@ -7931,7 +7574,6 @@
 		if (typeof(reviewSetup[key].filter) === "object") filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
 		if (reviewSetup[key].fieldset.length > 0 && filter) {
 		  console.log('reviewSetup[key]', reviewSetup[key]);
-		  /*
 		  if (app.querySelector(".row[review-id=" + key + "]") == null)
 			app.innerHTML += '<div class="row" review-id="' + key + '"><h4>' + reviewSetup[key].title + '</h4></div>';
 		  var row = app.querySelector(".row[review-id=" + key + "]");
@@ -8061,10 +7703,8 @@
 				row.innerHTML = "";
 			}
 		  }
-		  // old comment finish/
 		}
 	  }
-	  */
 	  // Buttons logic
   	  $('#msg.nfo span').click(function() {
 		$('#msg.nfo').hide();
@@ -10491,6 +10131,103 @@
 	//	quoteHelper.onCloneProductAndServices(config, document);
 	  }
 	},
+	quotePreview: function() {
+	  console.log('%c Quote Preview page ', 'background: #222; color: #bada55');    
+	  const disableAddressQuoteList = ['SoldTo', 'Payer', 'ShipTo', 'EndCx'];
+	  const currentValLengthOnPages = ['BillTo'];
+
+	  // ** PartyId
+	  const partyIds = $('input[data-name$="_PartyId"]');
+	  $(partyIds).each(function() {
+		const partyIdName = $(this).attr('data-name');
+		const partyIdNamePrefix = partyIdName.split('_')[0];
+
+		$(this).keyup(function() {
+		  let currentVal = $(this).val();
+
+		  if ( 
+			(currentVal.length === 10 && !currentValLengthOnPages.includes(partyIdNamePrefix))
+			|| (currentVal.length === 10 && currentValLengthOnPages.includes(partyIdNamePrefix) && currentVal[0] == "1")
+		  ) {
+			mo.fn.overlay.show({
+			  progressText: hpe.fn.lang("FormCFI010", config.locale, config.localizations),
+			  progressPercent: 10,
+			  close: false
+			})
+			config.dataset.SoldTo_PartyId = currentVal;
+			EMDMAddress(currentVal, partyIdNamePrefix, false);
+		  }
+		});
+
+		$(`*[data-name*="${partyIdNamePrefix}_"]`).change(function() {
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
+			$(`*[data-name="${partyIdName}"]`).val('');
+		});
+		$(`*[data-name*="${partyIdNamePrefix}_"]`).keyup(function() {
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
+			$('*[data-name="SoldTo_PartyId"]').val('');
+		});
+
+		// Disable some fields if quote is exist
+		if (disableAddressQuoteList.includes(partyIdNamePrefix)) {
+		  quoteHelper.disableAddressQuoteData(config);  
+		}      
+		helper.buildFastClearAddressButton(partyIdNamePrefix, true);
+	  });   
+	  // ** -- -- -- --
+
+	  /*
+    // ** NationalID
+    const nationalIds = $('input[data-name$="_NationalID"]');
+    $(nationalIds).each(function() {
+      const nationalIdName = $(this).attr('data-name');
+      const nationalIdNamePrefix = nationalIdName.split('_')[0];
+      $(`*[data-name="${nationalIdNamePrefix}_NationalID"]`).parent().parent().parent().parent().addClass('fixNationalID');
+    });
+    // ** -- -- -- --
+    */    
+
+	  // ** AddressCountry    
+	  const addressCountries = $('select[data-name$="_Address_Country"]');    
+	  $(addressCountries).each(function() {
+		const addressCountryName = $(this).attr('data-name');   
+		const options = $(this).find('option');
+		options.each(function() {
+		  $(this).click(function() {
+			$(`select[data-name="${addressCountryName}"]`).trigger("change");
+		  });
+		});
+
+		$(`select[data-name="${addressCountryName}"]`).change(function() {
+		  let completedData = document.querySelectorAll('*[data-name]');
+		  for (let i = 0; i < completedData.length; i++) {
+			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
+		  }
+		  config.dataset[`${addressCountryName}`] = $(this).val();
+		  nbsf.init(config, config.page);
+		});
+	  });
+	  // ** -- -- -- --
+
+	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
+		let currentVal = $(this).val();
+		if (currentVal.length == 10 && currentVal[0] == "1") {
+		  config.dataset.ShipTo_PartyId = currentVal;
+		  nbsf.init(config, config.page);
+		  mo.fn.overlay.show({
+			progressText: hpe.fn.lang("FormCFI010", config.locale, config.localizations),
+			progressPercent: 10,
+			close: false
+		  })
+		  EMDMAddress(currentVal, 'ShipTo', true);
+		} else if (currentVal.length == 10 && currentVal[0] == "2") {
+		  config.dataset.ShipTo_PartyId = currentVal;
+		  nbsf.init(config, config.page);
+		}
+	  });
+
+	  helper.buildFastClearAddressButton('AgentProgram');    
+	},
   };
 
   // CONFIG FORM TRANSLATIONS
@@ -12042,36 +11779,9 @@
 		  }
 		}
 	  }
-
-	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));
-	  config.dataset.isDraft = false;
-
-	  $(".nbsf .buttons .draft").click(function() {
-		config.dataset.isDraft = true;
-		config.onSubmit();
-	  });
-
-	  for (const field in reviewSetup) {
-		$(document).off('click', '.collapse[review-id="' + field + '"]').on('click', '.collapse[review-id="' + field + '"]', function() {
-		  console.log('clicked');
-		  var container = $('.container[review-id="' + field + '"]');
-		  var svg = $(this);
-		  var polyline = svg.find('polyline');
-
-		  if (container.is(':visible')) {
-			svg.attr("aria-label", "up");
-			polyline.attr("points", "7.086 1.174 17.086 11.174 7.086 21.174");
-			polyline.attr("transform", "rotate(-89 12.086 11.174)");
-
-		  } else {
-			svg.attr("aria-label", "down");
-			polyline.attr("points", "7.086 3.174 17.086 13.174 7.086 23.174");
-			polyline.attr("transform", "scale(1 -1) rotate(-89 -1.32 0)");
-		  }
-
-		  container.toggle("fast");
-		});
-	  }
+    /* @TODO Delete draft logic
+	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));	  
+     */
 	},
 	validateAddressData: function(config, section = 'soldto') {
 	  const validationConfig = {
@@ -13022,7 +12732,7 @@
   };
 
   const helper = {
-	buildFastClearAddressButton: function(section = 'SoldTo') {
+	buildFastClearAddressButton: function(section = 'SoldTo', isReviewPage = false) {
 	  const fastClearAddress = function() {
 		const fields = ['CompanyName', 'PartyId', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
 		fields.forEach((field) => {
@@ -13040,7 +12750,7 @@
 	  if (sectionPartyId) {
 		const row = document.querySelector('input[data-name="' + section + '_PartyId"]').closest('.row');
 		const heading = $(row).find('.heading');
-		if (heading) {
+		if (heading && !isReviewPage) {
 		  $(heading).append(`<svg class="${section} clear-option" viewBox="0 0 24 24" role="img" aria-label="trash" width="24px" height="24px">
 <path fill="none" stroke="#666" stroke-width="2" d="M4,5 L20,5 L20,23 L4,23 L4,5 Z M1,5 L23,5 M9,1 L15,1 L15,5 L9,5 L9,1 Z M9,1 L15,1 L15,5 L9,5 L9,1 Z M15,9 L15,19 M9,9 L9,19">
   </path>
