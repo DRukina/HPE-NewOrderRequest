@@ -278,6 +278,7 @@
 		channel: null,
 		pas: null
 	  },
+	  userPreferences:{}, // Map PANumber:UserPreferences
 	  company: {
 		party: null,
 		country: null,
@@ -7749,20 +7750,24 @@
 </script>
 <script>
   // MAIN CONFIG
-  const datasetHandler = {
-	set(target, property, value) {
-	  if (property === 'PA_Number' && value !== null && value !== undefined) {
-		console.log(`PA_Number changed to: ${value}`);
-		mo.fn.overlay.show({
-		  loading: true,
-		  close: false
-		});
-		(async () => {
+  const paNumberChanged = function(newVal) {
+	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PA_Number : newVal];
+	if (!prefs) return;
+	
+	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
+	  config.dataset[fieldName] = fieldValue;
+	  $(`[data-name='${fieldName}']`).val(fieldValue);
+	});
+  }
+
+  const loadPreferences = function() {
+      // Load preferences for all PA in global.data.brt.pas
+      return new Promise((resolve, reject) => {
 		  const ds = new kendo.data.DataSource({
 			type: "rfb-v2",
 			transport: {
 			  read: {
-				url: `https://hpe-rfb.it.hpe.com/form/data-set-provider/v2/989/Partner_Preferences/kendo/data/search`,
+				url: "/form/data-set-provider/v2/989/Partner_Preferences/kendo/data/search",
 				type: 'POST'
 			  },
 			},
@@ -7770,15 +7775,13 @@
 			  model: {
 				id: "EntryId",
 				fields: {
-				  
 				}
 			  }
 			},
 			serverFiltering: true,
 			filter: {
-			  field: 'PANumber',
-			  operator: 'eq',
-			  value
+			  logic: "or",
+			  filters: global.data.brt.pas.map((pa) => ({field: "PANumber", operator: "eq", value: pa}))
 			},
 			serverSorting: true,
 			sort: {
@@ -7788,35 +7791,34 @@
 			serverPaging: true,
 			pageSize: 1000
 		  });
-		  ds.read().then(function() {
-			mo.fn.overlay.hide();
+		  ds.read().then(() => {
 			const data = ds.view();
-			if (!data || !data[0] || !data[0].Preferences || data[0].Preferences == '') {
-			  return; 
-			}
-			const preferences = JSON.parse(data[0].Preferences);
-			Object.entries(preferences).forEach(([fieldName, fieldValue]) => {
-			  if (!target[fieldName]) { 
-				target[fieldName] = fieldValue;
-				$(`[data-name='${fieldName}']`).val(fieldValue);
-			  }
+			const prefs = {}
+			data.forEach((row) => {
+				try {
+				  if (row.Preferences) prefs[row.PANumber] = JSON.parse(row.Preferences);
+				} catch(e) {
+				  // The string with wrong preferences is not the reason to fall
+				  console.log("Error parsing preferences", row);
+				}
 			});
+			global.data.userPreferences = prefs;
+			resolve();
+		  }, (errArg) => {
+			console.log("User Preferences loading error", errArg);
+			reject(errArg);
 		  });
-		})();
-	  }
-	  target[property] = value;
-	  $(`[data-name='${property}']`).val(value);
-	  return true;
-	}
-  };
+	  });
+  }
+
   const config = {
 	dom: null,
 	locale: global.data.user.locale,
 	localizations: {},
-	dataset: new Proxy({
+	dataset: {
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
-	}, datasetHandler),
+	},
 	helper: true,
 	summary: {},
 	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
@@ -8326,18 +8328,20 @@
 				  reference.countriesRequest();
 				  otherFunctions.lang();
 
-				  crud.q.stop(function() {
-					hpe.data.xref(global.data.company.party, function(d) {
-					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					  reference.xref = d;
-					  config.locale = global.data.user.locale;
-					  config.dom = document.querySelector('div[tab-id="oob"]');
-					  nbsf.init(config, config.page + 1);
-					  nbsf.init(config, config.page);
-					  mo.fn.events.closeAll();
-					  mo.fn.overlay.hide();
+				  loadPreferences().then(() => {
+					crud.q.stop(function() {
+					  hpe.data.xref(global.data.company.party, function(d) {
+						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+						reference.xref = d;
+						config.locale = global.data.user.locale;
+						config.dom = document.querySelector('div[tab-id="oob"]');
+						nbsf.init(config, config.page + 1);
+						nbsf.init(config, config.page);
+						mo.fn.events.closeAll();
+						mo.fn.overlay.hide();
+					  });
 					});
-				  });
+				  })
 				});
 
 			  } else {
@@ -8485,16 +8489,18 @@
 				reference.countriesRequest();
 				otherFunctions.lang();
 
-				crud.q.stop(function() {
-				  hpe.data.xref(global.data.company.party, function(d) {
-					global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					reference.xref = d;
-					config.locale = global.data.user.locale;
-					config.dom = document.querySelector('div[tab-id="oob"]');
-					nbsf.init(config, config.page + 1);
-					nbsf.init(config, config.page);
-					mo.fn.events.closeAll();
-					mo.fn.overlay.hide();
+				loadPreferences().then(() => {
+				  crud.q.stop(function() {
+					hpe.data.xref(global.data.company.party, function(d) {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+					  reference.xref = d;
+					  config.locale = global.data.user.locale;
+					  config.dom = document.querySelector('div[tab-id="oob"]');
+					  nbsf.init(config, config.page + 1);
+					  nbsf.init(config, config.page);
+					  mo.fn.events.closeAll();
+					  mo.fn.overlay.hide();
+					});
 				  });
 				});
 			  });
@@ -9345,7 +9351,7 @@
 
 	  // Populate data from QuoteId 
 	  if (document.querySelector('input[data-name="Requestor_PO_Quote_ID"]')) {
-		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", function(event, invalid) {
+		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", async function(event, invalid) {
 		  let completedData = document.querySelectorAll('*[data-name]');
 		  for (let i = 0; i < completedData.length; i++) {
 			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
@@ -9355,10 +9361,11 @@
 		  nbsf.init(config, config.page);
 		  if (!invalid) {
 			quoteHelper.initHeaderQuoteData(config);
-			quoteHelper.initAddressQuoteData(config);
+			await quoteHelper.initAddressQuoteData(config);
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
+			paNumberChanged();
 			nbsf.init(config, config.page);
 		  }
 
@@ -9537,8 +9544,11 @@
 	  }
 
 	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
-		if ($('select[data-name="PA_Number"] option').length > 1) {
-		  $('select[data-name="PA_Number"]').val($('select[data-name="PA_Number"] option')[1].innerText).trigger('change');
+		const paOpts = $('select[data-name="PA_Number"] option');
+		if (paOpts.length > 1) {
+		  const paValue = paOpts[1].innerText;
+		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
+		  paNumberChanged(paValue); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
 	  
@@ -12950,47 +12960,48 @@
 			  global.data.brt.channel = chnls;
 			  reference.countriesRequest();
 
-
-			  crud.q.stop(function() {
-				if (global.data.company.party) {
-				  mo.fn.overlay.show({
-					loading: true,
-					close: false
-				  });
-				  hpe.data.xref(global.data.company.party, function(d) {
-					mo.fn.overlay.hide();
-					if (d.status == 'SUCCESS') {
-					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					  //d.party[0].countryCode = 'IN'; //CFI
-					  //d.party[0].countryName = 'India'; //CFI
-					  reference.xref = d;
-					  config.locale = global.data.user.locale;
-					  config.dom = document.querySelector('div[tab-id="oob"]');
-					  nbsf.init(config, 0);
-					  nbsf.init(config, 0);
-					  //mo.fn.overlay.hide()
-					} else {
-					  //console.log('err');
-					  mo.fn.modal.show({
-						ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-						title: hpe.fn.lang("ErrorGeneric", config.locale, config.localizations),
-						content: '',
-						ctaCallback: function() {
-						  mo.fn.overlay.hide();
-						  mo.fn.events.closeAll();
-						}
-					  });
-					}
-				  })
-				} else {
-				  document.querySelector('span[tab-id="oob"]').innerText = hpe.fn.lang('Form069', config.locale, config.localizations)
-				  if (document.querySelector('span[tab-id="requests"]'))
-					document.querySelector('span[tab-id="requests"]').innerText = hpe.fn.lang('Form072', config.locale, config.localizations)
-				  config.dom = document.querySelector('div[tab-id="oob"]');
-				  nbsf.init(config, 0);
-				  nbsf.init(config, 0);
-				  //mo.fn.overlay.hide()
-				}
+			  loadPreferences().then(() => {
+				crud.q.stop(function() {
+				  if (global.data.company.party) {
+					mo.fn.overlay.show({
+					  loading: true,
+					  close: false
+					});
+					hpe.data.xref(global.data.company.party, function(d) {
+					  mo.fn.overlay.hide();
+					  if (d.status == 'SUCCESS') {
+						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+						//d.party[0].countryCode = 'IN'; //CFI
+						//d.party[0].countryName = 'India'; //CFI
+						reference.xref = d;
+						config.locale = global.data.user.locale;
+						config.dom = document.querySelector('div[tab-id="oob"]');
+						nbsf.init(config, 0);
+						nbsf.init(config, 0);
+						//mo.fn.overlay.hide()
+					  } else {
+						//console.log('err');
+						mo.fn.modal.show({
+						  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+						  title: hpe.fn.lang("ErrorGeneric", config.locale, config.localizations),
+						  content: '',
+						  ctaCallback: function() {
+							mo.fn.overlay.hide();
+							mo.fn.events.closeAll();
+						  }
+						});
+					  }
+					})
+				  } else {
+					document.querySelector('span[tab-id="oob"]').innerText = hpe.fn.lang('Form069', config.locale, config.localizations)
+					if (document.querySelector('span[tab-id="requests"]'))
+					  document.querySelector('span[tab-id="requests"]').innerText = hpe.fn.lang('Form072', config.locale, config.localizations)
+					config.dom = document.querySelector('div[tab-id="oob"]');
+					nbsf.init(config, 0);
+					nbsf.init(config, 0);
+					//mo.fn.overlay.hide()
+				  }
+				});
 			  });
 			});
 		  } else {
@@ -13075,6 +13086,9 @@
 			document.querySelector(".search input").addEventListener('input', oob.grid._events._search);
 			oob.grid.load();
 		  })
+		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
+			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
+		  });
 		});
 	  });
 	},
