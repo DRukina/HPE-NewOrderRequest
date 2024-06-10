@@ -8514,6 +8514,8 @@
 			}
 		  })
 		}
+	  } else if (config.pages[config.page].id == "PS") {
+		doNext();
 	  } else if (config.page == 1) {
 		nbsf.init(config, config.page + 1);
 		nbsf.init(config, config.page);
@@ -8537,8 +8539,9 @@
 		loading: true,
 		close: false
 	  });
-	  if (config.page > 1 && config.pages[config.page - 2].id == "PS") {
-		quoteHelper.configureProductAndServices(config, config.pages[config.page - 2], function() {
+	  const currentPage = global.data.user.internal ? config.pages[config.page - 2] : config.pages[config.page - 1];
+	  if (config.page > 1 && currentPage.id == "PS") {
+		quoteHelper.configureProductAndServices(config, currentPage, function() {
 		  console.log("CONFIG:", this);
 		  console.log("CURRENT:", this.page);
 		  console.log("PREV:", this.page - 1);
@@ -8838,51 +8841,98 @@
 				ttl: "page-" + i,
 				val: hpe.fn.lang(cPage.title, config.locale, config.localizations)
 			  };
-
-			  pairs.push(hdr);
-			  for (j = 0; j < cStructure.length; j++) {
-				var cFilter = true;
-				if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
-				if (cFilter) {
-				  for (k = 0; k < cStructure[j].group.length; k++) {
-					var cGroup = cStructure[j].group[k];
-					for (l = 0; l < cGroup.length; l++) {
-					  var cInput = cGroup[l];
-					  if (cInput.type != "hidden") {
-						var obj = {
-						  ttl: "N/A",
-						  val: "N/A",
-						  data: "N/A"
-						}
-						if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
-						else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
-						if (
-						  typeof(cInput.data) !== "undefined" &&
-						  typeof(config.dataset[cInput.data]) !== "undefined" &&
-						  config.dataset[cInput.data] != null &&
-						  config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
-						) {
-						  if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
-						  else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
-						  else obj.val = config.dataset[cInput.data];
-						}
-						if (obj.val != "N/A") {
-						  obj.data = cInput.data;
-						  pairs.push(obj);
+			  
+			  if (cPage.id == "PS") {
+				pairs.push(hdr);
+				let PSTable = ''; 
+				if (config.dataset.Config_Quote_PartialOrder) {
+				  try {
+					let PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+					PSData = PSData.filter(item => item.Selected == "Y");
+					if (PSData.length) {
+					  // headers
+					  const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+					  PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
+<tr>
+<th style="${stylePS}">HPE Part Number</th>
+<th style="${stylePS}">HPE Part Quantity</th>
+<th style="${stylePS}">Deal ID</th>
+<th style="${stylePS}">bundle ID / Icon ID</th>
+<th style="${stylePS}">Unit Price</th>
+<th style="${stylePS}">Extended Net Price</th>
+<th style="${stylePS}">Previously Purchased Product Details</th>
+<th style="${stylePS}">Serial number of the products</th>
+<th style="${stylePS}">Product Purchased Date</th>
+  </tr>`;
+					  PSData.forEach(item => {
+						PSTable = PSTable + `<tr>
+<td style="${stylePS}">${item.ProductID  || ''}</td>
+<td style="${stylePS}">${item.Count  || ''}</td>
+<td style="${stylePS}">${item.DealId  || ''}</td>
+<td style="${stylePS}">${item.BundleID  || ''}</td>
+<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
+<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>
+<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
+<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>
+  </tr>`;
+					  });
+					  PSTable = PSTable + `</table>`;
+					}
+				  } catch(e) {}
+				  var obj = {
+					ttl: "",
+					val: PSTable,
+					data: "ProductAndServices",
+					id: cPage.id,
+				  };
+				  pairs.push(obj);
+				}
+			  } else {
+				pairs.push(hdr);
+				for (j = 0; j < cStructure.length; j++) {
+				  var cFilter = true;
+				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  if (cFilter) {
+					for (k = 0; k < cStructure[j].group.length; k++) {
+					  var cGroup = cStructure[j].group[k];
+					  for (l = 0; l < cGroup.length; l++) {
+						var cInput = cGroup[l];
+						if (cInput.type != "hidden") {
+						  var obj = {
+							ttl: "N/A",
+							val: "N/A",
+							data: "N/A"
+						  }
+						  if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
+						  else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
+						  if (
+							typeof(cInput.data) !== "undefined" &&
+							typeof(config.dataset[cInput.data]) !== "undefined" &&
+							config.dataset[cInput.data] != null &&
+							config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
+						  ) {
+							if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
+							else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
+							else obj.val = config.dataset[cInput.data];
+						  }
+						  if (obj.val != "N/A") {
+							obj.data = cInput.data;
+							pairs.push(obj);
+						  }
 						}
 					  }
 					}
 				  }
 				}
+				var obj = pairs[pairs.length - 1];
+				//console.log("obj", obj);
+				if (obj.ttl.indexOf("page-") > -1) {
+				  pairs.pop();
+				}
 			  }
-			  var obj = pairs[pairs.length - 1];
-			  //console.log("obj", obj);
-			  if (obj.ttl.indexOf("page-") > -1) {
-				pairs.pop();
-			  }
-
 			}
 		  }
 		  //  console.log("pairs", pairs);
@@ -8891,7 +8941,11 @@
 			let pairVal = pairs[i].val;
 			if (pairVal) pairVal = pairVal.trim();
 
-			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
+			if (pairs[i].id === "PS") {
+			  caseDescription = caseDescription + "<br><br>";
+			  caseDescription = caseDescription + "<strong>" + "Stand alone products and services" + "</strong><br>";
+			  caseDescription = caseDescription + pairVal + "<br>";
+			} else if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
@@ -12186,8 +12240,8 @@
 				  type: "hidden",
 				},
 				{
-				  label: "Serial number of the products:*",
-				  value: "Serial number of the products:*",
+				  label: "Serial number of the products:",
+				  value: "Serial number of the products:",
 				  data: "SNP",
 				  required: false,
 				  type: "textarea",
@@ -12196,7 +12250,7 @@
 				  class: "bolder-label",
 				},
 				{
-				  label: "Serial number of the products:*",
+				  label: "Serial number of the products:",
 				  value: ucid.SerialNumberOfProducts,
 				  data: "SerialNumberOfProducts_" + ucid.ID,
 				  disabled: isDisabled,
@@ -12319,8 +12373,8 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "Serial number of the products:*",
-			  value: "Serial number of the products:*",
+			  label: "Serial number of the products:",
+			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
 			  type: "textarea",
