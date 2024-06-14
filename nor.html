@@ -12117,7 +12117,10 @@
 			config.dataset[`${field}_${item.ID}`] = item[field];
 		  });
 		});
-		
+		if (page.structure[1].group[0][0]) {
+		  const newClass = page.structure[1].group[0][0].class.replace(" ftr-checkbox-hidden", '')
+		  page.structure[1].group[0][0].class = newClass;
+		} 
 		const formTable = page.structure.find(item => item.id == "form-table");
 		const group = [];
 		// header
@@ -12534,11 +12537,9 @@
 			return accumulator;
 		  }, 0);
 		  
-		  if (page.structure[1].group[0][0].data == "Field") {
-			// delete checkbox for repeater
-			page.structure[1].group[0].shift();
-		  }
-		  page.structure[1].group[0][0].class += " ftr-cell"; 
+		  page.structure[1].group[0][0].class += " ftr-checkbox-hidden"; 
+		  page.structure[1].group[0][1].class += " ftr-cell"; 
+		 
 		  page.structure.splice(2, sumRepeat, {
 			header: "",
 			repeatable: "ProductServicesRepeater",
