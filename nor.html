@@ -12062,7 +12062,11 @@
 	  const entryId = config.dataset.EntryId;
 	  const map = new Map();
 	  ucids.forEach(ucid => map.set(ucid.ProductID, ucid.Quantity ? Number(ucid.Quantity) : 0));
-
+	  quoteHelper.maxQuantity = map;
+	  if (callback) {
+		callback();
+	  }
+/*
 	  crud.read("6018", "Requestor_PO_Quote_ID=" +  quoteId, function(data) {
 		if (data.Rows.length > 0) {
 		  data.Rows.forEach(ucid => {
@@ -12077,6 +12081,7 @@
 		  callback();
 		}
 	  });
+*/
 	},
 	buildProductAndServices: function(config, page) {
 	  // clear repeater node 
