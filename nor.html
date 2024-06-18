@@ -12876,6 +12876,41 @@
 
 		let rowsData = [];
 		if (page.length >= 5) {
+		  const header = page[4];
+		  const headerMap = new Map();
+		  Object.entries(header).forEach(([key, value], index) => {
+			if (value.includes("HPE Part Number")) {
+			  headerMap.set("ProductID", index);
+			}
+			if (value.includes("HPE Part Quantity")) {
+			  headerMap.set("Count", index);
+			}
+			if (value.includes("Deal ID")) {
+			  headerMap.set("DealId", index);
+			}
+			if (value.includes("Config ID")) {
+			  headerMap.set("BundleID", index);
+			}
+			if (value.includes("Unit Price")) {
+			  headerMap.set("UnitNetAmount", index);
+			}
+			if (value.includes("Extended Net Price")) {
+			  headerMap.set("ExtendedNetAmount", index);
+			}
+			if (value.includes("Previously Purchased Product Details")) {
+			  headerMap.set("PreviouslyPurchasedProductDetails", index);
+			}
+			if (value.includes("Serial number of the products")) {
+			  headerMap.set("SerialNumberOfProducts", index);
+			}
+			if (value.includes("Product Purchased Date")) {
+			  headerMap.set("ProductPurchasedDate", index);
+			}
+			if (value.includes("HPE Part Description")) {
+			  headerMap.set("HPEPartDescription", index);
+			}
+		  });
+		  
 		  for (let i = 5; i < page.length; i++) {
 			const rowInfo = Object.values(page[i]);
 			// if ProductID or Quantity or UnitNetAmount doesn't exist
@@ -12893,26 +12928,26 @@
 			  Request_Id: config.dataset.EntryId,
 			  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
 			  UCID: "",
-			  BundleID: rowInfo[5], //Config ID
-			  DealId: rowInfo[4],
-			  UnitNetAmount: rowInfo[6],
-			  ExtendedNetAmount: rowInfo[8],
+			  BundleID: headerMap.get("BundleID") && rowInfo[headerMap.get("BundleID")] || rowInfo[5], //Config ID
+			  DealId: headerMap.get("DealId") && rowInfo[headerMap.get("DealId")] || rowInfo[4],
+			  UnitNetAmount: headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")] || rowInfo[6],
+			  ExtendedNetAmount: headerMap.get("ExtendedNetAmount") && rowInfo[headerMap.get("ExtendedNetAmount")] || rowInfo[8],
 			  Quantity: "",
 			  CfgSystemId: "",
 			  CfgSystemName: "",
 			  Selected: "Y",
-			  Count: rowInfo[3],
-			  ProductID: rowInfo[1],
+			  Count: headerMap.get("Count") && rowInfo[headerMap.get("Count")] || rowInfo[3],
+			  ProductID: headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || rowInfo[1],
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: rowInfo[1] && rowInfo[1].replace(/[\-]/g, '_') || '',
-			  PreviouslyPurchasedProductDetails: rowInfo[9],
-			  SerialNumberOfProducts: rowInfo[10],
-			  ProductPurchasedDate: productPurchasedDate,
+			  ID: headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")].replace(/[\-]/g, '_') || '',
+			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || rowInfo[9],
+			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || rowInfo[10],
+			  ProductPurchasedDate: headerMap.get("ProductPurchasedDate") && rowInfo[headerMap.get("ProductPurchasedDate")] || productPurchasedDate,
 			  //??
-			  HPEPartDescription: rowInfo[2],
-			  ITEM: rowInfo[0],
-			  ListPrice: rowInfo[7],
+			  HPEPartDescription: headerMap.get("HPEPartDescription") && rowInfo[headerMap.get("HPEPartDescription")] || rowInfo[2],
+			//  ITEM: rowInfo[0],
+			//  ListPrice: rowInfo[7],
 			};
 			rowsData.push(row);
 		  }
