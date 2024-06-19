@@ -684,7 +684,7 @@
             display: none;
         }
     }
-  
+
   	#form-table .wrapper.ftr-checkbox-hidden:has(.fmmcosmin > [type="hidden"]) {
         display: none !important;
         &>* {
@@ -970,30 +970,15 @@
         font-size: 16px !important;
         padding: 8px 0;
     }
-  
-  	 #form-table-repeat fieldset .bolder-label textarea {
-        display: none !important;
-    }
 
-    #form-table fieldset .bolder-label textarea {
-        display: none !important;
-    }
-  
-  
-  	#form-table fieldset .bolder-label .name {
-        display: block !important;
-        font-weight: 600;
-        color: #333;
-        font-size: 16px !important;
-        padding: 8px 0;
-    }
-
-    #form-table-repeat .ps-toggle {
+    #form-table-repeat .ps-toggle,
+    #form-table .ps-toggle {
         z-index: 100;
         width: 50px;
     }
 
-    #form-table-repeat .ps-toggle .preview {
+    #form-table-repeat .ps-toggle .preview,
+    #form-table .ps-toggle .preview {
         font-size: 10px;
         line-height: normal !important;
     }
@@ -1007,25 +992,61 @@
         &>* {
             display: none;
         }
-    }  
-  
-  	#form-table .wrapper.text span.required-tooltip, 
-	#form-table-repeat .wrapper.text span.required-tooltip {
-		width: 140px !important;
-		left: 2px !important;
-  	}
-  
-  	#form-table-repeat .bordered-input-disabled {
-		:is(input, textarea) {
-	  	border: 2px solid #ccc !important;
-	  	background-color: #ddd !important;
-		}
-  	}
+    }
 
+    #form-table .wrapper.text span.required-tooltip,
+    #form-table-repeat .wrapper.text span.required-tooltip {
+        width: 140px !important;
+        left: 2px !important;
+    }
+
+    #form-table-repeat .bordered-input-disabled {
+        :is(input, textarea) {
+            border: 2px solid #ccc !important;
+            background-color: #ddd !important;
+        }
+    }
+
+    #form-table .wrapper.ftr-checkbox-hidden:has(.fmmcosmin > [type="hidden"]) {
+        display: none !important;
+        &>* {
+            display: none;
+        }
+    }
+
+    #form-table-repeat fieldset .bolder-label textarea {
+        display: none !important;
+    }
+
+    #form-table fieldset .bolder-label textarea {
+        display: none !important;
+    }
+
+    #form-table fieldset .bolder-label .name {
+        display: block !important;
+        font-weight: 600;
+        color: #333;
+        font-size: 16px !important;
+        padding: 8px 0;
+    }
 
     /* special cells.end */
 
     /* validation */
+
+    .nbsf-review-page .review-address-country {
+        margin-right: 444px;
+        /* 414 width and 30 margin */
+    }
+
+    .nbsf-review-page .review-address-taxid {
+        margin-left: -414px;
+        /* -414 width */
+    }
+
+    .nbsf-review-page .review-contact-firstname {
+        margin-top: 20px;
+    }
 
     .nbsf fieldset .wrapper.text .validation.required,
     .nbsf fieldset .wrapper.multiselect .validation.required,
@@ -1054,12 +1075,14 @@
     .nbsf .row:has(fieldset .wrapper.select .validation.required:not(.hidden)) {
         z-index: 100;
     }
-  /* Styles for review page (special for NOR)*/
-  .nbsf-review-page fieldset label {
-  	display: inline-block !important;
+
+    /* Styles for review page (special for NOR)*/
+
+    .nbsf-review-page fieldset label {
+        display: inline-block !important;
 	width: calc((100% - 40px) / 3 - 43px);
-	margin: 0 15px;
-  }
+        margin: 0 15px;
+    }
 
   /* Product and Services table on Overview page */
   .nbsf .ps-table {

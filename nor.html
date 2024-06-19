@@ -3094,6 +3094,7 @@
 		   disabled: true,
 		   required: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -3122,6 +3123,7 @@
 			required: true,
 			type: "text",
 			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			class: "review-address-taxid",
 			typing: "nationalID"
 		  }]
 		]
@@ -3218,6 +3220,7 @@
 					   disabled: true,
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -3269,7 +3272,8 @@
 					  type: "text",
 					  //placeholder: "Form065",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -3423,6 +3427,7 @@
 		   required: true,
 		   disabled: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -3509,6 +3514,7 @@
 					   data: "Payer_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -3526,7 +3532,8 @@
 					  type: "text",
 					  //placeholder: "Form098",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -3671,6 +3678,7 @@
 		   data: "BillTo_Address_Country",
 		   required: false,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -3688,7 +3696,8 @@
 					  type: "text",
 					  //placeholder: "Form111",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -3872,6 +3881,7 @@
 		   data: "ShipTo_Address_Country",
 		   required: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -3964,6 +3974,7 @@
 					   data: "ShipTo_Address_Country",
 					   required: false,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -4072,6 +4083,7 @@
 					   data: "ShipTo_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -4102,7 +4114,8 @@
 					  required: true,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid",
 					}]
 				  ]
 				},
@@ -4127,7 +4140,8 @@
 					  required: false,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -4153,7 +4167,8 @@
 					  type: "text",
 					  //placeholder: "Form124",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -4216,7 +4231,8 @@
 					  type: "text",
 					  //placeholder: "Form124",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -4385,6 +4401,7 @@
 		   data: "EndCx_Address_Country",
 		   required: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -4478,6 +4495,7 @@
 					   data: "EndCx_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -4508,7 +4526,8 @@
 					  required: true,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -4533,7 +4552,8 @@
 					  required: false,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -4552,7 +4572,8 @@
 					  type: "text",
 					  //placeholder: "Form149",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -4768,6 +4789,7 @@
 			data: "Reseller_Address_Country",
 			required: true,
 			type: "select",
+			class: "review-address-country",
 			values: function() {
 			  return reference.countriesArray
 			}
@@ -4863,6 +4885,7 @@
 						data: "Reseller_Address_Country",
 						required: true,
 						type: "select",
+						class: "review-address-country",
 						values: function() {
 						  return reference.countriesArray
 						}
@@ -4887,7 +4910,8 @@
 					  type: "text",
 					  //placeholder: "Form135",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -6941,6 +6965,10 @@
 		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services.xlsx'>Download the template</a>`);
 		}
 	  }
+	  
+	  if (config.dataset.Config_Quote === "Y") {
+		quoteHelper.onInitQuoteCarepackProductAndServices(config);
+	  }
 
 	  callbacks.page13();  
 	},
@@ -6958,6 +6986,7 @@
 	  if (quoteHelper.ucids.length) {
 		var isOneSelected = false;
 		quoteHelper.ucids.forEach(item => {
+		  const carepack = document.querySelector(`input[data-name=Carepack_${item.ID}]`);
 		  const snp = document.querySelector(`textarea[data-name=SerialNumberOfProducts_${item.ID}]`);
 		  const count = document.querySelector(`input[data-name=Count_${item.ID}]`);
 		  const checkbox = document.querySelector(`input[data-name=Selected_${item.ID}]`);
@@ -6967,7 +6996,7 @@
 			if (checkbox.checked) {
 			  isOneSelected = true;
 			  // SerialNumberOfProducts
-			  if (snp) {
+			  if (snp && carepack && carepack.value == "Y") {
 				if (snp.value) {
 				  result.pass.push(snp.closest('label'));
 				  snp.closest('label').setAttribute("data-state", "");
@@ -12086,6 +12115,7 @@
 					  PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
 					  SerialNumberOfProducts: item.SerialNumberOfProducts,
 					  ProductPurchasedDate: item.ProductPurchasedDate,
+					  Carepack: item.Carepack || null,
 					});
 				  }
 				}
@@ -12102,7 +12132,7 @@
 			  }
 			  quoteHelper.ucids.forEach(item => {
 				item.Count = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || item.Count;
-				item.ExtendedNetAmount = item.UnitNetAmount * item.Count || 0;
+				item.ExtendedNetAmount = Math.round(item.Count * item.UnitNetAmount * 100) / 100 || 0;
 			  });
 			  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
 			  // build page
@@ -12182,7 +12212,8 @@
 		  "ProductPurchasedDate",
 		  "HPEPartDescription",
 		  "ITEM",
-		  "ListPrice"
+		  "ListPrice",
+		  "Carepack",
 		];
 		const isDisabled = config.dataset.Config_Quote !== "Y";
 		fields.forEach(field => {
@@ -12270,133 +12301,167 @@
 				type: "text",
 				validation: ['minLen|1'],
 			  }];
+			// add carepack config for quote
+			if (config.dataset.ProductServices_Attachment) {
+			  item.push({
+				data: "Field",
+				type: "hidden",
+			  });
+			} else {
+			  item.push({
+				label: "Carepack",
+				data: "Carepack_" + ucid.ID,
+				required: false,
+				type: "toggle",
+				value: ucid.Carepack || "N",
+				values: ["N", "Y"],
+				options: ["Carepack", "Carepack"],
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}`,
+			  });
+			}
 			group.push(item);
-			if (isCarePack) {
-			  const PPPD = [
-				{
-				  data: "Field",
-				  type: "hidden"
-				},
-				{
-				  label: "Previously Purchased Product Details:",
-				  value: "Previously Purchased Product Details:",
-				  data: "PPPD",
-				  required: false,
-				  type: "textarea",
-				  disabled: true,
-				  validation: ['minLen|1'],
-				  class: "bolder-label",
-				},
-				{
-				  label: "Previously Purchased Product Details",
-				  value: ucid.PreviouslyPurchasedProductDetails,
-				  data: "PreviouslyPurchasedProductDetails_" + ucid.ID,
-				  disabled: isDisabled,
-				  required: false,
-				  type: "textarea",
-				  validation: ['minLen|1'],
-				  class: "bordered-input",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-			  ];
-			  const SNP = [
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  label: "Serial number of the products:",
-				  value: "Serial number of the products:",
-				  data: "SNP",
-				  required: false,
-				  type: "textarea",
-				  disabled: true,
-				  validation: ['minLen|1'],
-				  class: "bolder-label",
-				},
-				{
-				  label: "Serial number of the products:",
-				  value: ucid.SerialNumberOfProducts,
-				  data: "SerialNumberOfProducts_" + ucid.ID,
-				  disabled: isDisabled,
-				  required: false,
-				  type: "textarea",
-				  validation: ['minLen|1'],
-				  class: "bordered-input",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-			  ];
-			  const PPD = [
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  label: "Product Purchased Date:",
-				  value: "Product Purchased Date:",
-				  data: "PPD",
-				  required: false,
-				  type: "textarea",
-				  disabled: true,
-				  validation: ['minLen|1'],
-				  class: "bolder-label",
-				},
-				{
-				  label: "Product Purchased Date:",
-				  placeholder: "Form040",
-				  value: ucid.ProductPurchasedDate,
-				  data: "ProductPurchasedDate_" + ucid.ID,
-				  required: false,
-				  type: "date",
-				  placeholder: "DD/MM/YYYY",
-				  disabled: isDisabled,
-				  class: "bordered-input",
-				  dtp: {
-					format: 'd/m/Y',
-					formatDate: 'd/m/Y',
-					timepicker: false,
-					minDate: 0,
-					//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
-					onChangeDateTime: function(dp, $input) {
+			const PPPD = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_PPPD_${ucid.ID}`,
+			  },
+			  {
+				label: "Previously Purchased Product Details:",
+				value: "Previously Purchased Product Details:",
+				data: "PPPD",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Previously Purchased Product Details",
+				value: ucid.PreviouslyPurchasedProductDetails,
+				data: "PreviouslyPurchasedProductDetails_" + ucid.ID,
+				disabled: isDisabled,
+				required: false,
+				type: "textarea",
+				validation: ['minLen|1'],
+				class: "bordered-input",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			const SNP = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_SNP_${ucid.ID}`,
+			  },
+			  {
+				label: "Serial number of the products*:",
+				value: "Serial number of the products*:",
+				data: "SNP",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Serial number of the products:",
+				value: ucid.SerialNumberOfProducts,
+				data: "SerialNumberOfProducts_" + ucid.ID,
+				disabled: isDisabled,
+				required: false,
+				type: "textarea",
+				validation: ['minLen|1'],
+				class: "bordered-input",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			const PPD = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_PPD_${ucid.ID}`,
+			  },
+			  {
+				label: "Product Purchased Date:",
+				value: "Product Purchased Date:",
+				data: "PPD",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Product Purchased Date:",
+				placeholder: "Form040",
+				value: ucid.ProductPurchasedDate,
+				data: "ProductPurchasedDate_" + ucid.ID,
+				required: false,
+				type: "date",
+				placeholder: "DD/MM/YYYY",
+				disabled: isDisabled,
+				class: "bordered-input",
+				dtp: {
+				  format: 'd/m/Y',
+				  formatDate: 'd/m/Y',
+				  timepicker: false,
+				  minDate: 0,
+				  //maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				  onChangeDateTime: function(dp, $input) {
 
-					}
 				  }
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-				{
-				  data: "Field",
-				  type: "hidden",
-				},
-			  ];
+				}
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			// add carepack config
+			if (!config.dataset.ProductServices_Attachment || isCarePack) {
 			  group.push(PPPD, SNP, PPD);
 			}
 		  });
@@ -12669,11 +12734,12 @@
 		  item.SerialNumberOfProducts = config.dataset[`SerialNumberOfProducts_${item.ID}`];
 		  item.ProductPurchasedDate = config.dataset[`ProductPurchasedDate_${item.ID}`];
 		  item.PreviouslyPurchasedProductDetails = config.dataset[`PreviouslyPurchasedProductDetails_${item.ID}`];
+		  item.Carepack = config.dataset[`Carepack_${item.ID}`];
 		  if (item.Selected) {
 			PO_Value += Math.round(item.Count * item.UnitNetAmount * 100);
 		  }
 		  
-		  item.ExtendedNetAmount = (item.Count || 0) * (item.UnitNetAmount || 0);
+		  item.ExtendedNetAmount = item.Count && item.UnitNetAmount ? (Math.round(item.Count * item.UnitNetAmount * 100) / 100) : 0;
 		  config.dataset[`ExtendedNetAmount_${item.ID}`] = item.ExtendedNetAmount;
 		  if ($(`*[data-name="ExtendedNetAmount_${item.ID}"]`)) {
 			$(`*[data-name="ExtendedNetAmount_${item.ID}"]`).val(item.ExtendedNetAmount);
@@ -12886,6 +12952,35 @@
 			}
 		  }
 		}
+	  }
+	},
+	onInitQuoteCarepackProductAndServices: function(config) {
+	  if (config.dataset.Config_Quote == "Y" && quoteHelper.ucids) {
+		quoteHelper.ucids.forEach(ucid => {
+		  const toggle = document.querySelector(`#form-table .carepack_toggle.ID_${ucid.ID} .toggle`);
+		  const label = toggle.closest('label');
+		  const wrapper = toggle.closest('label.wrapper');
+		  $(wrapper).attr('id', ucid.ID);
+		  const isInactive = label.getAttribute("class") == null || label.getAttribute("class") == "";
+		  const pppd = $(`#form-table .Carepack_PPPD_${ucid.ID}`).closest('fieldset');
+		  const snp = $(`#form-table .Carepack_SNP_${ucid.ID}`).closest('fieldset');
+		  const ppd = $(`#form-table .Carepack_PPD_${ucid.ID}`).closest('fieldset');
+		  if (isInactive) {
+			$(pppd).hide();
+			$(snp).hide();
+			$(ppd).hide();
+		  }
+		  $(toggle).on("click", function() {
+			const wrapper = $(this).closest('label.wrapper');
+			const id = $(wrapper).attr("id");
+			const pppd = $(`#form-table .Carepack_PPPD_${id}`).closest('fieldset');
+			const snp = $(`#form-table .Carepack_SNP_${id}`).closest('fieldset');
+			const ppd = $(`#form-table .Carepack_PPD_${id}`).closest('fieldset');
+			$(pppd).toggle();
+			$(snp).toggle();
+			$(ppd).toggle();
+		  });
+		});
 	  }
 	},
 	clearPOData: function(config) {
@@ -14171,8 +14266,6 @@
 			  CompanyCompleted: values[3],
 			  UserInprogress: values[4],
 			  CompanyInprogress: values[5],
-			  UserCancelled: values[6],
-			  CompanyCancelled: values[7],
 			};
 			callback(result);
 		  } else {
