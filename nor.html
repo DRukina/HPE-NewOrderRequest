@@ -12238,7 +12238,7 @@
 				label: "Deal ID",
 				value: ucid.DealId,
 				disabled: true,
-				data: "DealId" + ucid.ID,
+				data: "DealId_" + ucid.ID,
 				required: false,
 				type: "text",
 				validation: ['minLen|1'],
@@ -12949,43 +12949,81 @@
 
 		let rowsData = [];
 		if (page.length >= 5) {
+		  const header = page[4];
+		  const headerMap = new Map();
+		  Object.entries(header).forEach(([key, value], index) => {
+			if (value.includes("HPE Part Number")) {
+			  headerMap.set("ProductID", key);
+			}
+			if (value.includes("HPE Part Quantity")) {
+			  headerMap.set("Count", key);
+			}
+			if (value.includes("Deal ID")) {
+			  headerMap.set("DealId", key);
+			}
+			if (value.includes("Config ID")) {
+			  headerMap.set("BundleID", key);
+			}
+			if (value.includes("Unit Price")) {
+			  headerMap.set("UnitNetAmount", key);
+			}
+			if (value.includes("Extended Net Price")) {
+			  headerMap.set("ExtendedNetAmount", key);
+			}
+			if (value.includes("Previously Purchased Product Details")) {
+			  headerMap.set("PreviouslyPurchasedProductDetails", key);
+			}
+			if (value.includes("Serial number of the products")) {
+			  headerMap.set("SerialNumberOfProducts", key);
+			}
+			if (value.includes("Product Purchased Date")) {
+			  headerMap.set("ProductPurchasedDate", key);
+			}
+			if (value.includes("HPE Part Description")) {
+			  headerMap.set("HPEPartDescription", key);
+			}
+		  });
+		  
 		  for (let i = 5; i < page.length; i++) {
-			const rowInfo = Object.values(page[i]);
+			const rowInfo = page[i];
+			const productID = headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || "";
+			const count = headerMap.get("Count") && rowInfo[headerMap.get("Count")] || "";
+			const unitNetAmount = headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")] || "";
 			// if ProductID or Quantity or UnitNetAmount doesn't exist
-			if (!rowInfo[1] || !rowInfo[3] || !rowInfo[6]) {
+			if (!productID || !count || !unitNetAmount) {
 			  break;
 			}
 			let productPurchasedDate = null;
-			if (rowInfo[11] && rowInfo[11].toLocaleDateString) {
+			const ppd = headerMap.get("ProductPurchasedDate") && rowInfo[headerMap.get("ProductPurchasedDate")] || null;
+			if (ppd && ppd.toLocaleDateString) {
 			  try {
-				productPurchasedDate = rowInfo[11].toLocaleDateString('en-GB');
+				productPurchasedDate = ppd.toLocaleDateString('en-GB');
 			  } catch (e) {
 			  }
+			} else {
+			  productPurchasedDate = ppd;
 			}
 			const row = {
 			  Request_Id: config.dataset.EntryId,
 			  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
 			  UCID: "",
-			  BundleID: rowInfo[5], //Config ID
-			  DealId: rowInfo[4],
-			  UnitNetAmount: rowInfo[6],
-			  ExtendedNetAmount: rowInfo[8],
+			  BundleID: headerMap.get("BundleID") && rowInfo[headerMap.get("BundleID")] || "", //Config ID
+			  DealId: headerMap.get("DealId") && rowInfo[headerMap.get("DealId")] || "",
+			  UnitNetAmount: unitNetAmount,
+			  ExtendedNetAmount: headerMap.get("ExtendedNetAmount") && rowInfo[headerMap.get("ExtendedNetAmount")] || "",
 			  Quantity: "",
 			  CfgSystemId: "",
 			  CfgSystemName: "",
 			  Selected: "Y",
-			  Count: rowInfo[3],
-			  ProductID: rowInfo[1],
+			  Count: count,
+			  ProductID: productID,
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: rowInfo[1] && rowInfo[1].replace(/[\-]/g, '_') || '',
-			  PreviouslyPurchasedProductDetails: rowInfo[9],
-			  SerialNumberOfProducts: rowInfo[10],
-			  ProductPurchasedDate: productPurchasedDate,
-			  //??
-			  HPEPartDescription: rowInfo[2],
-			  ITEM: rowInfo[0],
-			  ListPrice: rowInfo[7],
+			  ID: productID.replace(/[\-]/g, '_') || '',
+			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
+			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
+			  ProductPurchasedDate: productPurchasedDate || "",
+			  HPEPartDescription: headerMap.get("HPEPartDescription") && rowInfo[headerMap.get("HPEPartDescription")] || "",
 			};
 			rowsData.push(row);
 		  }
