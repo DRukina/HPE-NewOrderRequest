@@ -12056,7 +12056,9 @@
 		config.dataset.Config_Quote_PartialOrder = null;
 		quoteHelper.ucids = [];
 		quoteHelper.maxQuantity = null;
-		quoteHelper.buildProductAndServices(config, page);
+		if (config.dataset.Config_PartialOrder == "Y") {
+		  quoteHelper.buildProductAndServices(config, page);
+		}
 		if (callback) {
 		  callback();
 		}
