@@ -13256,11 +13256,13 @@
 			  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
 			  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
 			  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+			  overview.querySelector(".cancelled strong").innerText = global.requests.userCancelled;
 			} else {
 			  // stats company
 			  overview.querySelector(".incomplete strong").innerText = global.requests.companyDraft;
 			  overview.querySelector(".pending strong").innerText = global.requests.companyInprogress;
 			  overview.querySelector(".completed strong").innerText = global.requests.companyCompleted;
+			  overview.querySelector(".cancelled strong").innerText = global.requests.companyCancelled;
 			}
 
 			// Update the filterable property of columns
@@ -13908,7 +13910,7 @@
 		  '<div class="pending"><strong></strong><span>' + hpe.fn.lang('Form212', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('SubmittedPOProcessed', config.locale, config.localizations) + '</p></div>' +
 		  '<div class="completed"><strong></strong><span>' + hpe.fn.lang('Completed', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('OrderCreated', config.locale, config.localizations) + '</p></div>' +
 		  '<div class="failed" style="display:none"><strong></strong><span>' + hpe.fn.lang('Form214', config.locale, config.localizations) + '</span></div>' +
-		  '<span style="display:block;clear:both;"></span>';
+		  '<div class="cancelled" style=""><strong></strong><span>' + hpe.fn.lang('Form513', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('OrderCancelledDescr', config.locale, config.localizations) + '</p></div>';
 
 		const filterGrid = function(value) {
 		  oob.grid._appStats.status = value;
@@ -13924,6 +13926,7 @@
 		  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
 		  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
 		  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+		  overview.querySelector(".cancelled strong").innerText = global.requests.userCancelled;
 
 		  document.querySelector('#overview .incomplete').onclick = function() {
 			filterGrid("0");
@@ -13933,6 +13936,9 @@
 		  };
 		  document.querySelector('#overview .completed').onclick = function() {
 			filterGrid("3");
+		  };
+		  document.querySelector('#overview .cancelled').onclick = function() {
+			filterGrid("5");
 		  };
 		  mo.fn.overlay.hide();
 		});
@@ -14058,7 +14064,36 @@
 		const progressCompanyRequest = new Promise((resolve, reject) => {
 		  progressOverview(resolve, reject, true);
 		});
-		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest])
+		// Cancelled
+		const cancelledOverview  = function(resolve, reject, isCompany = false) {
+		  const cancelledFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  cancelledFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 5
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview_DEV',
+			payload: {
+			  pageSize: 3000,
+			  filter: cancelledFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const cancelledUserRequest = new Promise((resolve, reject) => {
+		  cancelledOverview(resolve, reject);
+		});
+		const cancelledCompanyRequest = new Promise((resolve, reject) => {
+		  cancelledOverview(resolve, reject, true);
+		});
+		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest, cancelledUserRequest, cancelledCompanyRequest])
 		  .then((values) => {
 		  if (values && values.length) {
 			const result = {
@@ -14068,6 +14103,8 @@
 			  CompanyCompleted: values[3],
 			  UserInprogress: values[4],
 			  CompanyInprogress: values[5],
+			  UserCancelled: values[6],
+			  CompanyCancelled: values[7],
 			};
 			callback(result);
 		  } else {
@@ -14085,17 +14122,21 @@
 			oob.grid._appStats.userDraft = d.UserDraft;
 			oob.grid._appStats.userInprogress = d.UserInprogress;
 			oob.grid._appStats.userCompleted = d.UserCompleted;
+			oob.grid._appStats.userCancelled = d.UserCancelled;
 			oob.grid._appStats.companyDraft = d.CompanyDraft;
 			oob.grid._appStats.companyInprogress = d.CompanyInprogress;
 			oob.grid._appStats.companyCompleted = d.CompanyCompleted;
+			oob.grid._appStats.companyCancelled = d.CompanyCancelled;
 			
 		  } else {
 			oob.grid._appStats.userDraft = 0;
 			oob.grid._appStats.userInprogress = 0;
 			oob.grid._appStats.userCompleted = 0;
+			oob.grid._appStats.userCancelled = 0;
 			oob.grid._appStats.companyDraft = 0;
 			oob.grid._appStats.companyInprogress = 0;
 			oob.grid._appStats.companyCompleted = 0;
+			oob.grid._appStats.companyCancelled = 0;
 		  }
 		  return cb(oob.grid._appStats);
 		});

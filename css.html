@@ -150,12 +150,13 @@
 
     #overview {
         padding: 20px 0 20px 0;
+        display: flex;
+        gap: 10px;
     }
 
     #overview div {
         display: block;
-        float: left;
-        width: 31.3%;
+        flex: 1;
         padding: 0 1%;
         text-align: center;
         cursor: pointer;
@@ -194,6 +195,10 @@
 
     #overview div.incomplete strong {
         color: #CCC;
+    }
+
+    #overview div.cancelled strong {
+        color: #B30088;
     }
 
     #overview div p {
