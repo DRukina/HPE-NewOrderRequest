@@ -2023,6 +2023,7 @@
 			  operator: "eq",
 			  value: "Y"
 			},
+			{field: "Config_PartialOrder", operator: "eq", value: "N"}, // Dummy condition to completely hide this group. NOR-785
 			{
 			  field: "Config_Quote",
 			  operator: "neq",
@@ -7439,7 +7440,18 @@
 			[hpe.fn.lang("Form195", config.locale, config.localizations), "Comment_Packing"],
 			[hpe.fn.lang("Form197", config.locale, config.localizations), "Comment_Extra"]
 		  ]
-		}
+		},
+		PS: {
+		  title: "Products and Services",
+		  fieldset: [],
+		  filter: {
+			logic: "and",
+			filters: [{
+			  field: "Config_Quote_PartialOrder",
+			  operator: "isnotempty",
+			  value: "?"
+			}]
+		  }
 	  };
 	  
 	  var app = document.querySelector(".nbsf .row");
@@ -7709,6 +7721,45 @@
 			  else
 				row.innerHTML = "";
 			}
+		  }
+		}
+		if (key == "PS" && filter) {
+		  console.log('reviewSetup: PS', reviewSetup[key]);
+		  let PSData = null;
+		  try {
+			PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+			if (!Array.isArray(PSData)) PSData = null;
+			PSData = PSData.filter((item) => item.Selected == "Y");
+		  } catch(e) {
+			console.error("Could not parse PS", config.dataset.Config_Quote_PartialOrder);
+		  }
+
+		  if (PSData) {
+			if (app.querySelector(".row[review-id=" + key + "]") == null) {
+			  app.innerHTML += '<div class="row" review-id="' + key + '"><h4>' + reviewSetup[key].title + '</h4></div>';
+			}
+			const psRow = app.querySelector(".row[review-id=" + key + "]");
+			const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
+			let PSTable = "<table class='ps-table'>" +
+				"<thead><tr><th>HPE Part Number</th><th>HPE Part Quantity</th><th>Deal ID</th><th>bundle ID / Icon ID</th><th>Unit Price</th><th>Extended Net Price</th>";
+			if (prevProdExists) {
+			  PSTable = PSTable + `<th>Previously Purchased Product Details</th><th>Serial number of the products</th><th>Product Purchased Date</th>`;
+			}
+			PSTable = PSTable + "</tr></thead>" + PSData.map(item => {
+			  return `<tr>
+<td>${item.ProductID  || ''}</td>
+<td>${item.Count  || ''}</td>
+<td>${item.DealId  || ''}</td>
+<td>${item.BundleID  || ''}</td>
+<td>${item.UnitNetAmount  || ''}</td>
+<td>${item.ExtendedNetAmount  || ''}</td>` +
+				(prevProdExists ?
+`<td style=>${item.PreviouslyPurchasedProductDetails || ''}</td>
+<td style=>${item.SerialNumberOfProducts  || ''}</td>
+<td style=>${item.ProductPurchasedDate  || ''}</td>`
+			    : "") + "</tr>";
+			}).join("");
+			psRow.innerHTML += PSTable + "</table>";
 		  }
 		}
 	  }
@@ -8644,6 +8695,7 @@
 					  if (PSData.length) {
 						// headers
 						const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+						const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
 						PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
 <tr>
     <th style="${stylePS}">HPE Part Number</th>
@@ -8651,11 +8703,15 @@
     <th style="${stylePS}">Deal ID</th>
     <th style="${stylePS}">bundle ID / Icon ID</th>
     <th style="${stylePS}">Unit Price</th>
-    <th style="${stylePS}">Extended Net Price</th>
-    <th style="${stylePS}">Previously Purchased Product Details</th>
+    <th style="${stylePS}">Extended Net Price</th>`;
+						if (prevProdExists) {
+						  PSTable = PSTable +
+`   <th style="${stylePS}">Previously Purchased Product Details</th>
     <th style="${stylePS}">Serial number of the products</th>
-    <th style="${stylePS}">Product Purchased Date</th>
-</tr>`;
+    <th style="${stylePS}">Product Purchased Date</th>`;
+						}
+						PSTable = PSTable + "</tr>";
+
 						PSData.forEach(item => {
 						  PSTable = PSTable + `<tr>
 	<td style="${stylePS}">${item.ProductID  || ''}</td>
@@ -8663,11 +8719,14 @@
 	<td style="${stylePS}">${item.DealId  || ''}</td>
 	<td style="${stylePS}">${item.BundleID  || ''}</td>
 	<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
-	<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>
-	<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+	<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>`
+						  if (prevProdExists) {
+							PSTable = PSTable +
+`	<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
 	<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
-	<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>
-  </tr>`;
+	<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>`
+						  }
+						  PSTable = PSTable + "</tr>";
 						});
 						PSTable = PSTable + `</table>`;
 					  }
@@ -8852,6 +8911,7 @@
 					if (PSData.length) {
 					  // headers
 					  const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+					  const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
 					  PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
 <tr>
 <th style="${stylePS}">HPE Part Number</th>
@@ -8859,11 +8919,15 @@
 <th style="${stylePS}">Deal ID</th>
 <th style="${stylePS}">bundle ID / Icon ID</th>
 <th style="${stylePS}">Unit Price</th>
-<th style="${stylePS}">Extended Net Price</th>
-<th style="${stylePS}">Previously Purchased Product Details</th>
+<th style="${stylePS}">Extended Net Price</th>`;
+					  if (prevProdExists) {
+						PSTable = PSTable +
+`<th style="${stylePS}">Previously Purchased Product Details</th>
 <th style="${stylePS}">Serial number of the products</th>
-<th style="${stylePS}">Product Purchased Date</th>
-  </tr>`;
+<th style="${stylePS}">Product Purchased Date</th>`;
+					  }
+					  PSTable = PSTable + "</tr>";
+
 					  PSData.forEach(item => {
 						PSTable = PSTable + `<tr>
 <td style="${stylePS}">${item.ProductID  || ''}</td>
@@ -8871,11 +8935,14 @@
 <td style="${stylePS}">${item.DealId  || ''}</td>
 <td style="${stylePS}">${item.BundleID  || ''}</td>
 <td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
-<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>
-<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
++<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>`
+						if (prevProdExists) {
+						  PSTable = PSTable +
+`<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
 <td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
-<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>
-  </tr>`;
+<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>`
+						}
+						PSTable = PSTable + "</tr>";
 					  });
 					  PSTable = PSTable + `</table>`;
 					}
