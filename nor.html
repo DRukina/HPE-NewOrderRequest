@@ -122,7 +122,7 @@
 		  config.dataset[`${type}_Address_Postal`] = null;
 		  config.dataset[`${type}_Address_Street`] = null;
 		  config.dataset[`${type}_Address_Street2`] = null;
-		  config.dataset[`${type}_Nati onalID`] = null;
+		  config.dataset[`${type}_NationalID`] = null;
 
 		  if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
 			$(`*[data-name="${type}_Address_Country"]`).val('');
@@ -190,6 +190,13 @@
 		  contentCallback: function() {}
 		});
 	  }
+	  // Reflect dataset's data in reviewDataset
+	  if (Object.keys(config.reviewDataset)) {
+		[`${type}_Address_Country`, `${type}_CompanyName`, `${type}_Address_State`, `${type}_Address_City`,
+		 `${type}_Address_Postal`, `${type}_Address_Street`, `${type}_Address_Street2`, `${type}_NationalID`
+		].forEach(key => config.reviewDataset[key] = config.dataset[key]);
+	  };
+	  
 	});
   }
 
