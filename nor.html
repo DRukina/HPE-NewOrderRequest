@@ -10388,6 +10388,9 @@
 	  });
 	  
 	  // SoldTo
+	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  }
 	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
 	  });
@@ -10396,6 +10399,9 @@
 	  });
 	  
 	  // End Customer
+	  if (config.dataset.EndCx_Address_Country && !config.dataset.EndCx_Contact_Country) {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
 	  $(`[data-name="EndCx_PartyId"]`).change(function() {
 		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
 	  });
@@ -10404,12 +10410,16 @@
 	  });
 	  
 	  // Reseller
+	  if (config.dataset.Reseller_Address_Country && !config.dataset.Reseller_Contact_Country) {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
 	  $(`[data-name="Reseller_PartyId"]`).change(function() {
 		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
 	  });
 	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
 		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
 	  });
+	  nbsf.ev.global(config, true);
 	  
 	  // ** -- -- -- --
 
