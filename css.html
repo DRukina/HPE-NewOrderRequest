@@ -1033,21 +1033,7 @@
     /* special cells.end */
 
     /* validation */
-
-    .nbsf-review-page .review-address-country {
-        margin-right: 444px;
-        /* 414 width and 30 margin */
-    }
-
-    .nbsf-review-page .review-address-taxid {
-        margin-left: -414px;
-        /* -414 width */
-    }
-
-    .nbsf-review-page .review-contact-firstname {
-        margin-top: 20px;
-    }
-
+  
     .nbsf fieldset .wrapper.text .validation.required,
     .nbsf fieldset .wrapper.multiselect .validation.required,
     .nbsf fieldset .wrapper.select .validation.required {
@@ -1077,6 +1063,18 @@
     }
 
     /* Styles for review page (special for NOR)*/
+  
+  	.nbsf-review-page .review-address-country {
+        margin-right: calc((100% - 40px) / 3 - 43px); 
+    }
+
+    .nbsf-review-page .review-address-taxid {
+        margin-left: calc(-1 * ((100% - 40px) / 3 - 43px - 30px)); /* width + 30px margin */
+    }
+
+    .nbsf-review-page .review-contact-firstname {
+        margin-top: 20px;
+    }
 
     .nbsf-review-page fieldset label {
         display: inline-block !important;
