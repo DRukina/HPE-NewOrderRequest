@@ -8117,12 +8117,11 @@
 			setTimeout(function() {
 			  var modal = document.querySelector('.dxpModal');
 			  var modalPosition = modal.getBoundingClientRect();
-			  if (document.documentElement && document.documentElement.scrollTo) {
-				document.documentElement.scrollTo({
-				  top: modalPosition.top >= 0 ? modalPosition.top : modalPosition.top * -1,
-				  behavior: "smooth",
-				});
-			  }
+			  var message = {
+				type: 'MODAL_OPENED',
+				top: modalPosition.top
+			  };
+			  window.parent.postMessage(JSON.stringify(message), '*');
 			  mo.fn.overlay.show({
 				close: false
 			  });
