@@ -8688,7 +8688,8 @@
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
-		quoteHelper.clearPOData(config);
+		// Removed due to a request here https://hpheroes.atlassian.net/browse/NOR-664?focusedCommentId=57475
+		//quoteHelper.clearPOData(config);
 		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
