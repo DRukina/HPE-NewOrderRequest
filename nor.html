@@ -8122,6 +8122,13 @@
 		  closeLabel: hpe.fn.lang("No", config.locale, config.localizations),
 		  contentCallback: function() {
 			setTimeout(function() {
+			  var modal = document.querySelector('.dxpModal');
+			  var modalPosition = modal.getBoundingClientRect();
+			  var message = {
+				type: 'MODAL_OPENED',
+				top: modalPosition.top
+			  };
+			  window.parent.postMessage(JSON.stringify(message), '*');
 			  mo.fn.overlay.show({
 				close: false
 			  });
@@ -9565,11 +9572,7 @@
 		}
 	  }
 	  if (document.querySelector('*[data-name="Config_PartialOrder"]')) {
-		if (config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote != 'Y') {
-		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("filteredClass");
-		} else {
-		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
-		}
+		document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
 	  }
 	//  if (document.querySelector('*[data-name="Config_UCID"]'))
 	//	document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
@@ -10382,6 +10385,31 @@
 		  nbsf.init(config, config.page);
 		});
 	  });
+	  
+	  // SoldTo
+	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  });
+	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // End Customer
+	  $(`[data-name="EndCx_PartyId"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  });
+	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // Reseller
+	  $(`[data-name="Reseller_PartyId"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  });
+	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+	  });
+	  
 	  // ** -- -- -- --
 
 	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
