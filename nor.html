@@ -9565,11 +9565,7 @@
 		}
 	  }
 	  if (document.querySelector('*[data-name="Config_PartialOrder"]')) {
-		if (config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote != 'Y') {
-		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("filteredClass");
-		} else {
-		  document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
-		}
+		document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
 	  }
 	//  if (document.querySelector('*[data-name="Config_UCID"]'))
 	//	document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
