@@ -1,0 +1,561 @@
+<script>
+  let profile = {
+      get: function(config, callback) {
+          let self = this;
+
+          this.reset();
+          if (!this.util.health.config(config)) {
+              this.data.errors.push("Invalid configuration provided as arguement");
+              return this.data;
+          }
+
+          // start request chain
+          this.util.data.user.dataset(config.email, function(d) {
+              if (d) {
+                  self.data.user = d;
+                  self.util.data.relationship.dataset(d.person_id, function(d) {
+                      if (d) {
+                          self.data.relationship = profile.util.findRelationship(d);
+
+                          self.util.data.business.dataset(self.data.relationship.relationship_id, function(d) {
+                              if (d)
+                                  self.data.business = d;
+                              self.ready(callback);
+                          });
+
+                          self.util.data.sim.dataset(self.data.relationship.relationship_id, function(d) {
+                              if (d)
+                                  self.data.sim = d;
+                              self.ready(callback);
+                          });
+
+                          self.util.data.epi.dataset(self.data.relationship.relationship_id, function(d) {
+                              if (d)
+                                  self.data.epi = d;
+                              self.ready(callback);
+                          });
+
+                          self.util.data.rights.dataset(self.data.user.person_id, self.data.relationship.party_id, self.data.relationship.relationship_id, function(d) {
+                              if (d)
+                                  self.data.rights = d;
+                              self.ready(callback);
+                          });
+
+                          self.util.data.company.dataset(self.data.relationship.party_id, function(d) {
+                              if (d) {
+                                  self.data.company = d;
+                                  self.util.data.geography.dataset(d.country_code, function(d) {
+                                      if (d)
+                                          self.data.geography = d;
+
+                                      self.ready(callback);
+                                  });
+                              }
+                              self.ready(callback);
+                          });
+                      }
+                      self.ready(callback);
+                  });
+              }
+              self.ready(callback);
+          });
+      },
+      ready: function(callback) {
+          if (this.queue == 0) {
+              this.data = this.util.health.response(this.data);
+              //if(this.data.errors.length == 0) {
+              this.logical();
+              this.clean();
+              //}
+
+              this.data.timing.end = new Date().getTime();
+              this.data.timing.total = (this.data.timing.end - this.data.timing.start) / 1000;
+
+              return callback(this.data);
+          }
+          return false;
+      },
+      reset: function() {
+          this.data = {
+              user: null,
+              company: null,
+              geography: null,
+              business: null,
+              epi: null,
+              rights: null,
+              relationship: null,
+              sim: null,
+              success: false,
+              errors: [],
+              warnings: [],
+              timing: {
+                  start: new Date().getTime(),
+                  end: null,
+                  total: null
+              }
+          };
+          this.queue = 0;
+      },
+      util: {
+          health: {
+              config: function(config) {
+                  if (!config || !config.email || !this.util.isEmail(config.email))
+                      return false;
+                  return true;
+              },
+              response: function(data) {
+                  //data health
+                  if (!data.user)
+                      data.errors.push('Missing user data');
+                  if (!data.company)
+                      data.errors.push('Missing company location data');
+                  if (!data.relationship)
+                      data.errors.push('Missing company business data');
+                  if (!data.geography)
+                      data.errors.push('Missing company geographical data');
+
+                  // low level health
+                  if (data.errors.length == 0) {
+                      // status health
+                      if (data.user.status && data.user.status != 'ACTIVE')
+                          data.errors.push('Inactive user');
+                      if (data.company.status && data.company.status != 'ACTIVE')
+                          data.errors.push('Inactive company location');
+                      if (data.relationship.status && data.relationship.status != 'ACTIVE')
+                          data.errors.push('Inactive user relationship');
+
+                      // privacy health
+                      if (data.user.anonym_indicator == "Y" || data.user.deleted_indicator == "Y" || data.user.delist_indicator == "Y")
+                          data.errors.push('Privacy restricted user account');
+
+                      // user relationship
+                      if (data.user.user_flag != 'Y' || !data.user.hppid)
+                          data.errors.push('Contact record is not flagged as an active user');
+                  }
+
+                  if (data.errors.length == 0)
+                      data.success = true;
+
+                  return data;
+              },
+              util: {
+                  isEmail: function(email) {
+                      return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+                  },
+                  isLocale: function(language, country) {
+                      if (!language || !country)
+                          return false;
+                      if (["en_US", "pt_BR", "es_ES", "fr_FR", "de_DE", "it_IT", "tr_TR", "ru_RU", "zh_CN", "zh_TW", "ja_JP", "ko_KR", "in_ID"].indexOf(language.toLowerCase() + '_' + country.toUpperCase()) > -1)
+                          return true;
+                      return false;
+                  },
+                  isLanguage: function(language) {
+                      if (!language)
+                          return false;
+                      if (["en", "pt", "es", "fr", "de", "it", "tr", "ru", "zh", "ja", "ko", "id"].indexOf(language.toLowerCase()) > -1)
+                          return true;
+                      return false;
+                  }
+              }
+          },
+          data: {
+              user: {
+                  dataset: function(email, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_MDCPC_Main",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'email',
+                                          operator: 'eq',
+                                          value: email
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 1
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length == 1)
+                              return callback(d.Data[0]);
+                          return callback(false);
+                      });
+                  }
+              },
+              relationship: {
+                  dataset: function(person, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_MDCPC_BUSINESS_RELATIONSHIPS_DATA",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'person_id',
+                                          operator: 'eq',
+                                          value: person
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 20
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length > 0)
+                              return callback(d.Data);
+                          return callback(false);
+                      });
+                  }
+              },
+              sim: {
+                  dataset: function(relationship_id, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_BRT_SIM",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'relationship_id',
+                                          operator: 'eq',
+                                          value: relationship_id
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 1000
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data)
+                              return callback(d.Data);
+                          return callback(false);
+                      });
+                  }
+              },
+              company: {
+                  dataset: function(party, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_EMDM_Main",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                      field: 'party_id',
+                                      operator: 'eq',
+                                      value: party
+                                  }]
+                              },
+                              pageSize: 1
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length == 1)
+                              return callback(d.Data[0]);
+                          return callback(false);
+                      });
+                  }
+              },
+              geography: {
+                  dataset: function(code, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "Country_Mapping",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                      field: 'ISO2',
+                                      operator: 'eq',
+                                      value: code
+                                  }]
+                              },
+                              pageSize: 1
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length == 1)
+                              return callback(d.Data[0]);
+                          return callback(false);
+                      });
+                  }
+              },
+              business: {
+                  dataset: function(relationship, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_EMDMH_BRT",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'relationship_id',
+                                          operator: 'eq',
+                                          value: relationship
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 1
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length == 1)
+                              return callback(d.Data[0]);
+                          return callback(false);
+                      });
+                  }
+              },
+              epi: {
+                  dataset: function(relationship, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_EMDM_BRTEPI",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'relationship_id',
+                                          operator: 'eq',
+                                          value: relationship
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 500
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length > 0)
+                              return callback(d.Data);
+                          return callback(false);
+                      });
+                  }
+              },
+              rights: {
+                  dataset: function(person, party, relationship, callback) {
+                      profile.queue++;
+                      hpe.api.dataset({
+                          form: "1266",
+                          dataset: "SOR_MDCPC_BRTEPI",
+                          payload: {
+                              filter: {
+                                  logic: "and",
+                                  filters: [{
+                                          field: 'person_id',
+                                          operator: 'eq',
+                                          value: person
+                                      },
+                                      {
+                                          field: 'party_id',
+                                          operator: 'eq',
+                                          value: party
+                                      },
+                                      {
+                                          field: 'relationship_id',
+                                          operator: 'eq',
+                                          value: relationship
+                                      },
+                                      {
+                                          field: 'status',
+                                          operator: 'eq',
+                                          value: 'ACTIVE'
+                                      }
+                                  ]
+                              },
+                              pageSize: 500
+                          }
+                      }, function(d) {
+                          profile.queue--;
+                          if (d && d.Data && d.Data.length > 0)
+                              return callback(d.Data);
+                          return callback(false);
+                      });
+                  }
+              }
+          },
+          mapping: {
+              // company
+              entry_id: "EntryId",
+              competitor_status: "Competitor",
+              customer_status: "Customer",
+              partner_status: "Partner",
+              vendor_status: "Vendor",
+              party_id: "PartyId",
+              status: "Status",
+              name: "Name",
+              country_code: "CountryOfBusiness",
+              deleted_status: "Deleted",
+              isolation_status: "Isolated",
+              parent: "ParentPartyId",
+              type: "Type",
+              last_update: "Modified",
+              duns_id: "DUNS",
+              headquarter_flag: "DUNSLocalHQ",
+              global_ultimate_flag: "DUNSGlobalHQ",
+              person_id: "PersonId",
+              primary_flag: "Primary",
+              relationship_id: "BRGA",
+              relationship_type: "BRType",
+              user_flag: "User",
+              allow_email: "AllowEmail",
+              allow_phone: "AllowPhone",
+              anonym_indicator: "Anonymized",
+              country_of_residence: "CountryOfResidence",
+              deleted_indicator: "Deleted",
+              delist_indicator: "Delisted",
+              email: "Email",
+              first_name: "FirstName",
+              last_name: "LastName",
+              hppid: "HPPId",
+              okta_id: "OktaId",
+              language: "PreferredLanguage",
+              salutation: "Salutation",
+              timezone: "PreferredTimezone",
+              siebel_partner: "PartnerProId",
+              siebel_user: "SiebelUserId",
+              last_modified: "Modified",
+              contact_id: "ContactId",
+              relationship: "BRType",
+              relationship_motion: "BRMotion",
+              parent_entity: "GroupId",
+              parent_entity_type: "GroupType",
+              tier1flag: "T1",
+              tier2flag: "T2",
+              epi: "EPICode",
+              epi_name: "EPIName",
+              country_code: "ISO2",
+              created_date: "Created",
+              date_format: "DateFormat",
+              update_at: "Updated"
+          },
+          remove: ["entry_id", "EntryId", "Modified", "ModifiedBy", "Created", "CreatedBy", "DXPMapping", "agreement_id", "contract_id", "end_date", "start_date"],
+          config: ["user", "company", "geography", "relationship", "business", "epi", "rights", "sim"],
+          findRelationship: function(relationships) {
+              for (let i = 0; i < relationships.length; i++)
+                  if (relationships[i].primary_flag == 'Y' && relationships[i].user_flag == 'Y')
+                      return relationships[i];
+
+              for (let i = 0; i < relationships.length; i++)
+                  if (relationships[i].user_flag == 'Y')
+                      return relationships[i];
+
+              return relationships[0];
+          }
+      },
+      clean: function() {
+          let props = this.util.config;
+          for (let i = 0; i < props.length; i++) {
+              let prop = props[i];
+              if (this.data[prop]) {
+                  if (Array.isArray(this.data[prop])) {
+                      for (let k = 0; k < this.data[prop].length; k++) {
+                          let keys = Object.keys(this.data[prop][k]);
+                          this.data[prop][k] = this.keys(keys, this.data[prop][k]);
+                      }
+                  } else {
+                      let keys = Object.keys(this.data[prop]);
+                      this.data[prop] = this.keys(keys, this.data[prop]);
+                  }
+              }
+          }
+      },
+      keys: function(keys, prop) {
+          for (let j = 0; j < keys.length; j++) {
+              let key = keys[j];
+              if (this.util.remove.indexOf(key) > -1)
+                  delete prop[key];
+
+              else {
+                  if (this.util.mapping[key]) {
+                      prop[this.util.mapping[key]] = prop[key];
+                      delete prop[key];
+                  }
+              }
+          }
+
+          return prop;
+      },
+      logical: function() {
+          const isoCodes = {
+              "EN": "en_US",
+              "PT": "pt_BR",
+              "ES": "es_ES",
+              "FR": "fr_FR",
+              "DE": "de_DE",
+              "IT": "it_IT",
+              "TR": "tr_TR",
+              "RU": "ru_RU",
+              "JA": "ja_JP",
+              "KO": "ko_KR",
+              "ID": "id_ID"
+          };
+          // locales
+          if (this.data && this.data.geography && this.data.geography.Languages) {
+              try {
+                  this.data.geography.Languages = JSON.parse(this.data.geography.Languages);
+              } catch (err) {
+                  console.error(err);
+                  this.data.warnings.push('Failed to convert RFB geographical language mapping to JSON');
+              }
+          }
+
+          // timezone
+          if (this.data && this.data.geography && this.data.geography.Timezone) {
+              try {
+                  this.data.geography.Timezone = JSON.parse(this.data.geography.Timezone);
+              } catch (err) {
+                  console.error(err);
+                  this.data.warnings.push('Failed to convert RFB geographical timezone mapping to JSON');
+              }
+          }
+
+          // locale
+          if (
+              this.data && this.data.user && this.data.user.language &&
+              this.data && this.data.company && this.data.company.country_code &&
+              this.util.health.util.isLocale(this.data.user.language, this.data.company.country_code)
+          ) this.data.user.Locale = this.data.user.language.toLowerCase() + '_' + this.data.company.country_code.toUpperCase();
+          else if (this.data && this.data.user) {
+              if (this.util.health.util.isLanguage(this.data.user.language)) {
+                  this.data.user.Locale = isoCodes[this.data.user.language]
+              } else {
+                  this.data.user.Locale = 'en_US';
+              }
+          }
+
+      }
+  }
+</script>

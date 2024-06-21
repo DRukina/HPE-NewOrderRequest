@@ -190,6 +190,13 @@
 		  contentCallback: function() {}
 		});
 	  }
+	  // Reflect dataset's data in reviewDataset
+	  if (Object.keys(config.reviewDataset)) {
+		[`${type}_Address_Country`, `${type}_CompanyName`, `${type}_Address_State`, `${type}_Address_City`,
+		 `${type}_Address_Postal`, `${type}_Address_Street`, `${type}_Address_Street2`, `${type}_NationalID`
+		].forEach(key => config.reviewDataset[key] = config.dataset[key]);
+	  };
+	  
 	});
   }
 
@@ -214,12 +221,12 @@
 								PO_BackgroundGroup: "Edge"
 							  },
 							  {
-								teamName: "OTC EMEA Order Processing",
+								teamName: "Global OP Indirect Manual",
 								region: "EMEA",
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
 							  {
-								teamName: "OTC APJ OP India",
+								teamName: "Global OP Indirect Manual",
 								region: "APJ, India",
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
@@ -239,7 +246,7 @@
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
 							  {
-								teamName: "OTC APJ OP South PAC",
+								teamName: "Global OP Indirect Manual",
 								region: "APJ, Australia, New Zealand",
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
@@ -249,7 +256,7 @@
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
 							  {
-								teamName: "OTC APJ OP SEA",
+								teamName: "Global OP Indirect Manual",
 								region: "APJ",
 								PO_BackgroundGroup: "Hybrid IT"
 							  },
@@ -278,6 +285,7 @@
 		channel: null,
 		pas: null
 	  },
+	  userPreferences:{}, // Map PANumber:UserPreferences
 	  company: {
 		party: null,
 		country: null,
@@ -883,6 +891,7 @@
 	no: "No",
 	poformat: "POFormat",
 	savedraft: "Form208",
+	showOnReview: false,
 	structure: [{
 	  header: "FormCFI01",
 	  description: "FormCFI02",
@@ -953,11 +962,14 @@
 	savedraft: "Form208",
 	internal: true,
 	nav: true,
-	structure: [{
+	showOnReview: false,
+	structure: [
+	  {
 	  header: "FormCFI01",
 	  description: "FormCFI02",
 	  group: [
-		[{
+		  [
+			{
 		  label: "Email",
 		  data: "OnBehalf_CreatedBy",
 		  required: true,
@@ -1003,10 +1015,91 @@
 	  ]
 	},
 				{
+		filter: {
+		  field: "OnBehalf_Type",
+		  operator: "eq",
+		  value: "Company"
+		},
 				  header: "FormCFI03",
 				  description: "FormCFI04",
 				  group: [
-					[{
+		  [
+			{
+			  label: "Country Entity",
+			  data: "CountryEntity",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "PartyId",
+			  data: "PartyId",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "",
+			  validation: ["partnerIds", "minLen|1", "maxLen|50"],
+			  typing: "partnerIds"
+			},
+			{
+			  label: "Business Relationship Type",
+			  data: "PartnerBRT",
+			  required: false,
+			  disabled: false,
+			  type: "select",
+			  values: function() {
+				return global.data.partyData.brts || [];
+			  }
+			},
+			{
+			  label: "Partner name",
+			  data: "PartnerName",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Country",
+			  data: "Country",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "Region",
+			  data: "Region",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			},
+			{
+			  label: "GEO",
+			  data: "Geo",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: ""
+			}
+		  ]
+		]
+	  },
+	  {
+		filter: {
+		  field: "OnBehalf_Type",
+		  operator: "neq",
+		  value: "Company"
+		},
+		header: "FormCFI03",
+		description: "FormCFI04",
+		group: [
+		  [
+			{
 					  label: "Country Entity",
 					  data: "CountryEntity",
 					  required: false,
@@ -1098,6 +1191,7 @@
 	goExternal: true,
 	isValidQuote: true,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // HIDDEN INPUTS
 	  {
@@ -1253,6 +1347,40 @@
 			placeholder: "Form020",
 			validation: ["kpDefault", "minLen|13", "maxLen|13", "noBlanksv2"],
 			typing: "kpDefault"
+		  }]
+		]
+	  },
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			/*		{
+					  field: "PartnerBRT",
+					  operator: "neq",
+					  value: "Master Area Partner"
+					},
+					{
+					  field: "CountryCode",
+					  operator: "neq",
+					  value: "TR"
+					}*/
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form021",
+			data: "Requestor_PO_Deal_ID",
+			required: false,
+			type: "text",
+			placeholder: "Form022",
+			validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
+			typing: "isIntegerAndComma"
 		  }]
 		]
 	  },
@@ -1978,235 +2106,6 @@
 		]
 	  },
 
-	  // QOD filter - Partial order
-	  // QOD no filter ams / UCID-CONFIG NO
-	  /*{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form480",
-                            validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },*/
-
-	  // QOD with filter ams / UCID-CONFIG NO
-	  /*
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            value: "OPE-",
-                            placeholder: "Form480",
-                            validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-	  // QOD no filter no ams / UCID-CONFIG NO
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "neq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "CountryCode",
-                            operator: "neq",
-                            value: "TR"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form021",
-                        data: "Requestor_PO_Deal_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form022",
-                        validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                        typing: "isIntegerAndComma"
-                    }]
-                ]
-            },
-			*/
 	  // QOD with filter no ams / UCID-CONFIG NO
 	  {
 		filter: {
@@ -2216,7 +2115,7 @@
 			operator: "neq",
 			value: "AMS"
 		  },
-					{
+					/*			{
 					  field: "PartnerBRT",
 					  operator: "neq",
 					  value: "Master Area Partner"
@@ -2225,10 +2124,10 @@
 					  field: "CountryCode",
 					  operator: "neq",
 					  value: "TR"
-					}
+					}*/
 				   ]
 		},
-		header: "Form258",
+		header: "", //"Form258",
 		group: [
 		  [{
 			label: "Form262",
@@ -2244,12 +2143,13 @@
 	  {
 		filter: {
 		  logic: "and",
-		  filters: [{
-			field: "Region",
-			operator: "neq",
-			value: "AMS"
-		  },
-					{
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			/*		{
 					  field: "PartnerBRT",
 					  operator: "neq",
 					  value: "Master Area Partner"
@@ -2258,13 +2158,19 @@
 					  field: "CountryCode",
 					  operator: "neq",
 					  value: "TR"
-					},
-					{
-					  field: "Config_PartialOrder",
-					  operator: "eq",
-					  value: "Y"
-					}
-				   ]
+					},*/
+			{
+			  field: "Config_PartialOrder",
+			  operator: "eq",
+			  value: "Y"
+			},
+			{field: "Config_PartialOrder", operator: "eq", value: "N"}, // Dummy condition to completely hide this group. NOR-785
+			{
+			  field: "Config_Quote",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
 		header: "",
 		group: [
@@ -2298,7 +2204,7 @@
 		  ]
 		]
 	  },
-	  {
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2330,444 +2236,10 @@
 			typing: "isIntegerAndComma"
 		  }]
 		]
-	  },
-
-	  // QOD no filter ams / UCID-CONFIG YES - QOD with filter ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form480",
-                            validation: ["ascii", "minLen|1", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-	  // QOD with filter ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        }
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "Y"
-                        },
-                        {
-                            field: "Region",
-                            operator: "eq",
-                            value: "AMS"
-                        },
-                        {
-                            field: "PartnerBRT",
-                            operator: "eq",
-                            value: "Master Area Partner"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form021",
-                            data: "Requestor_PO_Deal_ID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form022",
-                            validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        },
-                        {
-                            label: "Form479",
-                            data: "Requestor_PO_Opp_ID",
-                            filtered: "true",
-                            required: false,
-                            type: "text",
-                            value: "OPE-",
-                            placeholder: "Form480",
-                            validation: ["ascii", "minLen|1", "maxLen|14", "IsOpportunityID"],
-                            typing: "ascii"
-                        }
-                    ]
-                ]
-            },
-			*/
-
-
-	  // QOD no filter no ams / UCID-CONFIG YES - QOD with filter no ams / UCID-CONFIG YES
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                header: "Form258",
-                group: [
-                    [{
-                        label: "Form262",
-                        data: "Config_PartialOrder",
-                        required: false,
-                        type: "toggle",
-                        value: "N",
-                        values: ["N", "Y"],
-                        options: ["No", "Yes"]
-                    }]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        },
-                        {
-                            field: "Config_PartialOrder",
-                            operator: "eq",
-                            value: "Y"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                            label: "Form456",
-                            data: "Config_UCID",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form457",
-                            validation: ["IsUCID", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCID"
-                        },
-                        {
-                            label: "Form458",
-                            data: "Config_UCIDQ",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form459",
-                            validation: ["IsUCIDQ", "minLen|1", "noBlanksv2"],
-                            typing: "IsUCIDQ"
-                        },
-                        {
-                            label: "Form460",
-                            data: "Config_ConfigId",
-                            required: false,
-                            type: "text",
-                            placeholder: "Form461",
-                            validation: ["isIntegerAndComma", "minLen|1", "noBlanksv2"],
-                            typing: "isIntegerAndComma"
-                        }
-                    ]
-                ]
-            },
-            {
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "Region",
-                            operator: "neq",
-                            value: "AMS"
-                        },
-                        {
-                            logic: "or",
-                            filters: [{
-                                    field: "PartnerBRT",
-                                    operator: "eq",
-                                    value: "Master Area Partner"
-                                },
-                                {
-                                    field: "CountryCode",
-                                    operator: "eq",
-                                    value: "TR"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                        label: "Form021",
-                        data: "Requestor_PO_Deal_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form022",
-                        validation: ["isIntegerAndComma", "minLen|8", "noBlanksv2"],
-                        typing: "isIntegerAndComma"
-                    }]
-                ]
-            },
-			*/
+	  },*/
 
 	  // QOD with filter no ams / UCID-CONFIG YES
-	  {
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2791,7 +2263,7 @@
 					}
 				   ]
 		},
-		header: "Form258",
+		header: "", //"Form258",
 		group: [
 		  [{
 			label: "Form262",
@@ -2864,8 +2336,8 @@
 		   }
 		  ]
 		]
-	  },
-	  {
+	  },*/
+	/*  {
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -2901,40 +2373,8 @@
 			typing: "isIntegerAndComma"
 		  }]
 		]
-	  },
+	  },*/
 
-	  // QOD no filter JAPAN / Requestor_PO_Opp_ID
-	  /*
-			{
-                filter: {
-                    logic: "and",
-                    filters: [{
-                            field: "Config_Quote",
-                            operator: "eq",
-                            value: "N"
-                        },
-                        {
-                            field: "CountryCode",
-                            operator: "eq",
-                            value: "JP"
-                        }
-                    ]
-                },
-                header: "",
-                group: [
-                    [{
-                        label: "Form479",
-                        data: "Requestor_PO_Opp_ID",
-                        filtered: "true",
-                        required: false,
-                        type: "text",
-                        placeholder: "Form480",
-                        validation: ["ascii", "maxLen|14", "IsOpportunityID"],
-                        typing: "ascii"
-                    }]
-                ]
-            },
-			*/
 	  // QOD with filter JAPAN / Requestor_PO_Opp_ID
 	  {
 		filter: {
@@ -3135,17 +2575,17 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only 00000 after '3' - 300000XXXXX
+		  // allow only 00000 after '3' - 300000XXXXX 
 		  if (this.value.length > 2 && this.value.length <= 6 && /^30/.test(this.value) && !/^3[0]{2,5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // allow only digits after '300000' - 300000XXXXX
+		  // allow only digits after '300000' - 300000XXXXX 
 		  if (this.value.length > 6 && this.value.length <= 11 && /^30/.test(this.value) && !/^300000\d*$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // 300000XXXXX
+		  // 300000XXXXX 
 		  if (this.value.length > 11 && /^30/.test(this.value) && !/^300000\d{5}$/.test(this.value)) {
 			this.value = this.value.slice(0, -1);
 		  }
@@ -3160,7 +2600,7 @@
 			this.value = this.value.slice(0, -1);
 		  }
 
-		  // read quote
+		  // read quote 
 		  if (this.value) {
 			// const quotePattern = /(^(NQ|DQ)\d{8}-([0-9][0-9]))|^(300000)\d{5}$/;
 			// for testing
@@ -3214,8 +2654,10 @@
 		pass: []
 	  };
 	  var Notification_CC = document.querySelector('input[data-name=Notification_CC]');
-	  if (Notification_CC.value && (!nbsf.vld.isCarbonCC(Notification_CC.value) || !nbsf.vld.maxLen(Notification_CC.value, 255))) {
-		result.fail.push(Notification_CC.closest('label'));
+	  if (Notification_CC) {
+		if (Notification_CC.value && (!nbsf.vld.isCarbonCC(Notification_CC.value) || !nbsf.vld.maxLen(Notification_CC.value, 255))) {
+		  result.fail.push(Notification_CC.closest('label'));
+		}
 	  }
 
 	  // check if quote ID respects the format
@@ -3252,286 +2694,44 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
-	quotePreview: true,
+	review: {
+		editable: true,
+		layout: "spa",
+		collapsible: true,
+		collapsed: true,
+	},
+	quotePreview: true,    
 	filter: {
-	  logic: "and",
-	  filters: [{
-		field: "Config_Quote",
-		operator: "eq",
-		value: "Y"
-	  },
+		logic: "or",
+		filters: [
+			{
+			field: "Geo",
+			operator: "in",
+			value: ["CERTA", "CETA", "Latin America", "North America"]
+			},
 				{
-				  field: "Quote_Error",
-				  operator: "neq",
-				  value: "Y"
+					field: "SubRegion",
+					operator: "eq",
+					value: "MESA"
 				},
 				{
-				  logic: "or",
-				  filters: [{
-					field: "Geo",
+					field: "internalUser",
+					operator: "eq",
+					value: true
+				},
+				{
+					field: "CountryCode",
 					operator: "in",
-					value: ["CERTA", "CETA", "Latin America", "North America"]
-				  },
-							{
-							  field: "SubRegion",
-							  operator: "eq",
-							  value: "MESA"
-							},
-							{
-							  field: "internalUser",
-							  operator: "eq",
-							  value: true
-							},
-							{
-							  field: "CountryCode",
-							  operator: "in",
-							  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
-							},
-						   ]
-				}
-			   ]
-	},
-	structure: [
-	  // SoldTo Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_SoldTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }],
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_SoldTo",
-			type: "hidden"
-		  }],
-		]
-	  },
-	  // Payer Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_Payer",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_Payer",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // BillTo Config
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_BillTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form081",
-		group: [
-		  [{
-			data: "PPC_BillTo",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // ShipTo Config
-	  {
-		header: "Form045",
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_ShipTo",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Form045",
-		group: [
-		  [{
-			data: "PPC_ShipTo",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // End Customer Config
-	  {
-		header: "End Customer Information",
-		filter: {
-		  field: "PO_Category",
-		  operator: "neq",
-		  value: "Stock"
-		},
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_EndCx",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "End Customer Information",
-		filter: {
-		  field: "PO_Category",
-		  operator: "neq",
-		  value: "Stock"
-		},
-		group: [
-		  [{
-			data: "PPC_EndCx",
-			type: "hidden"
-		  }]
-		]
-	  },
-	  // Reseller Config
-	  {
-		header: "Reseller Information",
-		filter: {
-		  logic: "or",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartnerBRT",
-			  operator: "in",
-			  value: ["Distributor", "OEM Distributor", "System Integrator"]
-			},
-					  {
-						field: "PO_BusinessModel",
-						operator: "nin",
-						value: ["Agent Model", "HPFS & Agent Model"]
-					  },
-					  {
-						field: "PO_Category",
-						operator: "neq",
-						value: "Stock"
-					  }
-					 ]
-		  },
-					{
-					  logic: "and",
-					  filters: [{
-						field: "PartnerBRT",
-						operator: "eq",
-						value: "T1 Solution Provider"
-					  },
-								{
-								  field: "CountryCode",
-								  operator: "eq",
-								  value: "KR"
-								},
-								{
-								  field: "PO_Category",
-								  operator: "neq",
-								  value: "Stock"
-								}
-							   ]
-					}
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form257",
-			data: "Config_PPC_Reseller",
-			value: "Y",
-			required: true,
-			type: "toggle",
-			values: ["Y", "N"],
-			options: ["No", "Yes"]
-		  }]
-		]
-	  },
-	  {
-		header: "Reseller Information",
-		filter: {
-		  logic: "or",
-		  filters: [{
-			logic: "and",
-			filters: [{
-			  field: "PartnerBRT",
-			  operator: "in",
-			  value: ["Distributor", "OEM Distributor", "System Integrator"]
-			},
-					  {
-						field: "PO_BusinessModel",
-						operator: "nin",
-						value: ["Agent Model", "HPFS & Agent Model"]
-					  },
-					  {
-						field: "PO_Category",
-						operator: "neq",
-						value: "Stock"
-					  }
-					 ]
-		  },
-					{
-					  logic: "and",
-					  filters: [{
-						field: "PartnerBRT",
-						operator: "eq",
-						value: "T1 Solution Provider"
-					  },
-								{
-								  field: "CountryCode",
-								  operator: "eq",
-								  value: "KR"
-								},
-								{
-								  field: "PO_Category",
-								  operator: "neq",
-								  value: "Stock"
-								}
-							   ]
-					}
-				   ]
-		},
-		group: [
-		  [{
-			data: "PPC_Reseller",
-			type: "hidden"
-		  }]
-		]
-	  },
-	],
+					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				},
+				]
+	},  
+	structure: [{
+		hidden: false,
+		group: []
+	}],
 	callback: function() {
+	  callbacks.quotePreview();
 	  quoteHelper.checkResellerAddressData(config);
 	  quoteHelper.buildQuotePreviewPage(config);
 	}
@@ -3551,6 +2751,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	filter: {
 	  logic: "and",
 	  filters: [{
@@ -3928,140 +3129,121 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'soldto',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		field: "Config_SoldToDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_SoldTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  filters: [
+		{
+		  field: "Config_SoldToDetails",
+		  operator: "neq",
+		  value: "Y"
+		},
+	  ]
 	},
 	structure: [
 	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "No"
-					},
-					{
-					  field: "CountryCode",
-            operator: "nin",
-            value: ["HK", "MO"]
-					},
-				   ]
+	  //header: "Form056",
+	  header: "Address",
+	  filter: {
+		logic: "and",
+		filters: [{
+		  field: "Config_SoldToDetails",
+		  operator: "neq",
+		  value: "Y"
 		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
-		  [{
-			label: "Form058",
-			data: "SoldTo_CompanyName",
-			required: true,
-			type: "text",
-			//placeholder: "Form059",
-			validation: ["kpDefault", "minLen|2", "maxLen|140"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Address",
-			 data: "SoldTo_Address_Street",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form216",
-			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "AddressLineOptional",
-			 data: "SoldTo_Address_Street2",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form061",
-			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "City",
-			 data: "SoldTo_Address_City",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form062",
-			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "StateProvince",
-			 data: "SoldTo_Address_State",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form063",
-			 validation: ["kpDefault", "minLen|2"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Postal code",
-			 data: "SoldTo_Address_Postal",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form087",
-			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Country",
-			 data: "SoldTo_Address_Country",
-			 disabled: true,
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
+				  {
+					field: "xrefFail",
+					operator: "eq",
+					value: "No"
+				  },
+				  {
+					field: "CountryCode",
+					operator: "nin",
+					value: ["HK", "MO"]
+				  },
+				 ]
 	  },
-	  {
+	  group: [
+		[{
+		  label: "Form086",
+		  data: "SoldTo_PartyId",
+		  required: false,
+		  type: "text",
+		  //placeholder: "Form057",
+		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+		  typing: "kpDefault"
+		}],
+		[{
+		  label: "Form058",
+		  data: "SoldTo_CompanyName",
+		  required: true,
+		  type: "text",
+		  //placeholder: "Form059",
+		  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+		  typing: "kpDefault"
+		},
+		 {
+		   label: "Address",
+		   data: "SoldTo_Address_Street",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form216",
+		   validation: ["kpDefault", "minLen|2", "maxLen|55"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "AddressLineOptional",
+		   data: "SoldTo_Address_Street2",
+		   required: false,
+		   type: "text",
+		   //placeholder: "Form061",
+		   validation: ["kpDefault", "minLen|2", "maxLen|50"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "City",
+		   data: "SoldTo_Address_City",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form062",
+		   validation: ["kpDefault", "minLen|2", "maxLen|35"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "StateProvince",
+		   data: "SoldTo_Address_State",
+		   required: false,
+		   type: "text",
+		   //placeholder: "Form063",
+		   validation: ["kpDefault", "minLen|2"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "Postal code",
+		   data: "SoldTo_Address_Postal",
+		   required: true,
+		   type: "text",
+		   //placeholder: "Form087",
+		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
+		   typing: "kpDefault"
+		 },
+		 {
+		   label: "Country",
+		   data: "SoldTo_Address_Country",
+		   disabled: true,
+		   required: true,
+		   type: "select",
+		   class: "review-address-country",
+		   values: function() {
+			 return reference.countriesArray
+		   }
+		 }
+		]
+	  ]
+	},
+				{
 		header: "",
 		filter: {
 		  logic: "and",
@@ -4082,195 +3264,198 @@
 			required: true,
 			type: "text",
 			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			class: "review-address-taxid",
 			typing: "nationalID"
 		  }]
 		]
 	  },
 	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "No"
+				  //header: "Form056",
+				  header: "Address",
+				  filter: {
+					logic: "and",
+					filters: [{
+					  field: "Config_SoldToDetails",
+					  operator: "neq",
+					  value: "Y"
 					},
-					{
-					  field: "CountryCode",
-            operator: "in",
-            value: ["HK", "MO"]
+							  {
+								field: "xrefFail",
+								operator: "eq",
+								value: "No"
+							  },
+							  {
+								field: "CountryCode",
+								operator: "in",
+								value: ["HK", "MO"]
+							  },
+							 ]
+				  },
+				  group: [
+					[{
+					  label: "Form086",
+					  data: "SoldTo_PartyId",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form057",
+					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					  typing: "kpDefault"
+					}],
+					[{
+					  label: "Form058",
+					  data: "SoldTo_CompanyName",
+					  required: true,
+					  type: "text",
+					  //placeholder: "Form059",
+					  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+					  typing: "kpDefault"
 					},
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
-		  [{
-			label: "Form058",
-			data: "SoldTo_CompanyName",
-			required: true,
-			type: "text",
-			//placeholder: "Form059",
-			validation: ["kpDefault", "minLen|2", "maxLen|140"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Address",
-			 data: "SoldTo_Address_Street",
+					 {
+					   label: "Address",
+					   data: "SoldTo_Address_Street",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form216",
+					   validation: ["kpDefault", "minLen|2", "maxLen|55"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "AddressLineOptional",
+					   data: "SoldTo_Address_Street2",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form061",
+					   validation: ["kpDefault", "minLen|2", "maxLen|50"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "City",
+					   data: "SoldTo_Address_City",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form062",
+					   validation: ["kpDefault", "minLen|2", "maxLen|35"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "StateProvince",
+					   data: "SoldTo_Address_State",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form063",
+					   validation: ["kpDefault", "minLen|2"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Postal code",
+					   data: "SoldTo_Address_Postal",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form087",
+					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Country",
+					   data: "SoldTo_Address_Country",
+					   disabled: true,
+					   required: true,
+					   type: "select",
+					   class: "review-address-country",
+					   values: function() {
+						 return reference.countriesArray
+					   }
+					 }
+					]
+				  ]
+				},
+				{
+				  //header: "Form056",
+				  header: "Address",
+				  filter: {
+					logic: "and",
+					filters: [{
+					  field: "Config_SoldToDetails",
+					  operator: "neq",
+					  value: "Y"
+					},
+							  {
+								field: "xrefFail",
+								operator: "eq",
+								value: "Yes"
+							  }
+							 ]
+				  },
+				  group: [
+					[{
+					  label: "Form086",
+					  data: "SoldTo_PartyId",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form057",
+					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					  typing: "kpDefault"
+					}]
+				  ]
+				},
+				{
+				  header: "Contact",
+				  filter: {
+					field: "Config_SoldToDetails",
+					operator: "neq",
+					value: "Y"
+				  },
+				  group: [
+					[{
+					  label: "FirstName",
+					  data: "SoldTo_Contact_FirstName",
+					  required: false,
+					  type: "text",
+					  //placeholder: "Form065",
+					  validation: ["kpDefault", "minLen|1"],
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
+					},
+					 {
+					   label: "Surname",
+					   data: "SoldTo_Contact_LastName",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form066",
+					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
+					   typing: "kpDefault"
+					 },
+					 {
+					   label: "Telephone",
+					   data: "SoldTo_Contact_Phone",
+					   required: false,
+					   type: "text",
+					   //placeholder: "1-888-666-5555",
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
+					   typing: "typePhone"
+					 },
+					 {
+					   label: "Email",
+					   data: "SoldTo_Contact_Email",
+					   required: true,
+					   type: "text",
+					   //placeholder: "Form067",
+					   validation: ["isEmail", "maxLen|96"],
+					   typing: "typeEmail"
+					 },
+					 {
+					   label: "CountryOfResidence",
+					   data: "SoldTo_Contact_Country",
 			 required: true,
-			 type: "text",
-			 //placeholder: "Form216",
-			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "AddressLineOptional",
-			 data: "SoldTo_Address_Street2",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form061",
-			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "City",
-			 data: "SoldTo_Address_City",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form062",
-			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "StateProvince",
-			 data: "SoldTo_Address_State",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form063",
-			 validation: ["kpDefault", "minLen|2"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Postal code",
-			 data: "SoldTo_Address_Postal",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form087",
-			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Country",
-			 data: "SoldTo_Address_Country",
-			 disabled: true,
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
-	  },
-	  {
-		//header: "Form056",
-		header: "Address",
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "Config_SoldToDetails",
-			operator: "neq",
-			value: "Y"
-		  },
-					{
-					  field: "xrefFail",
-					  operator: "eq",
-					  value: "Yes"
-					}
-				   ]
-		},
-		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }]
-		]
-	  },
-	  {
-		header: "Contact",
-		filter: {
-		  field: "Config_SoldToDetails",
-		  operator: "neq",
-		  value: "Y"
-		},
-		group: [
-		  [{
-			label: "FirstName",
-			data: "SoldTo_Contact_FirstName",
-			required: false,
-			type: "text",
-			//placeholder: "Form065",
-			validation: ["kpDefault", "minLen|1"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Surname",
-			 data: "SoldTo_Contact_LastName",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form066",
-			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Telephone",
-			 data: "SoldTo_Contact_Phone",
-			 required: false,
-			 type: "text",
-			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|20"],
-			 typing: "typePhone"
-		   },
-		   {
-			 label: "Email",
-			 data: "SoldTo_Contact_Email",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form067",
-			 validation: ["isEmail", "maxLen|96"],
-			 typing: "typeEmail"
-		   },
-		   {
-			 label: "CountryOfResidence",
-			 data: "SoldTo_Contact_Country",
-			 required: false,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
-		  ]
-		]
-	  },
-	],
+					   type: "select",
+					   values: function() {
+						 return reference.countriesArray
+					   }
+					 }
+					]
+				  ]
+				},
+			   ],
 	callback: function() {
 	  callbacks.page3();
 	}
@@ -4290,38 +3475,18 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'payer',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		field: "Config_PayerDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_Payer",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  filters: [
+		{
+		  field: "Config_PayerDetails",
+		  operator: "neq",
+		  value: "Y"
+		},
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -4403,6 +3568,7 @@
 		   required: true,
 		   disabled: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -4489,6 +3655,7 @@
 					   data: "Payer_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -4506,7 +3673,8 @@
 					  type: "text",
 					  //placeholder: "Form098",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -4523,7 +3691,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -4567,39 +3735,19 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'billto',
-	filter: {
-	  logic: "and",
-	  filters: [{
-		field: "Config_BillToDetails",
-		operator: "neq",
-		value: "Y"
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_BillTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
-	},
+    filter: {
+      logic: "and",
+      filters: [
+        {
+          field: "Config_BillToDetails",
+          operator: "neq",
+          value: "Y"
+        },
+      ]
+    },
 	structure: [{
 	  header: "Address",
 	  group: [
@@ -4671,6 +3819,7 @@
 		   data: "BillTo_Address_Country",
 		   required: false,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -4688,7 +3837,8 @@
 					  type: "text",
 					  //placeholder: "Form111",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -4705,7 +3855,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -4750,47 +3900,28 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'shipping',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		logic: "or",
-		filters: [{
-		  field: "Config_ShipToDetails",
-		  operator: "neq",
-		  value: "Y"
+	  filters: [
+		{
+		  logic: "or",
+		  filters: [
+			{
+			  field: "Config_ShipToDetails",
+			  operator: "neq",
+			  value: "Y"
+			},
+			{
+			  field: "Config_ShipToDetails_Contact",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
-				  {
-					field: "Config_ShipToDetails_Contact",
-					operator: "neq",
-					value: "Y"
-				  }
-				 ]
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_ShipTo",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -4891,6 +4022,7 @@
 		   data: "ShipTo_Address_Country",
 		   required: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -4983,6 +4115,7 @@
 					   data: "ShipTo_Address_Country",
 					   required: false,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -5091,6 +4224,7 @@
 					   data: "ShipTo_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -5121,7 +4255,8 @@
 					  required: true,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid",
 					}]
 				  ]
 				},
@@ -5146,7 +4281,8 @@
 					  required: false,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -5172,7 +4308,8 @@
 					  type: "text",
 					  //placeholder: "Form124",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -5189,7 +4326,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5235,7 +4372,8 @@
 					  type: "text",
 					  //placeholder: "Form124",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -5252,7 +4390,7 @@
 					   required: true,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5296,47 +4434,28 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'endcx',
 	filter: {
 	  logic: "and",
-	  filters: [{
-		logic: "or",
-		filters: [{
-		  field: "Config_EndCxDetails",
-		  operator: "neq",
-		  value: "Y"
+	  filters: [
+		{
+		  logic: "or",
+		  filters: [
+			{
+			  field: "Config_EndCxDetails",
+			  operator: "neq",
+			  value: "Y"
+			},
+			{
+			  field: "Config_EndCxDetails_Contact",
+			  operator: "neq",
+			  value: "Y"
+			}
+		  ]
 		},
-				  {
-					field: "Config_EndCxDetails_Contact",
-					operator: "neq",
-					value: "Y"
-				  }
-				 ]
-	  },
-				{
-				  logic: "or",
-				  filters: [{
-					field: "Config_Quote",
-					operator: "neq",
-					value: "Y"
-				  },
-							{
-							  logic: "and",
-							  filters: [{
-								field: "Config_Quote",
-								operator: "eq",
-								value: "Y"
-							  },
-										{
-										  field: "Config_PPC_EndCx",
-										  operator: "neq",
-										  value: "Y"
-										},
-									   ]
-							},
-						   ]
-				},
-			   ]
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -5423,6 +4542,7 @@
 		   data: "EndCx_Address_Country",
 		   required: true,
 		   type: "select",
+		   class: "review-address-country",
 		   values: function() {
 			 return reference.countriesArray
 		   }
@@ -5516,6 +4636,7 @@
 					   data: "EndCx_Address_Country",
 					   required: true,
 					   type: "select",
+					   class: "review-address-country",
 					   values: function() {
 						 return reference.countriesArray
 					   }
@@ -5546,7 +4667,8 @@
 					  required: true,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -5571,7 +4693,8 @@
 					  required: false,
 					  type: "text",
 					  validation: ["nationalID", "minLen|1", "maxLen|14"],
-					  typing: "nationalID"
+					  typing: "nationalID",
+					  class: "review-address-taxid"
 					}]
 				  ]
 				},
@@ -5590,7 +4713,8 @@
 					  type: "text",
 					  //placeholder: "Form149",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -5607,7 +4731,7 @@
 					   required: true,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5622,7 +4746,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "EndCx_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -5651,89 +4775,73 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	addressPage: 'reseller',
 	filter: {
 	  logic: 'or',
-	  filters: [{
-		logic: "and",
-		filters: [{
-		  field: "PartnerBRT",
-		  operator: "in",
-		  value: ["Distributor", "OEM Distributor", "System Integrator"]
-		},
-				  {
-					logic: "and",
-					filters: [{
-					  logic: "or",
-					  filters: [{
-						field: "Config_ResellerDetails",
-						operator: "neq",
-						value: "Y"
-					  },
-								{
-								  field: "Config_ResellerDetails_Contact",
-								  operator: "neq",
-								  value: "Y"
-								}
-							   ]
-					},
-							  {
-								logic: "or",
-								filters: [{
-								  field: "Config_Quote",
-								  operator: "neq",
-								  value: "Y"
-								},
-										  {
-											logic: "and",
-											filters: [{
-											  field: "Config_Quote",
-											  operator: "eq",
-											  value: "Y"
-											},
-													  {
-														field: "Config_PPC_Reseller",
-														operator: "neq",
-														value: "Y"
-													  },
-													 ]
-										  },
-										 ]
-							  },
-							 ]
-				  },
-				  {
-					field: "PO_BusinessModel",
-					operator: "nin",
-					value: ["Agent Model", "HPFS & Agent Model"]
-				  },
-				  {
-					field: "PO_Category",
-					operator: "neq",
-					value: "Stock"
-				  }
-				 ]
-	  },
+	  filters: [
+		{
+		  logic: "and",
+		  filters: [
+			{
+			  field: "PartnerBRT",
+			  operator: "in",
+			  value: ["Distributor", "OEM Distributor", "System Integrator"]
+			},
+			{
+			  logic: "and",
+			  filters: [
 				{
-				  logic: "and",
-				  filters: [{
-					field: "PartnerBRT",
-					operator: "eq",
-					value: "T1 Solution Provider"
-				  },
-							{
-							  field: "CountryCode",
-							  operator: "eq",
-							  value: "KR"
-							},
-							{
-							  field: "PO_Category",
-							  operator: "neq",
-							  value: "Stock"
-							}
-						   ]
-				}
-			   ]
+				  logic: "or",
+				  filters: [
+					{
+					  field: "Config_ResellerDetails",
+					  operator: "neq",
+					  value: "Y"
+					},
+					{
+					  field: "Config_ResellerDetails_Contact",
+					  operator: "neq",
+					  value: "Y"
+					}
+				  ]
+				},
+			  ]
+			},
+			{
+			  field: "PO_BusinessModel",
+			  operator: "nin",
+			  value: ["Agent Model", "HPFS & Agent Model"]
+			},
+			{
+			  field: "PO_Category",
+			  operator: "neq",
+			  value: "Stock"
+			}
+		  ]
+		},
+		{
+		  logic: "and",
+		  filters: [
+			{
+			  field: "PartnerBRT",
+			  operator: "eq",
+			  value: "T1 Solution Provider"
+			},
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "KR"
+			},
+			{
+			  field: "PO_Category",
+			  operator: "neq",
+			  value: "Stock"
+			}
+		  ]
+		}
+	  ]
 	},
 	structure: [{
 	  header: "Address",
@@ -5822,6 +4930,7 @@
 			data: "Reseller_Address_Country",
 			required: true,
 			type: "select",
+			class: "review-address-country",
 			values: function() {
 			  return reference.countriesArray
 			}
@@ -5917,6 +5026,7 @@
 						data: "Reseller_Address_Country",
 						required: true,
 						type: "select",
+						class: "review-address-country",
 						values: function() {
 						  return reference.countriesArray
 						}
@@ -5941,7 +5051,8 @@
 					  type: "text",
 					  //placeholder: "Form135",
 					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault"
+					  typing: "kpDefault",
+					  class: "review-contact-firstname",
 					},
 					 {
 					   label: "Surname",
@@ -5958,7 +5069,7 @@
 					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|20"],
+					   validation: ["typePhone", "minLen|8", "maxLen|18"],
 					   typing: "typePhone"
 					 },
 					 {
@@ -5973,7 +5084,7 @@
 					 {
 					   label: "CountryOfResidence",
 					   data: "Reseller_Contact_Country",
-					   required: false,
+					   required: true,
 					   type: "select",
 					   values: function() {
 						 return reference.countriesArray
@@ -6002,6 +5113,8 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	filter: {
 	  logic: "or",
 	  filters: [{
@@ -6040,8 +5153,8 @@
 		logic: "and",
 		filters: [{
 		  field: "CountryCode",
-		  operator: "nin",
-		  value: ["HK", "MO"]
+			operator: "nin",
+			value: ["HK", "MO"]
 		}, ]
 	  },
 	  group: [
@@ -6224,6 +5337,8 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: true,
+	hideIfOnReview: true,
 	filter: {
 	  logic: "and",
 	  filters: [{
@@ -6452,6 +5567,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // optional attachment
 	  {
@@ -6608,7 +5724,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|20"],
+			 validation: ["typePhone", "minLen|8", "maxLen|18"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -7229,7 +6345,7 @@
 			 required: false,
 			 type: "text",
 			 //placeholder: "1-888-666-5555",
-			 validation: ["typePhone", "minLen|8", "maxLen|20"],
+			 validation: ["typePhone", "minLen|8", "maxLen|18"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -7610,7 +6726,7 @@
 			 data: "ALI_Contact_Phone",
 			 required: false,
 			 type: "text",
-			 validation: ["typePhone", "minLen|8", "maxLen|20"],
+			 validation: ["typePhone", "minLen|8", "maxLen|18"],
 			 typing: "typePhone"
 		   },
 		   {
@@ -7715,7 +6831,7 @@
 		pass: []
 	  };
 	  var Optional_Attachment = document.querySelector('input[data-name=Optional_Attachment]');
-	  if (Optional_Attachment.value) result.pass.push(Optional_Attachment);
+	  if (Optional_Attachment && Optional_Attachment.value) result.pass.push(Optional_Attachment);
 	  return result;
 	}
   };
@@ -7734,6 +6850,7 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
+	showOnReview: false,
 	structure: [
 	  // COMMENTS
 	  {
@@ -7794,6 +6911,282 @@
 	}
   };
 
+  // PRODUCT AND SERVICES FILE UPLOADING
+  const page13 = {
+	id: "PS",
+	title: "Are you ordering stand alone products and services",
+	filter: {
+	  logic: "and",
+	  filters: [{
+		field: "Config_PartialOrder",
+		operator: "eq",
+		value: "Y"
+	  },]
+	},
+	subtitle: "",
+	description: "",  
+	selectone: "SelectOne",
+	continue: "Continue",
+	submit: "Submit",
+	back: "Back",
+	no: "No",    
+	nav: true,
+	showOnReview: false,
+	poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
+	structure: [
+	  {
+		header: "Product and services attachment",  
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_Quote",
+			operator: "eq",
+			value: "N"
+		  }],
+		},
+		description: "",
+		group: [
+		  [
+			{
+			  label: "FormCFI06",
+			  data: "ProductServices_Attachment",
+			  required: false,
+			  type: "kUpload",
+			  uploadConfig: {
+				formId: 989,
+				extensions: [".xlxs", ".xls", ".xlsx", ".xlsm"],
+				maxFileSize: 1
+			  }
+			},              
+		  ],
+		]
+	  },
+	  {
+		header: "",
+		description: "",
+		id: "form-table",
+		group: [
+		  [
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "title-cell",
+			},
+			{
+			  label: "HPE Part Number*",
+			  data: "HPE_Product_Nub",
+			  value: "HPE Part Number*",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+			{
+			  label: "HPE Part Quantity*",
+			  value: "HPE Part Quantity*",
+			  data: "Quantity",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+			{
+			  label: "Deal ID",
+			  value: "Deal ID",
+			  data: "Deal_Id",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+
+			{
+			  label: "bundle ID / Icon ID",
+			  value: "bundle ID / Icon ID",
+			  data: "Test",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+			{
+			  label: "Unit Price*",
+			  value: "Unit Price*",
+			  data: "UnitPrice",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+			{
+			  label: "Extended Net Price*",
+			  value: "Extended Net Price*",
+			  data: "ExtendedNetPrice",
+			  required: false,
+			  type: "text",
+			  validation: ['minLen|1'],
+			  class: "title-cell",
+			},
+		  ],
+		],
+	  },  
+	  {
+		filter: {
+		  logic: "or",
+		  filters: [
+			{
+			  field: "CountryCode",
+			  operator: "in",
+			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			},
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Region",
+				  operator: "neq",
+				  value: "APJ"
+				},
+				{
+				  field: "SubRegion",
+				  operator: "neq",
+				  value: "UKI"
+				},
+				{
+				  field: "Geo",
+				  operator: "nin",
+				  value: ["DACH", "Europe South", "North West Europe"]
+				}
+			  ]
+			}
+		  ]
+		},
+		header: "",
+		group: [
+		  [
+			{
+			  label: "Form008",
+			  data: "PO_Value",
+			  required: false,
+			  disabled: true,
+			  type: "text",
+			  placeholder: "Form009",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping"
+			},
+		  ]
+		]
+	  },
+	],      
+	callback: function() {  
+	  const PS_Att = document.querySelector('[data-name="ProductServices_Attachment"]');
+	  if (PS_Att) {
+		const kendoOptAtt = $(PS_Att).data('kendoUpload');
+		kendoOptAtt.bind("upload", function(e) {            
+		  if (e.files && e.files.length) {
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
+			  if (data.success && data.data && data.data.length) {
+				config.dataset.ProductServicesRepeater = null;
+				config.dataset.Config_Quote_PartialOrder = null;
+				config.dataset.ProductServices_Attachment =
+				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
+				// build product and services page
+				quoteHelper.buildProductAndServices(config, config.pages[config.page]);
+				nbsf.init(config, config.page);
+			  }
+			});
+		  }
+		});
+		
+		const row = PS_Att.closest('.row');
+		const heading = $(row).find('.heading');
+		if (heading) {
+		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services.xlsx'>Download the template</a>`);
+		}
+	  }
+	  
+	  if (config.dataset.Config_Quote === "Y") {
+		quoteHelper.onInitQuoteCarepackProductAndServices(config);
+	  }
+
+	  callbacks.page13();  
+	},
+	validation: function() {
+	  var result = {
+		fail: [],
+		pass: [],
+		tooltips: {},
+	  };
+	  // if selected check the required field 
+	  // ProductServices_Attachment
+	  if (config.dataset.ProductServices_Attachment) {
+		return result;
+	  }
+	  if (quoteHelper.ucids.length) {
+		var isOneSelected = false;
+		quoteHelper.ucids.forEach(item => {
+		  const carepack = document.querySelector(`input[data-name=Carepack_${item.ID}]`);
+		  const snp = document.querySelector(`textarea[data-name=SerialNumberOfProducts_${item.ID}]`);
+		  const count = document.querySelector(`input[data-name=Count_${item.ID}]`);
+		  const checkbox = document.querySelector(`input[data-name=Selected_${item.ID}]`);
+		  const maxQuantity = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || 0;
+		  const consumedQuantity = item.Quantity - maxQuantity;
+		  if (checkbox) {
+			if (checkbox.checked) {
+			  isOneSelected = true;
+			  // SerialNumberOfProducts
+			  if (snp && carepack && carepack.value == "Y") {
+				if (snp.value) {
+				  result.pass.push(snp.closest('label'));
+				  snp.closest('label').setAttribute("data-state", "");
+				} else {
+				  result.fail.push(snp.closest('label'));
+				  snp.closest('label').setAttribute("data-state", "error");
+				}
+			  }
+			  // Count - Quantity
+			  if (count) {
+				const val = count.value && Number(count.value) || 0;
+				if (val && val <= maxQuantity && val > 0) {
+				  result.pass.push(count.closest('label'));
+				  count.closest('label').setAttribute("data-state", "");
+				} else {
+				  result.fail.push(count.closest('label'));
+				  if (val > 0) {
+					result.tooltips[`Count_${item.ID}`] = consumedQuantity == 0 ? ['Max Quantity is ' + item.Quantity] : [consumedQuantity + ' Quantities already consumed'];
+				  }
+				  count.closest('label').setAttribute("data-state", "error");
+				}
+			  }
+			} else {
+			  if (snp) {
+				result.pass.push(snp.closest('label'));
+				snp.closest('label').setAttribute("data-state", "");
+			  }
+			  result.pass.push(count.closest('label'));
+			  count.closest('label').setAttribute("data-state", "");
+			}
+		  }
+		});
+		// At least one checkbox must be selected
+		if (!isOneSelected) {
+		  const checkbox = document.querySelector(`input[data-name=Selected_${quoteHelper.ucids[0].ID}]`);
+		  if (checkbox) {
+			result.fail.push(checkbox.closest('label'));
+		  }
+		}
+	  }
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {		
+		if (!result.fail.length) {
+		  quoteHelper.saveProductAndServicesConfig(config);
+		}
+	  }
+	  return result;
+	},
+  };
+ 
   // OVERVIEW PAGE
   const overviewPage = {
 	title: "Form221",
@@ -7807,21 +7200,14 @@
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
-	structure: [{
-	  hidden: false,
-	  group: [
-		[{
-		  data: "CFI",
-		  type: "hidden"
-		}]
-	  ]
-	}],
+  structure: [{
+    hidden: false,
+    group: []
+  }],
 	callback: function() {
 	  // POPULATE ORID
 	  var orid = document.querySelectorAll(".header .ORID");
 	  for (i = 0; i < orid.length; i++) orid[i].innerText = config.dataset.EntryId;
-	  document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.classList.add("output");
-	  //document.querySelector('input[data-name="CFI"]').parentElement.parentElement.parentElement.parentElement.innerHTML = '';
 
 	  //empty ship to if the config is toggled yes but the quote still has info
 	  if (config.dataset.Config_ShipToDetails == 'Y') {
@@ -8226,9 +7612,26 @@
 			[hpe.fn.lang("Form195", config.locale, config.localizations), "Comment_Packing"],
 			[hpe.fn.lang("Form197", config.locale, config.localizations), "Comment_Extra"]
 		  ]
+		},
+		PS: {
+		  title: "Products and Services",
+		  fieldset: [],
+		  filter: {
+			logic: "and",
+			filters: [{
+			  field: "Config_Quote_PartialOrder",
+			  operator: "isnotempty",
+			  value: "?"
+			}]
+		  }
 		}
 	  };
-	  var app = document.querySelector(".output");
+	  
+	  var app = document.querySelector(".nbsf .row");
+	  const geo = config.dataset.Geo || global.data.geo.geography;
+	  /*
+	  var app = document.querySelector(".nbsf-review-page");
+	  
 	  const geo = config.dataset.Geo || global.data.geo.geography;
 	  document.querySelector(".output").innerHTML += '<div id="msg" class="active nfo"><p>' + hpe.fn.lang("InfoCurrent", config.locale, config.localizations) + '</p><span>' +
 		`<svg version="1.1" viewBox="0 0 24 24" role="img" aria-label="close" width="16px" height="16px">
@@ -8236,7 +7639,7 @@
   </path>
   </svg>` +
 		'</span></div>';
-	  $('#msg.nfo').show();
+	  $('#msg.nfo').show();*/
 
 	  let objK = Object.keys(reviewSetup);
 	  for (i = 0; i < objK.length; i++) {
@@ -8493,8 +7896,48 @@
 			}
 		  }
 		}
+		if (key == "PS" && filter) {
+		  console.log('reviewSetup: PS', reviewSetup[key]);
+		  let PSData = null;
+		  try {
+			PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+			if (!Array.isArray(PSData)) PSData = null;
+			PSData = PSData.filter((item) => item.Selected == "Y");
+		  } catch(e) {
+			console.error("Could not parse PS", config.dataset.Config_Quote_PartialOrder);
+		  }
+
+		  if (PSData) {
+			if (app.querySelector(".row[review-id=" + key + "]") == null) {
+			  app.innerHTML += '<div class="row" review-id="' + key + '"><h4>' + reviewSetup[key].title + '</h4></div>';
+			}
+			const psRow = app.querySelector(".row[review-id=" + key + "]");
+			const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
+			let PSTable = "<table class='ps-table'>" +
+				"<thead><tr><th>HPE Part Number</th><th>HPE Part Quantity</th><th>Deal ID</th><th>bundle ID / Icon ID</th><th>Unit Price</th><th>Extended Net Price</th>";
+			if (prevProdExists) {
+			  PSTable = PSTable + `<th>Previously Purchased Product Details</th><th>Serial number of the products</th><th>Product Purchased Date</th>`;
+			}
+			PSTable = PSTable + "</tr></thead>" + PSData.map(item => {
+			  return `<tr>
+<td>${item.ProductID  || ''}</td>
+<td>${item.Count  || ''}</td>
+<td>${item.DealId  || ''}</td>
+<td>${item.BundleID  || ''}</td>
+<td>${item.UnitNetAmount  || ''}</td>
+<td>${item.ExtendedNetAmount  || ''}</td>` +
+				(prevProdExists ?
+`<td style=>${item.PreviouslyPurchasedProductDetails || ''}</td>
+<td style=>${item.SerialNumberOfProducts  || ''}</td>
+<td style=>${item.ProductPurchasedDate  || ''}</td>`
+			    : "") + "</tr>";
+			}).join("");
+			psRow.innerHTML += PSTable + "</table>";
+		  }
+		}
 	  }
-	  $('#msg.nfo span').click(function() {
+	  // Buttons logic
+  	  $('#msg.nfo span').click(function() {
 		$('#msg.nfo').hide();
 	  });
 	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));
@@ -8523,14 +7966,76 @@
 		  }
 		} catch (error) {
 		  console.error("Error fetching the link:", error);
-		  //window.location = "fallbackURL";
+		  //window.location = "fallbackURL"; 
 		}
 	  });
 	}
   };
+  
 </script>
 <script>
   // MAIN CONFIG
+  const paNumberChanged = function(newVal) {
+	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PA_Number : newVal];
+	if (!prefs) return;
+	
+	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
+	  config.dataset[fieldName] = fieldValue;
+	  $(`[data-name='${fieldName}']`).val(fieldValue);
+	});
+  }
+
+  const loadPreferences = function() {
+      // Load preferences for all PA in global.data.brt.pas
+      return new Promise((resolve, reject) => {
+		  const ds = new kendo.data.DataSource({
+			type: "rfb-v2",
+			transport: {
+			  read: {
+				url: "/form/data-set-provider/v2/989/Partner_Preferences/kendo/data/search",
+				type: 'POST'
+			  },
+			},
+			schema: {
+			  model: {
+				id: "EntryId",
+				fields: {
+				}
+			  }
+			},
+			serverFiltering: true,
+			filter: {
+			  logic: "or",
+			  filters: global.data.brt.pas.map((pa) => ({field: "PANumber", operator: "eq", value: pa}))
+			},
+			serverSorting: true,
+			sort: {
+			  field: "EntryId",
+			  dir: "desc"
+			},
+			serverPaging: true,
+			pageSize: 1000
+		  });
+		  ds.read().then(() => {
+			const data = ds.view();
+			const prefs = {}
+			data.forEach((row) => {
+				try {
+				  if (row.Preferences) prefs[row.PANumber] = JSON.parse(row.Preferences);
+				} catch(e) {
+				  // The string with wrong preferences is not the reason to fall
+				  console.log("Error parsing preferences", row);
+				}
+			});
+			global.data.userPreferences = prefs;
+			resolve();
+		  }, (errArg) => {
+			console.log("User Preferences loading error", errArg);
+			reject(errArg);
+		  });
+	  });
+  }
+
   const config = {
 	dom: null,
 	locale: global.data.user.locale,
@@ -8539,13 +8044,22 @@
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
 	},
+	helper: true,
 	summary: {},
-	pages: [page1, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
+	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
 	onNext: function() {
 	  if (config.dataset.xrefFail == 'Yes') config.dataset.xrefFail = 'No';
-
+	  
 	  config.dataset.PO_Attachment_Flag = config.dataset.PO_Attachment ? 'Y' : 'N';
 	  config.dataset.Optional_Attachment_Flag = config.dataset.Optional_Attachment ? 'Y' : 'N';
+
+	  if (config.pages[config.page + 1].id == "PS") {
+		quoteHelper.configureProductAndServices(config, config.pages[config.page + 1]);
+	  }
+	  if (config.pages[config.page].id == "PS") {
+		quoteHelper.parseProductAndServicesRepeater(config);
+		quoteHelper.saveProductAndServicesConfig(config);
+	  }
 
 	  function doNext() {
 		mo.fn.overlay.show({
@@ -8744,6 +8258,13 @@
 		  closeLabel: hpe.fn.lang("No", config.locale, config.localizations),
 		  contentCallback: function() {
 			setTimeout(function() {
+			  var modal = document.querySelector('.dxpModal');
+			  var modalPosition = modal.getBoundingClientRect();
+			  var message = {
+				type: 'MODAL_OPENED',
+				top: modalPosition.top
+			  };
+			  window.parent.postMessage(JSON.stringify(message), '*');
 			  mo.fn.overlay.show({
 				close: false
 			  });
@@ -8788,7 +8309,7 @@
 		  }
 		}
 		return true;
-	  }	  
+	  }
 
 	  //if PartnerBRT is one of the Distributor, OEM Distributor, System Integrator and the PO_BusinessModel is Agent Model" or HPFS & Agent Model, open the optional info modal
 	  if (
@@ -8932,7 +8453,7 @@
 			  });
 			} else {
 
-			  const partyData = view.find(item => ['T1 Solution Provider', 'Distributor', 'OEM Distributor', 'System Integrator', 'Master Area Partner'].includes(item.BRT));
+			  const partyData = view.find(item => global.data.brts.find(brt => brt.name === item.BRT));
 			  console.log('partyData', partyData);
 			  if (partyData) {
 				global.data.company.country = partyData.CountryEntity;
@@ -8952,20 +8473,9 @@
 				global.data.brt.code = brtCode[0].code;
 				
 				// new 
-				let brts = view.filter(item => [
-					'Virtual OEM', 
-					'T1 Solution Provider', 
-					'Distributor', 
-					'OEM Distributor', 
-					'System Integrator', 
-					'Master Area Partner', 
-					'Supplies Distributor', 
-					'Federal Reseller', 
-					'T1 Service Provider', 
-					'Remarketing Distributor'
-				].includes(item.BRT));
-				brts = brts.map(item => item.BRT);
-				brts = global.data.brts.filter(item => brts.includes(item.name));
+				let brts = view.filter(item => global.data.brts.find(brt => brt.name === item.BRT));
+				const brts_names = brts.map(item => item.BRT);
+				brts = global.data.brts.filter(item => brts_names.includes(item.name));
 				let channels = [];
 				let brt_codes = [];
 				brts.forEach(item => {
@@ -8973,6 +8483,7 @@
 				  brt_codes = [...brt_codes, item.code];
 				});
 				global.data.partyData = {
+				  brts: brts_names || [],
 				  channels,
 				  codes: brt_codes
 				}
@@ -8981,11 +8492,13 @@
 				//  config.dom = document.querySelector('div[tab-id="oob"]');
 				config.dataset.CountryEntity = global.data.company.country;
 				config.dataset.PartyId = document.querySelector("input[data-name=OnBehalf_PartyId]").value;
+				if (!config.dataset.PartnerBRT) {
 				config.dataset.PartnerBRT = partyData.BRT;
+				}
 				config.dataset.PartnerName = partyData.PartyName;
 				config.dataset.Country = partyData.CountryName;
 				config.dataset.Region = global.data.geo.region;
-				config.dataset.Geo = global.data.geo.geography;
+				config.dataset.Geo = global.data.geo.geography;							 
 
 				if (!global.data.brt.channel) {
 				  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
@@ -9047,18 +8560,20 @@
 				  reference.countriesRequest();
 				  otherFunctions.lang();
 
-				  crud.q.stop(function() {
-					hpe.data.xref(global.data.company.party, function(d) {
-					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					  reference.xref = d;
-					  config.locale = global.data.user.locale;
-					  config.dom = document.querySelector('div[tab-id="oob"]');
-					  nbsf.init(config, config.page + 1);
-					  nbsf.init(config, config.page);
-					  mo.fn.events.closeAll();
-					  mo.fn.overlay.hide();
+				  loadPreferences().then(() => {
+					crud.q.stop(function() {
+					  hpe.data.xref(global.data.company.party, function(d) {
+						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+						reference.xref = d;
+						config.locale = global.data.user.locale;
+						config.dom = document.querySelector('div[tab-id="oob"]');
+						nbsf.init(config, config.page + 1);
+						nbsf.init(config, config.page);
+						mo.fn.events.closeAll();
+						mo.fn.overlay.hide();
+					  });
 					});
-				  });
+				  })
 				});
 
 			  } else {
@@ -9206,16 +8721,18 @@
 				reference.countriesRequest();
 				otherFunctions.lang();
 
-				crud.q.stop(function() {
-				  hpe.data.xref(global.data.company.party, function(d) {
-					global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					reference.xref = d;
-					config.locale = global.data.user.locale;
-					config.dom = document.querySelector('div[tab-id="oob"]');
-					nbsf.init(config, config.page + 1);
-					nbsf.init(config, config.page);
-					mo.fn.events.closeAll();
-					mo.fn.overlay.hide();
+				loadPreferences().then(() => {
+				  crud.q.stop(function() {
+					hpe.data.xref(global.data.company.party, function(d) {
+					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+					  reference.xref = d;
+					  config.locale = global.data.user.locale;
+					  config.dom = document.querySelector('div[tab-id="oob"]');
+					  nbsf.init(config, config.page + 1);
+					  nbsf.init(config, config.page);
+					  mo.fn.events.closeAll();
+					  mo.fn.overlay.hide();
+					});
 				  });
 				});
 			  });
@@ -9228,6 +8745,8 @@
 			}
 		  })
 		}
+	  } else if (config.pages[config.page].id == "PS") {
+		doNext();
 	  } else if (config.page == 1) {
 		nbsf.init(config, config.page + 1);
 		nbsf.init(config, config.page);
@@ -9251,21 +8770,42 @@
 		loading: true,
 		close: false
 	  });
-	  console.log("CONFIG:", this);
-	  console.log("CURRENT:", this.page);
-	  console.log("PREV:", this.page - 1);
-	  console.log("DATA:", this.dataset);
-	  nbsf.init(config, config.page - 1);
-	  nbsf.init(config, config.page);
-	  mo.fn.overlay.hide();
+	  const currentPage = global.data.user.internal ? config.pages[config.page - 2] : config.pages[config.page - 1];
+	  if (config.page > 1 && currentPage.id == "PS") {
+		quoteHelper.configureProductAndServices(config, currentPage, function() {
+		  console.log("CONFIG:", this);
+		  console.log("CURRENT:", this.page);
+		  console.log("PREV:", this.page - 1);
+		  console.log("DATA:", this.dataset);
+		  nbsf.init(config, config.page - 1);
+		  nbsf.init(config, config.page);
+		  mo.fn.overlay.hide();
 
-	  window.scrollTo({
-		top: 0,
-		behavior: 'smooth'
-	  });
-	  window.parent.postMessage(JSON.stringify({
-		"top": true
-	  }), "*");
+		  window.scrollTo({
+			top: 0,
+			behavior: 'smooth'
+		  });
+		  window.parent.postMessage(JSON.stringify({
+			"top": true
+		  }), "*");
+		});
+	  } else {
+		console.log("CONFIG:", this);
+		console.log("CURRENT:", this.page);
+		console.log("PREV:", this.page - 1);
+		console.log("DATA:", this.dataset);
+		nbsf.init(config, config.page - 1);
+		nbsf.init(config, config.page);
+		mo.fn.overlay.hide();
+
+		window.scrollTo({
+		  top: 0,
+		  behavior: 'smooth'
+		});
+		window.parent.postMessage(JSON.stringify({
+		  "top": true
+		}), "*");
+	  }
 	},
 	onSubmit: function() {
 	  mo.fn.overlay.show({
@@ -9276,13 +8816,17 @@
 		// SET SUBMISSION INFO
 		config.dataset.OnBehalf_SubmittedBy = '[SSOData.Email]';
 		config.dataset.Requestor_Email = '[SSOData.Email]';
+		
+		
 
 		// Don't override user's data if exist for case description
 		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.LastName)) {
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
 		}
-
+		// Removed due to a request here https://hpheroes.atlassian.net/browse/NOR-664?focusedCommentId=57475
+		//quoteHelper.clearPOData(config);
+		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
@@ -9301,7 +8845,7 @@
 			var cStructure = cPage.structure;
 			var cFilter = true;
 			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
-			if (cPage.quotePreview) cFilter = false;
+			if (cPage.quotePreview || cPage.review) cFilter = false;
 
 			if (
 			  config.dataset.Config_Quote == 'Y' &&
@@ -9322,70 +8866,131 @@
 				ttl: "page-" + i,
 				val: hpe.fn.lang(cPage.title, config.locale, config.localizations)
 			  };
-			  if (global.data.user.internal) {
-				if (hdr.ttl != "page-0")
-				  pairs.push(hdr);
-			  } else pairs.push(hdr);
-			  for (j = 0; j < cStructure.length; j++) {
-				var cFilter = true;
-				if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
-				if (cFilter) {
-				  for (k = 0; k < cStructure[j].group.length; k++) {
-					var cGroup = cStructure[j].group[k];
-					for (l = 0; l < cGroup.length; l++) {
-					  var cInput = cGroup[l];
-					  if (cInput.type != "hidden") {
-						var obj = {
-						  ttl: "N/A",
-						  val: "N/A",
-						  data: "N/A"
+			  if (cPage.id == "PS") {
+				pairs.push(hdr);
+				let PSTable = ''; 
+				if (config.dataset.Config_Quote_PartialOrder) {
+					try {
+					  let PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+					  PSData = PSData.filter(item => item.Selected == "Y");
+					  if (PSData.length) {
+						// headers
+						const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+						const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
+						PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
+<tr>
+    <th style="${stylePS}">HPE Part Number</th>
+    <th style="${stylePS}">HPE Part Quantity</th>
+    <th style="${stylePS}">Deal ID</th>
+    <th style="${stylePS}">bundle ID / Icon ID</th>
+    <th style="${stylePS}">Unit Price</th>
+    <th style="${stylePS}">Extended Net Price</th>`;
+						if (prevProdExists) {
+						  PSTable = PSTable +
+`   <th style="${stylePS}">Previously Purchased Product Details</th>
+    <th style="${stylePS}">Serial number of the products</th>
+    <th style="${stylePS}">Product Purchased Date</th>`;
 						}
-						if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
-						else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
-						if (
-						  typeof(cInput.data) !== "undefined" &&
-						  typeof(config.dataset[cInput.data]) !== "undefined" &&
-						  config.dataset[cInput.data] != null &&
-						  config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
-						) {
-						  if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
-						  else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
-						  else obj.val = config.dataset[cInput.data];
-						}
-						if (obj.val != "N/A") {
-						  obj.data = cInput.data;
-						  pairs.push(obj);
+						PSTable = PSTable + "</tr>";
+
+						PSData.forEach(item => {
+						  PSTable = PSTable + `<tr>
+	<td style="${stylePS}">${item.ProductID  || ''}</td>
+	<td style="${stylePS}">${item.Count  || ''}</td>
+	<td style="${stylePS}">${item.DealId  || ''}</td>
+	<td style="${stylePS}">${item.BundleID  || ''}</td>
+	<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
+	<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>`
+						  if (prevProdExists) {
+							PSTable = PSTable +
+`	<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+	<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
+	<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>`
+						  }
+						  PSTable = PSTable + "</tr>";
+						});
+						PSTable = PSTable + `</table>`;
+					  }
+					} catch(e) {}
+				  var obj = {
+					ttl: "",
+					val: PSTable,
+					data: "ProductAndServices",
+					id: cPage.id,
+				  };
+				  pairs.push(obj);
+				}
+				
+			  } else {
+				if (global.data.user.internal) {
+				  if (hdr.ttl != "page-0")
+					pairs.push(hdr);
+				} else pairs.push(hdr);
+
+				for (j = 0; j < cStructure.length; j++) {
+				  var cFilter = true;
+				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  if (cFilter) {
+					for (k = 0; k < cStructure[j].group.length; k++) {
+					  var cGroup = cStructure[j].group[k];
+					  for (l = 0; l < cGroup.length; l++) {
+						var cInput = cGroup[l];
+						if (cInput.type != "hidden") {
+						  var obj = {
+							ttl: "N/A",
+							val: "N/A",
+							data: "N/A"
+						  }
+						  if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
+						  else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
+						  if (
+							typeof(cInput.data) !== "undefined" &&
+							typeof(config.dataset[cInput.data]) !== "undefined" &&
+							config.dataset[cInput.data] != null &&
+							config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
+						  ) {
+							if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
+							else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
+							else obj.val = config.dataset[cInput.data];
+						  }
+						  if (obj.val != "N/A") {
+							obj.data = cInput.data;
+							pairs.push(obj);
+						  }
 						}
 					  }
 					}
 				  }
 				}
-			  }
-			  var obj = pairs[pairs.length - 1];
-			  //  console.log("obj", obj);
-			  if (obj.ttl.indexOf("page-") > -1) {
-				pairs.pop();
-			  }
-			  if (obj.data == "OnBehalf_CreatedBy") {
-				// Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
-				pairs.shift();
-				const secondPair = pairs.shift();
-				if (secondPair.data == "OnBehalf_PartyId") {
+				var obj = pairs[pairs.length - 1];
+				//  console.log("obj", obj);
+				if (obj.ttl.indexOf("page-") > -1) {
+				  pairs.pop();
+				}
+				if (obj.data == "OnBehalf_CreatedBy") {
+				  // Delete the first pairs - 'On behalf of' and either 'Email' or 'Party ID'
 				  pairs.shift();
+				  const secondPair = pairs.shift();
+				  if (secondPair.data == "OnBehalf_PartyId") {
+					pairs.shift();
+				  }
 				}
 			  }
-
 			}
 		  }
 		  //  console.log("pairs", pairs);
 		  var caseDescription = "";
 		  for (i = 0; i < pairs.length; i++) {
-			let pairVal = pairs[i].val;
-			if (pairVal) pairVal = pairVal.trim();
-			
-			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
+				let pairVal = pairs[i].val;
+				if (pairVal) pairVal = pairVal.trim();
+			if (pairs[i].id === "PS") {
+			  caseDescription = caseDescription + "<br><br>";
+			  caseDescription = caseDescription + "<strong>" + "Stand alone products and services" + "</strong><br>";
+			  caseDescription = caseDescription + pairVal + "<br>";
+			  
+			} else if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI018", config.locale, config.localizations) + "</strong><br>";
@@ -9397,7 +9002,8 @@
 				else
 				  caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			  }
-			} else {
+			}
+			else {
 			  if (["PA_Number"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form023", config.locale, config.localizations) + "</strong><br>";
@@ -9421,7 +9027,7 @@
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + " (DD/MM/YYYY)<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
@@ -9475,51 +9081,106 @@
 				ttl: "page-" + i,
 				val: hpe.fn.lang(cPage.title, config.locale, config.localizations)
 			  };
+			  
+			  if (cPage.id == "PS") {
+				pairs.push(hdr);
+				let PSTable = ''; 
+				if (config.dataset.Config_Quote_PartialOrder) {
+				  try {
+					let PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder);
+					PSData = PSData.filter(item => item.Selected == "Y");
+					if (PSData.length) {
+					  // headers
+					  const stylePS = "text-align: left;vertical-align: top;font-weight: 400;border-bottom: 1px solid #eee;padding: 8px 10px";
+					  const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
+					  PSTable = `<table cellspacing="0" style="border-collapse: collapse;border-spacing: 0">
+<tr>
+<th style="${stylePS}">HPE Part Number</th>
+<th style="${stylePS}">HPE Part Quantity</th>
+<th style="${stylePS}">Deal ID</th>
+<th style="${stylePS}">bundle ID / Icon ID</th>
+<th style="${stylePS}">Unit Price</th>
+<th style="${stylePS}">Extended Net Price</th>`;
+					  if (prevProdExists) {
+						PSTable = PSTable +
+`<th style="${stylePS}">Previously Purchased Product Details</th>
+<th style="${stylePS}">Serial number of the products</th>
+<th style="${stylePS}">Product Purchased Date</th>`;
+					  }
+					  PSTable = PSTable + "</tr>";
 
-			  pairs.push(hdr);
-			  for (j = 0; j < cStructure.length; j++) {
-				var cFilter = true;
-				if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
-				if (cFilter) {
-				  for (k = 0; k < cStructure[j].group.length; k++) {
-					var cGroup = cStructure[j].group[k];
-					for (l = 0; l < cGroup.length; l++) {
-					  var cInput = cGroup[l];
-					  if (cInput.type != "hidden") {
-						var obj = {
-						  ttl: "N/A",
-						  val: "N/A",
-						  data: "N/A"
+					  PSData.forEach(item => {
+						PSTable = PSTable + `<tr>
+<td style="${stylePS}">${item.ProductID  || ''}</td>
+<td style="${stylePS}">${item.Count  || ''}</td>
+<td style="${stylePS}">${item.DealId  || ''}</td>
+<td style="${stylePS}">${item.BundleID  || ''}</td>
+<td style="${stylePS}">${item.UnitNetAmount  || ''}</td>
++<td style="${stylePS}">${item.ExtendedNetAmount  || ''}</td>`
+						if (prevProdExists) {
+						  PSTable = PSTable +
+`<td style="${stylePS}">${item.PreviouslyPurchasedProductDetails || ''}</td>
+<td style="${stylePS}">${item.SerialNumberOfProducts  || ''}</td>
+<td style="${stylePS}">${item.ProductPurchasedDate  || ''}</td>`
 						}
-						if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
-						else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
-						if (
-						  typeof(cInput.data) !== "undefined" &&
-						  typeof(config.dataset[cInput.data]) !== "undefined" &&
-						  config.dataset[cInput.data] != null &&
-						  config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
-						) {
-						  if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
-						  else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
-						  else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
-						  else obj.val = config.dataset[cInput.data];
-						}
-						if (obj.val != "N/A") {
-						  obj.data = cInput.data;
-						  pairs.push(obj);
+						PSTable = PSTable + "</tr>";
+					  });
+					  PSTable = PSTable + `</table>`;
+					}
+				  } catch(e) {}
+				  var obj = {
+					ttl: "",
+					val: PSTable,
+					data: "ProductAndServices",
+					id: cPage.id,
+				  };
+				  pairs.push(obj);
+				}
+			  } else {
+				pairs.push(hdr);
+				for (j = 0; j < cStructure.length; j++) {
+				  var cFilter = true;
+				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  if (cFilter) {
+					for (k = 0; k < cStructure[j].group.length; k++) {
+					  var cGroup = cStructure[j].group[k];
+					  for (l = 0; l < cGroup.length; l++) {
+						var cInput = cGroup[l];
+						if (cInput.type != "hidden") {
+						  var obj = {
+							ttl: "N/A",
+							val: "N/A",
+							data: "N/A"
+						  }
+						  if (typeof(cInput.label) !== "undefined" && cInput.label.length > 0) obj.ttl = hpe.fn.lang(cInput.label, config.locale, config.localizations);
+						  else if (typeof(cInput.data) !== "undefined" && cInput.data.length > 0) obj.ttl = cInput.data;
+						  if (
+							typeof(cInput.data) !== "undefined" &&
+							typeof(config.dataset[cInput.data]) !== "undefined" &&
+							config.dataset[cInput.data] != null &&
+							config.dataset[cInput.data].length > 0 && ["NA@IGNOREME.COM", "Select one", "+1000000000"].indexOf(config.dataset[cInput.data]) == -1
+						  ) {
+							if (config.dataset[cInput.data] == "Y") obj.val = hpe.fn.lang("Yes", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "N") obj.val = hpe.fn.lang("No", config.locale, config.localizations);
+							else if (config.dataset[cInput.data] == "NA") obj.val = "N/A";
+							else if (cInput.data == "PO_Attachment") obj.val = '<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/' + config.dataset.EntryId + '/PO_Attachment?name=' + config.dataset[cInput.data] + '">' + config.dataset[cInput.data] + '</a>';
+							else obj.val = config.dataset[cInput.data];
+						  }
+						  if (obj.val != "N/A") {
+							obj.data = cInput.data;
+							pairs.push(obj);
+						  }
 						}
 					  }
 					}
 				  }
 				}
+				var obj = pairs[pairs.length - 1];
+				//console.log("obj", obj);
+				if (obj.ttl.indexOf("page-") > -1) {
+				  pairs.pop();
+				}
 			  }
-			  var obj = pairs[pairs.length - 1];
-			  //console.log("obj", obj);
-			  if (obj.ttl.indexOf("page-") > -1) {
-				pairs.pop();
-			  }
-
 			}
 		  }
 		  //  console.log("pairs", pairs);
@@ -9528,7 +9189,11 @@
 			let pairVal = pairs[i].val;
 			if (pairVal) pairVal = pairVal.trim();
 
-			if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
+			if (pairs[i].id === "PS") {
+			  caseDescription = caseDescription + "<br><br>";
+			  caseDescription = caseDescription + "<strong>" + "Stand alone products and services" + "</strong><br>";
+			  caseDescription = caseDescription + pairVal + "<br>";
+			} else if (pairs[i].ttl != null && pairs[i].ttl.indexOf("page-") > -1) {
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
@@ -9558,7 +9223,7 @@
 			  } else if (["PO_DeliveryDate"].indexOf(pairs[i].data) > -1) {
 				caseDescription = caseDescription + "<br><br>";
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form472", config.locale, config.localizations) + "</strong><br>";
-				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + "<br>";
+				caseDescription = caseDescription + pairs[i].ttl + ": " + pairVal + " (DD/MM/YYYY)<br>";
 			  } else if (["AssLoc_PartyId", "AssLoc_CompanyName", "AssLoc_Address_Street", "AssLoc_Address_Street2", "AssLoc_Address_City", "AssLoc_Address_State", "AssLoc_Address_Postal", "AssLoc_Address_Country"].indexOf(pairs[i].data) > -1) {
 				if (caseDescription.indexOf(hpe.fn.lang("Form519", config.locale, config.localizations)) == -1) {
 				  caseDescription = caseDescription + "<br><br>";
@@ -9586,11 +9251,14 @@
 		  config.dataset.CaseDescription = caseDescription;
 		  //  console.log("CaseDescription: " + config.dataset.CaseDescription);
 		}
+		
+		// product and services
+		quoteHelper.parseProductAndServicesRepeater(config);
 
 		if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 		  config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
 		}
-
+		
 		var subject = (config.dataset.CaseTitle_aaS ? config.dataset.CaseTitle_aaS : '') +
 			' ' +
 			(config.dataset.CaseReason ? config.dataset.CaseReason : 'N/A') +
@@ -9609,9 +9277,20 @@
 		}
 
 		config.dataset.Subject = subject.length > 255 ? subject.substring(0, 255) : subject;
+		config.dataset.Environment = appSettings.environment;
 		
 		config.dataset.FirstName = '[SSOData.FirstName]';
 		config.dataset.LastName = '[SSOData.LastName]';
+		
+		const errorHandler = function() {
+		  elog('Failed to update record in RFB');
+		  mo.fn.overlay.hide();
+		  mo.fn.modal.show({
+			ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+			title: hpe.fn.lang("ErrorGeneric2", config.locale, config.localizations),
+			content: '<p>' + hpe.fn.lang("ErrorSubmit", config.locale, config.localizations) + '</p>'
+		  });
+		}
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
@@ -9620,8 +9299,8 @@
 			config.dataset = data;
 			nbsf.init(config, config.page);
 			mo.fn.overlay.hide();
-
-			if (!isDraft) {
+			
+			const notDraftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 				title: hpe.fn.lang('Form226', config.locale, config.localizations),
@@ -9641,8 +9320,8 @@
 				  mo.fn.events.closeAll();
 				}
 			  });
-			} else {
-			  // DRAFT
+			}
+			const draftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 				title: hpe.fn.lang('Form228', config.locale, config.localizations) + " #" + config.dataset.EntryId,
@@ -9663,19 +9342,24 @@
 				}
 			  });
 			}
-
+			
+			if (isDraft) {
+			  draftHandler();
+			} else {
+			  quoteHelper.saveProductAndServices(config, notDraftHandler, errorHandler);
+			}
 		  } else {
-			elog('Failed to update record in RFB');
-			mo.fn.overlay.hide();
-			mo.fn.modal.show({
-			  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-			  title: hpe.fn.lang("ErrorGeneric2", config.locale, config.localizations),
-			  content: '<p>' + hpe.fn.lang("ErrorSubmit", config.locale, config.localizations) + '</p>'
-			});
+			errorHandler();
 		  }
 		});
 	  });
-	}
+	},
+	onClone: function(donor, clone) {
+	  quoteHelper.onCloneProductAndServices(config, clone);
+	},
+	onDeClone: function(donor, clone) {
+	  quoteHelper.onDeCloneProductAndServices(config, clone);
+	},
   };
 
   if (global.data.user.internal) {
@@ -9897,6 +9581,9 @@
 		config.dataset.Config_Quote = $(this).val();
 		if (config.dataset.Config_Quote == 'N') {
 		  config.dataset.Requestor_PO_Quote_ID = null;
+		  config.dataset.Config_Quote_PartialOrder = null;
+		  quoteHelper.ucids = [];
+		  quoteHelper.maxQuantity = null;
 		  config.dataset.Config_UCID = null;
 		  config.dataset.Config_UCIDQ = null;
 		  config.dataset.Config_ConfigId = null;
@@ -9907,6 +9594,9 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
+		} else {
+		  config.dataset.ProductServices_Attachment = null;
+		  config.dataset.ProductServicesRepeater = null;
 		}
 		nbsf.init(config, config.page);
 	  });
@@ -9920,8 +9610,18 @@
 			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
 		  }
 		  config.dataset.Config_PartialOrder = $(this).val();
-		  config.dataset.PO_Value = null;
+		//  config.dataset.PO_Value = null;
 		  nbsf.init(config, config.page);
+		  
+		  if (config.dataset.Config_PartialOrder === "Y") {
+			config.dataset.Config_Quote_PartialOrder = null;
+		  } else {
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			config.dataset.Config_Quote_PartialOrder = null;
+			config.dataset.ProductServices_Attachment = null;
+			config.dataset.ProductServicesRepeater = null;
+		  }
 		});
 	  }
 
@@ -9943,6 +9643,7 @@
 			  }
 			  config.dataset.SIM_Country = $('select[data-name="SIM_Country"]').val();
 			  quoteHelper.initCountry(config);
+			  paNumberChanged();
 			  nbsf.init(config, config.page);
 
 			  mo.fn.overlay.hide();
@@ -9952,9 +9653,9 @@
 		});
 	  }
 
-	  // Populate data from QuoteId
+	  // Populate data from QuoteId 
 	  if (document.querySelector('input[data-name="Requestor_PO_Quote_ID"]')) {
-		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", function(event, invalid) {
+		$("input[data-name=Requestor_PO_Quote_ID]").on("changeQuoteId", async function(event, invalid) {
 		  let completedData = document.querySelectorAll('*[data-name]');
 		  for (let i = 0; i < completedData.length; i++) {
 			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
@@ -9964,7 +9665,11 @@
 		  nbsf.init(config, config.page);
 		  if (!invalid) {
 			quoteHelper.initHeaderQuoteData(config);
-			quoteHelper.initAddressQuoteData(config);
+			await quoteHelper.initAddressQuoteData(config);
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			config.dataset.Config_Quote_PartialOrder = null;
+			paNumberChanged();
 			nbsf.init(config, config.page);
 		  }
 
@@ -9999,12 +9704,17 @@
 		document.querySelector('*[data-name="Cx_PO_Number"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Invoice_SendEmail"]'))
 		document.querySelector('*[data-name="Invoice_SendEmail"]').closest('.row').classList.add("customFilteredClassToggle13");
-	  if (document.querySelector('*[data-name="Requestor_PO_Quote_ID"]'))
+	  if (document.querySelector('*[data-name="Requestor_PO_Quote_ID"]')) {
 		document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("customFilteredClassToggle");
-	  if (document.querySelector('*[data-name="Config_PartialOrder"]'))
-		document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("filteredClass");
-	  if (document.querySelector('*[data-name="Config_UCID"]'))
-		document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
+		if (document.querySelector('*[data-name="Requestor_PO_Deal_ID"]')) {
+		  document.querySelector('*[data-name="Requestor_PO_Quote_ID"]').closest('.row').classList.add("filteredClass");
+		}
+	  }
+	  if (document.querySelector('*[data-name="Config_PartialOrder"]')) {
+		document.querySelector('*[data-name="Config_PartialOrder"]').closest('.row').classList.add("customFilteredClassToggle5");
+	  }
+	//  if (document.querySelector('*[data-name="Config_UCID"]'))
+	//	document.querySelector('*[data-name="Config_UCID"]').closest('.row').classList.add("filteredClass");
 	  if (document.querySelector('*[data-name="Requestor_PO_Opp_ID"]'))
 		document.querySelector('*[data-name="Requestor_PO_Opp_ID"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Payment_TermsPlaceholder"]'))
@@ -10158,19 +9868,20 @@
 	  }
 
 	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
-		if ($('select[data-name="PA_Number"] option').length > 1) {
-		  $('select[data-name="PA_Number"]').val($('select[data-name="PA_Number"] option')[1].innerText).trigger('change');
+		const paOpts = $('select[data-name="PA_Number"] option');
+		if (paOpts.length > 1) {
+		  const paValue = paOpts[1].innerText;
+		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
+		  paNumberChanged(paValue); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
-
+	  
 	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone) {
 		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
 		if ($('select[data-name="PO_Category"]'))  {
 		  $('select[data-name="PO_Category"]').trigger('change');
 		}
-
 	  }
-
 
 	  //PO_CompleteDelivery LOGIC FOR KR
 	  if (document.querySelector('input[data-name="PO_CompleteDelivery"]') && !PO_CompleteDeliveryLogicCheck && (config.dataset.PO_CompleteDelivery == null || config.dataset.PO_CompleteDelivery == '' || config.dataset.PO_CompleteDelivery == 'N')) {
@@ -10194,7 +9905,7 @@
 		});
 	  }
 
-	  //QOD logic for not turkey and MAP
+	  //QOD logic for not turkey and MAP 
 	  if (!QODCheck) {
 		QODCheck = true;
 		var config_QuoteToggle = document.querySelector('input[data-name="Config_Quote"]');
@@ -10296,6 +10007,16 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('SoldTo');
+
+	  if (config.dataset.SoldTo_Address_Country) {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  }
+	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  });
+	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page4: function() {
 	  console.log('page4');
@@ -10434,6 +10155,14 @@
 	  // Disable some fields if quote is exist
 	  quoteHelper.disableAddressQuoteData(config);
 	  helper.buildFastClearAddressButton('EndCx');
+
+	  if (config.dataset.EndCx_Address_Country) {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
+	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+	  });
+
 	},
 	page8: function() {
 	  console.log('page8');
@@ -10474,6 +10203,13 @@
 		  $('*[data-name="Reseller_PartyId"]').val('');
 	  });
 	  helper.buildFastClearAddressButton('Reseller');
+
+	  if (config.dataset.Reseller_Address_Country) {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
+	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+	  });
 	},
 	page9: function() {
 	  console.log('page9');
@@ -10688,7 +10424,186 @@
 	},
 	page12: function() {
 	  console.log('page12');
-	}
+	},
+	page13: function() {
+        console.log('page13');
+        if (document.querySelector('input[data-name="ProductServices_Attachment"]')) {
+          const OptAtt = document.querySelector('[data-name="ProductServices_Attachment"]');
+          const kendoOptAtt = $(OptAtt).data('kendoUpload');
+          kendoOptAtt.bind("upload", function(e) {
+            if (e.files && e.files.length) {
+              // config.dataset.ProductServices_Attachment_Flag = 'Y';
+            }
+          });
+  
+          $('input[data-name="ProductServices_Attachment"]').live('change', function() {
+            if (document.querySelector('.k-upload .k-upload-files .k-file-validation-message')) {
+              mo.fn.modal.show({
+                ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+                title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+                content: hpe.fn.lang("FormACR001", config.locale, config.localizations),
+                ctaCallback: function() {
+                  mo.fn.events.closeAll();
+                },
+                contentCallback: function() {
+                  config.dataset.ProductServices_Attachment = null;
+                  $('.k-upload .k-upload-files .k-upload-status .k-icon[title="Remove"]').click();
+                }
+              });
+              // config.dataset.ProductServices_Attachment_Flag = 'N';
+            }
+          });
+        }
+	  
+	  const changableInputs = document.querySelectorAll('input[data-name*="Count"], input[data-name*="Selected"]');
+	  if (changableInputs.length) {
+		for (let i = 0; i < changableInputs.length; i++) {
+		  changableInputs[i].addEventListener('change', function(e) {
+			const check = nbsf.ev.global(config);
+			if (!check.total.fail) {
+			  quoteHelper.saveProductAndServicesConfig(config);
+			}
+		  });
+		}
+	  }
+	  
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		 quoteHelper.onInitProductAndServices(config);
+	//	quoteHelper.onCloneProductAndServices(config, document);
+	  }
+	},
+	quotePreview: function() {
+	  console.log('%c Quote Preview page ', 'background: #222; color: #bada55');    
+	  const disableAddressQuoteList = ['SoldTo', 'Payer', 'ShipTo', 'EndCx'];
+	  const currentValLengthOnPages = ['BillTo'];
+
+	  // ** PartyId
+	  const partyIds = $('input[data-name$="_PartyId"]');
+	  $(partyIds).each(function() {
+		const partyIdName = $(this).attr('data-name');
+		const partyIdNamePrefix = partyIdName.split('_')[0];
+
+		$(this).keyup(function() {
+		  let currentVal = $(this).val();
+
+		  if ( 
+			(currentVal.length === 10 && !currentValLengthOnPages.includes(partyIdNamePrefix))
+			|| (currentVal.length === 10 && currentValLengthOnPages.includes(partyIdNamePrefix) && currentVal[0] == "1")
+		  ) {
+			mo.fn.overlay.show({
+			  progressText: hpe.fn.lang("FormCFI010", config.locale, config.localizations),
+			  progressPercent: 10,
+			  close: false
+			})
+			config.dataset.SoldTo_PartyId = currentVal;
+			EMDMAddress(currentVal, partyIdNamePrefix, false);
+		  }
+		});
+
+		$(`*[data-name*="${partyIdNamePrefix}_"]`).change(function() {
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
+			$(`*[data-name="${partyIdName}"]`).val('');
+		});
+		$(`*[data-name*="${partyIdNamePrefix}_"]`).keyup(function() {
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
+			$('*[data-name="SoldTo_PartyId"]').val('');
+		});
+
+		// Disable some fields if quote is exist
+		if (disableAddressQuoteList.includes(partyIdNamePrefix)) {
+		  quoteHelper.disableAddressQuoteData(config);  
+		}      
+		helper.buildFastClearAddressButton(partyIdNamePrefix, true);
+	  });   
+	  // ** -- -- -- --
+
+	  /*
+    // ** NationalID
+    const nationalIds = $('input[data-name$="_NationalID"]');
+    $(nationalIds).each(function() {
+      const nationalIdName = $(this).attr('data-name');
+      const nationalIdNamePrefix = nationalIdName.split('_')[0];
+      $(`*[data-name="${nationalIdNamePrefix}_NationalID"]`).parent().parent().parent().parent().addClass('fixNationalID');
+    });
+    // ** -- -- -- --
+    */    
+
+	  // ** AddressCountry    
+	  const addressCountries = $('select[data-name$="_Address_Country"]');    
+	  $(addressCountries).each(function() {
+		const addressCountryName = $(this).attr('data-name');   
+		const options = $(this).find('option');
+		options.each(function() {
+		  $(this).click(function() {
+			$(`select[data-name="${addressCountryName}"]`).trigger("change");
+		  });
+		});
+
+		$(`select[data-name="${addressCountryName}"]`).change(function() {
+		  let completedData = document.querySelectorAll('*[data-name]');
+		  for (let i = 0; i < completedData.length; i++) {
+			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
+		  }
+		  config.dataset[`${addressCountryName}`] = $(this).val();
+		  nbsf.init(config, config.page);
+		});
+	  });
+	  
+	  // SoldTo
+	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  }
+	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+	  });
+	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
+		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // End Customer
+	  if (config.dataset.EndCx_Address_Country && !config.dataset.EndCx_Contact_Country) {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  }
+	  $(`[data-name="EndCx_PartyId"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
+	  });
+	  $(`[data-name="EndCx_Address_Country"]`).change(function() {
+		$(`[data-name="EndCx_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // Reseller
+	  if (config.dataset.Reseller_Address_Country && !config.dataset.Reseller_Contact_Country) {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  }
+	  $(`[data-name="Reseller_PartyId"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+	  });
+	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
+		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+	  });
+	  nbsf.ev.global(config, true);
+	  
+	  // ** -- -- -- --
+
+	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
+		let currentVal = $(this).val();
+		if (currentVal.length == 10 && currentVal[0] == "1") {
+		  config.dataset.ShipTo_PartyId = currentVal;
+		  nbsf.init(config, config.page);
+		  mo.fn.overlay.show({
+			progressText: hpe.fn.lang("FormCFI010", config.locale, config.localizations),
+			progressPercent: 10,
+			close: false
+		  })
+		  EMDMAddress(currentVal, 'ShipTo', true);
+		} else if (currentVal.length == 10 && currentVal[0] == "2") {
+		  config.dataset.ShipTo_PartyId = currentVal;
+		  nbsf.init(config, config.page);
+		}
+	  });
+
+	  helper.buildFastClearAddressButton('AgentProgram');    
+	},
   };
 
   // CONFIG FORM TRANSLATIONS
@@ -10745,6 +10660,8 @@
   // QUOTE HELPER
   const quoteHelper = {
 	quote: null,
+	ucids: [],
+	maxQuantity: null,
 	quotePA: [],
 	addressArr: [],
 	country: null,
@@ -10769,7 +10686,7 @@
 		'GET',
 		`https://hpe-rfb.it.hpe.com/resources/rs/custom/php/qids/readquote.php?qid=${qid}`
 	  );
-	  // for testing:
+	  // for testing: 
 	  // xhr.timeout = qid === 'NI01062833-01' ? 1000 : 10000;
 	  xhr.timeout = 80000;
 	  const errorHandler = function() {
@@ -10886,18 +10803,17 @@
 	  if (!quoteHelper.quotePA.length) {
 		PANumbers = [...new Set(PANumbers)];
 		PANumbers.join(', ');
-		// comment for testing
+		// comment for testing - todo: add a setting
 		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
-
-	  // clear big data
+	  
 	  const HpQuoteLineItems = quote.hpQuoteLineItemList.HpQuoteLineItems;
 	  if (HpQuoteLineItems) {
 		// check that HpQuoteLineItems is a non-empty array
 		if (Array.isArray(HpQuoteLineItems) && HpQuoteLineItems.length) {
 		  const lightHpQuoteLineItems = [];
 		  HpQuoteLineItems.forEach(el => {
-			if (el.LineType === "Config") {
+			if (el.LineType === "Config" || (el.LineType == "Product" && !el.UCID)) {
 			  lightHpQuoteLineItems.push(el);
 			}
 			else if (el.PANumber) {
@@ -10906,15 +10822,10 @@
 		  });
 		  quote.hpQuoteLineItemList.HpQuoteLineItems = lightHpQuoteLineItems;
 		}
-
-		/*else if (HpQuoteLineItems.PANumber) {
-		  quote.hpQuoteLineItemList.HpQuoteLineItems = {PANumber: HpQuoteLineItems.PANumber};
-		}*/
 	  }
 
 	  // save quote to reference
 	  quoteHelper.quote = quote;
-
 	  // quote is valid
 	  return {
 		valid: true,
@@ -11188,7 +11099,7 @@
 	  let quoteCurrency = null;
 	  let quoteCurrencies = null;
 
-	  // if quote is exist
+	  // if quote is exist 
 	  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
 	  const isCurrentQuote = quote && quote.quoteHeader && !config.dataset.Quote_Error && quote.quoteHeader.OriginatingSystemQuoteAndVersionID === config.dataset.Requestor_PO_Quote_ID;
 	  const quoteCountry = isCurrentQuote && quote.quoteHeader.EndCustomer && quote.quoteHeader.EndCustomer.Address && quote.quoteHeader.EndCustomer.Address.Country;
@@ -11642,7 +11553,7 @@
 			}
 		  }
 
-		  // “TradeStyleName” to “Company name” wherever available if not use the name field
+		  // “TradeStyleName” to “Company name” wherever available if not use the name field 
 		  //config.dataset[`${section}_CompanyName`] = (quoteHelper.quote.quoteHeader[quoteSection].Address && quoteHelper.quote.quoteHeader[quoteSection].Address.TradeStyleName) || quoteHelper.quote.quoteHeader[quoteSection].Company.Name;
 		}
 
@@ -12079,7 +11990,7 @@
 		}
 		document.querySelector(`input[data-name=${id}]`).parentElement.parentElement.parentElement.parentElement.classList.add('PPC', `${id}_output`);
 		var app = document.querySelector(`.${id}_output`);
-		// move config toggle to the right
+		// move config toggle to the right 
 		$(app).prev().addClass('PPC PPC_toggle');
 		const geo = config.dataset.Geo || global.data.geo.geography;
 
@@ -12088,7 +11999,7 @@
 		  validationConfig,
 		  hidebill
 		} = quoteHelper.validateAddressData(config, key);
-		// Disable toggle and open page
+		// Disable toggle and open page 
 		const toggleId = `Config_${id}`;
 		if (!valid) {
 		  if (document.querySelector(`*[data-name="${toggleId}"]`)) {
@@ -12278,36 +12189,9 @@
 		  }
 		}
 	  }
-
-	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));
-	  config.dataset.isDraft = false;
-
-	  $(".nbsf .buttons .draft").click(function() {
-		config.dataset.isDraft = true;
-		config.onSubmit();
-	  });
-
-	  for (const field in reviewSetup) {
-		$(document).off('click', '.collapse[review-id="' + field + '"]').on('click', '.collapse[review-id="' + field + '"]', function() {
-		  console.log('clicked');
-		  var container = $('.container[review-id="' + field + '"]');
-		  var svg = $(this);
-		  var polyline = svg.find('polyline');
-
-		  if (container.is(':visible')) {
-			svg.attr("aria-label", "up");
-			polyline.attr("points", "7.086 1.174 17.086 11.174 7.086 21.174");
-			polyline.attr("transform", "rotate(-89 12.086 11.174)");
-
-		  } else {
-			svg.attr("aria-label", "down");
-			polyline.attr("points", "7.086 3.174 17.086 13.174 7.086 23.174");
-			polyline.attr("transform", "scale(1 -1) rotate(-89 -1.32 0)");
-		  }
-
-		  container.toggle("fast");
-		});
-	  }
+    /* @TODO Delete draft logic
+	  $('.nbsf .buttons .back').after($('<div class="btn draft">' + hpe.fn.lang('Form208', config.locale, config.localizations) + '</div>'));	  
+     */
 	},
 	validateAddressData: function(config, section = 'soldto') {
 	  const validationConfig = {
@@ -12400,10 +12284,967 @@
 		}
 	  }
 	},
+	configureProductAndServices: function(config, page, callback) {
+	  if (config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== "Y" && config.dataset.Config_PartialOrder == "Y") {
+		const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
+		if (currentUcids && currentUcids.length) {
+		  quoteHelper.ucids = currentUcids;
+		  quoteHelper.buildProductAndServices(config, page);
+		  if (callback) {
+			callback();
+		  }
+		  return;
+		}
+	  }
+	  
+	  if (config.dataset.Config_Quote !== "Y" || config.dataset.Config_PartialOrder !== "Y" || !config.dataset.Requestor_PO_Quote_ID) {
+		config.dataset.Config_Quote_PartialOrder = null;
+		quoteHelper.ucids = [];
+		quoteHelper.maxQuantity = null;
+		if (config.dataset.Config_PartialOrder == "Y") {
+		  quoteHelper.buildProductAndServices(config, page);
+		}
+		if (callback) {
+		  callback();
+		}
+		return;
+	  }
+	  
+	  if (config.dataset.Config_Quote == "Y" &&  config.dataset.Config_PartialOrder == "Y" && config.dataset.Requestor_PO_Quote_ID) {
+		const currentUcids = config.dataset.Config_Quote_PartialOrder ? JSON.parse(config.dataset.Config_Quote_PartialOrder) : [];  
+		if (currentUcids && currentUcids.length) {
+		  quoteHelper.ucids = currentUcids;
+		  quoteHelper.getMaxQuantity(config, currentUcids, function() {
+			// filter by max quantity and build page with new config
+			quoteHelper.ucids = quoteHelper.maxQuantity ? currentUcids.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : currentUcids;
+			const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
+			if (!isSelected && quoteHelper.ucids.length) {
+			  quoteHelper.ucids[0].Selected = "Y";
+			}
+			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			// build page
+			quoteHelper.buildProductAndServices(config, page);
+			if (callback) {
+			  callback();
+			}
+		  });
+		} else {
+		  const quote = quoteHelper.quote || (config.dataset.QuoteResponse ? JSON.parse(config.dataset.QuoteResponse) : null);
+		  if (quote && quote.hpQuoteLineItemList && !config.dataset.Quote_Error) {
+			let items = quote.hpQuoteLineItemList.HpQuoteLineItems;
+			const ucidConfig = [];
+			const productIds = [];
+
+			items = Array.isArray(items) ? items : [items];
+			if (Array.isArray(items)) {
+			  items.forEach((item) => {
+				if (item.LineType === "Config" || (item.LineType === "Product" && !item.UCID)) {
+				  if (!productIds.includes(item.ProductID)) {
+					productIds.push(item.ProductID);
+					const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
+					ucidConfig.push({
+					  Request_Id: config.dataset.EntryId,
+					  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+					  UCID: item.UCID,
+					  BundleID: item.BundleID,
+					  DealId: item.DealId,
+					  UnitNetAmount: item.UnitNetAmount,
+					  Count: curUcid ? curUcid.Count : 1,
+					  ExtendedNetAmount: item.ExtendedNetAmount,
+					  Quantity: item.Quantity,
+					  CfgSystemId: item.CfgSystemId,
+					  CfgSystemName: item.CfgSystemName,
+					  Selected: curUcid ? curUcid.Selected : null,
+					  ProductID: item.ProductID,
+					  ProductClassificationCode: item.ProductClassificationCode,
+					  LineType: item.LineType,
+					  ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+					  PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+					  SerialNumberOfProducts: item.SerialNumberOfProducts,
+					  ProductPurchasedDate: item.ProductPurchasedDate,
+					  Carepack: item.Carepack || null,
+					});
+				  }
+				}
+			  })
+			}
+			quoteHelper.ucids = ucidConfig;
+
+			// filter by max quantity and build page with new config
+			quoteHelper.getMaxQuantity(config, ucidConfig, function() {
+			  quoteHelper.ucids = quoteHelper.maxQuantity ? ucidConfig.filter(ucid => quoteHelper.maxQuantity.get(ucid.ProductID) > 0) : ucidConfig;
+			  const isSelected = quoteHelper.ucids.find(ucid => ucid.Selected);
+			  if (!isSelected && quoteHelper.ucids.length) {
+				quoteHelper.ucids[0].Selected = "Y";
+			  }
+			  quoteHelper.ucids.forEach(item => {
+				item.Count = quoteHelper.maxQuantity && quoteHelper.maxQuantity.get(item.ProductID) || item.Count;
+				item.ExtendedNetAmount = Math.round(item.Count * item.UnitNetAmount * 100) / 100 || 0;
+			  });
+			  config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			  // build page
+			  quoteHelper.buildProductAndServices(config, page);
+			  if (callback) {
+				callback();
+			  }
+			  return;
+			});		
+		  } else {
+			console.error('no quote data');
+			config.dataset.Config_Quote_PartialOrder = null;
+			quoteHelper.ucids = [];
+			quoteHelper.maxQuantity = null;
+			if (callback) {
+			  callback();
+			}
+			return;
+		  }
+		} 
+	  }
+	},
+	getMaxQuantity: function(config, ucids, callback) {
+	  const quoteId = config.dataset.Requestor_PO_Quote_ID;
+	  const entryId = config.dataset.EntryId;
+	  const map = new Map();
+	  ucids.forEach(ucid => map.set(ucid.ProductID, ucid.Quantity ? Number(ucid.Quantity) : 0));
+	  quoteHelper.maxQuantity = map;
+	  if (callback) {
+		callback();
+	  }
+/*
+	  crud.read("6018", "Requestor_PO_Quote_ID=" +  quoteId, function(data) {
+		if (data.Rows.length > 0) {
+		  data.Rows.forEach(ucid => {
+			if (ucid.Request_Id !== entryId && ucid.Selected == "Y") {
+			  const curQ = map.get(ucid.ProductID);
+			  map.set(ucid.ProductID, curQ - ucid.Count);
+			}
+		  });
+		}
+		quoteHelper.maxQuantity = map;
+		if (callback) {
+		  callback();
+		}
+	  });
+*/
+	},
+	buildProductAndServices: function(config, page) {
+	  // clear repeater node 
+	  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
+		if (currentValue.id == "form-table-repeat") {
+		  return accumulator + 1;
+		}
+		return accumulator;
+	  }, 0);
+	  page.structure.splice(2, sumRepeat);
+	  
+	  if (quoteHelper.ucids) {
+		const fields = [
+		  "UCID",
+		  "BundleID",
+		  "DealId",
+		  "UnitNetAmount",
+		  "ExtendedNetAmount",
+		  "Quantity",
+		  "CfgSystemId",
+		  "CfgSystemName",
+		  "Selected",
+		  "Count",
+		  "ProductID",
+		  "ProductClassificationCode",
+		  "LineType",
+		  "ID",
+		  "PreviouslyPurchasedProductDetails",
+		  "SerialNumberOfProducts",
+		  "ProductPurchasedDate",
+		  "HPEPartDescription",
+		  "ITEM",
+		  "ListPrice",
+		  "Carepack",
+		];
+		const isDisabled = config.dataset.Config_Quote !== "Y";
+		fields.forEach(field => {
+		  quoteHelper.ucids.forEach(item => {
+			config.dataset[`${field}_${item.ID}`] = item[field];
+		  });
+		});
+		if (page.structure[1].group[0][0]) {
+		  const newClass = page.structure[1].group[0][0].class.replace(" ftr-checkbox-hidden", '')
+		  page.structure[1].group[0][0].class = newClass;
+		} 
+		const formTable = page.structure.find(item => item.id == "form-table");
+		const group = [];
+		// header
+		group.push(formTable.group[0]);
+		if (quoteHelper.ucids && quoteHelper.ucids.length) {
+		  quoteHelper.ucids.forEach(ucid => {
+			console.log(ucid);
+			isCarePack = ucid.LineType == "Product" && ucid.ProductClassificationCode == "ES" ||
+			  (config.dataset.Config_Quote !== "Y" && (ucid.PreviouslyPurchasedProductDetails || ucid.SerialNumberOfProducts || ucid.ProductPurchasedDate));
+			const item = [
+			  {
+				label: "Checkbox (type checkbox)",
+				data: "Selected_" + ucid.ID,
+				required: false,
+				value: ucid.Selected,
+				type: "checkbox",
+				values: ["Y",],
+				disabled: isDisabled,
+			  },
+			  {
+				label: "HPE Part Number",
+				data: "ProductID_" + ucid.ID,
+				value: ucid.ProductID,
+				required: false,
+				disabled: true,
+				type: "text",
+				validation: ['minLen|1'],
+			  },
+			  {
+				label: "HPE Part Quantity*",
+				value: ucid.Count,
+				data: "Count_" + ucid.ID,
+				required: false,
+				type: "text",
+				validation: ['minLen|1', 'isInteger'],
+				typing: "isInteger",
+				class: "bordered-input",
+				
+				disabled: isDisabled,
+			  },
+			  {
+				label: "Deal ID",
+				value: ucid.DealId,
+				disabled: true,
+				data: "DealId_" + ucid.ID,
+				required: false,
+				type: "text",
+				validation: ['minLen|1'],
+			  },				
+			  {
+				label: "bundle ID / Icon ID",
+				value: ucid.BundleID,
+				disabled: true,
+				data: "BundleID_" + ucid.ID,
+				required: false,
+				type: "text",
+				validation: ['minLen|1'],
+			  },
+			  {
+				label: "Unit Price",
+				value: ucid.UnitNetAmount,
+				disabled: true,
+				data: "UnitNetAmount_" + ucid.ID,
+				required: false,
+				type: "text",
+				validation: ['minLen|1'],
+			  },
+			  {
+				label: "Extended Net Price",
+				value: ucid.ExtendedNetAmount,
+				data: "ExtendedNetAmount_" + ucid.ID,
+				required: true,
+				disabled: true,
+				type: "text",
+				validation: ['minLen|1'],
+			  }];
+			// add carepack config for quote
+			if (config.dataset.ProductServices_Attachment) {
+			  item.push({
+				data: "Field",
+				type: "hidden",
+			  });
+			} else {
+			  item.push({
+				label: "Carepack",
+				data: "Carepack_" + ucid.ID,
+				required: false,
+				type: "toggle",
+				value: ucid.Carepack || "N",
+				values: ["N", "Y"],
+				options: ["Carepack", "Carepack"],
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}`,
+			  });
+			}
+			group.push(item);
+			const PPPD = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_PPPD_${ucid.ID}`,
+			  },
+			  {
+				label: "Previously Purchased Product Details:",
+				value: "Previously Purchased Product Details:",
+				data: "PPPD",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Previously Purchased Product Details",
+				value: ucid.PreviouslyPurchasedProductDetails,
+				data: "PreviouslyPurchasedProductDetails_" + ucid.ID,
+				disabled: isDisabled,
+				required: false,
+				type: "textarea",
+				validation: ['minLen|1'],
+				class: "bordered-input",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			const SNP = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_SNP_${ucid.ID}`,
+			  },
+			  {
+				label: "Serial number of the products*:",
+				value: "Serial number of the products*:",
+				data: "SNP",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Serial number of the products:",
+				value: ucid.SerialNumberOfProducts,
+				data: "SerialNumberOfProducts_" + ucid.ID,
+				disabled: isDisabled,
+				required: false,
+				type: "textarea",
+				validation: ['minLen|1'],
+				class: "bordered-input",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			const PPD = [
+			  {
+				data: "Field",
+				type: "hidden",
+				class: `Carepack_PPD_${ucid.ID}`,
+			  },
+			  {
+				label: "Product Purchased Date:",
+				value: "Product Purchased Date:",
+				data: "PPD",
+				required: false,
+				type: "textarea",
+				disabled: true,
+				validation: ['minLen|1'],
+				class: "bolder-label",
+			  },
+			  {
+				label: "Product Purchased Date:",
+				placeholder: "Form040",
+				value: ucid.ProductPurchasedDate,
+				data: "ProductPurchasedDate_" + ucid.ID,
+				required: false,
+				type: "date",
+				placeholder: "DD/MM/YYYY",
+				disabled: isDisabled,
+				class: "bordered-input",
+				dtp: {
+				  format: 'd/m/Y',
+				  formatDate: 'd/m/Y',
+				  timepicker: false,
+				  minDate: 0,
+				  //maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				  onChangeDateTime: function(dp, $input) {
+
+				  }
+				}
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			  {
+				data: "Field",
+				type: "hidden",
+			  },
+			];
+			// add carepack config
+			if (!config.dataset.ProductServices_Attachment || isCarePack) {
+			  group.push(PPPD, SNP, PPD);
+			}
+		  });
+		}
+		
+		// quoteless && no upload data 
+		
+		if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		  // add repeater 
+		  const PPPD = [
+			{
+			  label: "Previously Purchased Product Details:",
+			  value: "Previously Purchased Product Details:",
+			  data: "PPPD",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Previously Purchased Product Details",
+			  data: "PreviouslyPurchasedProductDetails",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  const SNP = [
+			{
+			  label: "Serial number of the products:",
+			  value: "Serial number of the products:",
+			  data: "SNP",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Serial number of the products:*",
+			  data: "SerialNumberOfProducts",
+			  required: false,
+			  type: "textarea",
+			  validation: ['minLen|1'],
+			  class: "bordered-input",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  const PPD = [
+			{
+			  label: "Product Purchased Date:",
+			  value: "Product Purchased Date:",
+			  data: "PPD",
+			  required: false,
+			  type: "textarea",
+			  disabled: true,
+			  validation: ['minLen|1'],
+			  class: "bolder-label",
+			},
+			{
+			  label: "Product Purchased Date:",
+			  placeholder: "Form040",
+			  data: "ProductPurchasedDate",
+			  required: false,
+			  type: "date",
+			  placeholder: "DD/MM/YYYY",
+			  class: "bordered-input",
+			  dtp: {
+				format: 'd/m/Y',
+				formatDate: 'd/m/Y',
+				timepicker: false,
+				minDate: 0,
+				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				onChangeDateTime: function(dp, $input) {
+
+				}
+			  }
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			},
+			{
+			  data: "Field",
+			  type: "hidden",
+			  class: "ps-toggle",
+			},
+		  ];
+		  let repeaterItem = [
+			{
+			  label: "HPE Part Number",
+			  data: "ProductID",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},
+			{
+			  label: "HPE Part Quantity*",
+			  data: "Count",
+			  required: true,
+			  type: "text",
+			  validation: ['minLen|1', 'isInteger'],
+			  typing: "isInteger",
+			  class: "bordered-input",
+			},
+			{
+			  label: "Deal ID",
+			  data: "DealId",
+			  required: false,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},				
+			{
+			  label: "bundle ID / Icon ID",
+			  data: "BundleID" ,
+			  required: false,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ['minLen|1'],
+			},
+			{
+			  label: "Unit Price*",
+			  data: "UnitNetAmount",
+			  required: true,
+			  type: "text",
+			  class: "bordered-input",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping"
+			},
+			{
+			  label: "Extended Net Price*",
+			  data: "ExtendedNetAmount",
+			  required: true,
+			  disabled: true,
+			  type: "text",
+			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			  typing: "povaluetyping",
+			  class: "bordered-input-disabled",
+			},
+			{
+			  label: "Carepack",
+			  data: "Carepack",
+			  required: false,
+			  type: "toggle",
+			  values: ["N", "Y"],
+			  options: ["Carepack", "Carepack"],
+			  class: "ps-toggle",
+			}];
+		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
+		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
+			if (currentValue.id == "form-table-repeat") {
+			  return accumulator + 1;
+			}
+			return accumulator;
+		  }, 0);
+		  
+		  page.structure[1].group[0][0].class += " ftr-checkbox-hidden"; 
+		  page.structure[1].group[0][1].class += " ftr-cell"; 
+		 
+		  page.structure.splice(2, sumRepeat, {
+			header: "",
+			repeatable: "ProductServicesRepeater",
+			repeatableLimit: 4,
+			repeatableDirection: "bottom",
+			group: [repeaterItem],
+			id: "form-table-repeat",
+		  });
+		}
+		
+		formTable.group = group;
+		quoteHelper.saveProductAndServicesConfig(config);
+	  }
+	},
+	saveProductAndServicesConfig: function(config, deletedRepeater = null) { // fix deletedRepeaterID
+	  const isPPAtt = config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== "Y" && config.dataset.Config_PartialOrder == "Y";
+	  const isPPQuote = config.dataset.Config_Quote == "Y" && config.dataset.Config_PartialOrder == "Y";
+	  const poValueFilter = {
+		logic: "or",
+		filters: [
+		  {
+			field: "CountryCode",
+			operator: "in",
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+		  },
+		  {
+			logic: "and",
+			filters: [
+			  {
+				field: "Region",
+				operator: "neq",
+				value: "APJ"
+			  },
+			  {
+				field: "SubRegion",
+				operator: "neq",
+				value: "UKI"
+			  },
+			  {
+				field: "Geo",
+				operator: "nin",
+				value: ["DACH", "Europe South", "North West Europe"]
+			  }
+			]
+		  }
+		]
+	  };
+	  if ((isPPAtt || isPPQuote) && quoteHelper.ucids && quoteHelper.ucids.length) {
+		let PO_Value = 0;
+		quoteHelper.ucids.forEach(item => {
+		  item.Count = config.dataset[`Count_${item.ID}`];
+		  item.Selected = config.dataset[`Selected_${item.ID}`];
+		  item.UnitNetAmount = config.dataset[`UnitNetAmount_${item.ID}`];
+		  item.SerialNumberOfProducts = config.dataset[`SerialNumberOfProducts_${item.ID}`];
+		  item.ProductPurchasedDate = config.dataset[`ProductPurchasedDate_${item.ID}`];
+		  item.PreviouslyPurchasedProductDetails = config.dataset[`PreviouslyPurchasedProductDetails_${item.ID}`];
+		  item.Carepack = config.dataset[`Carepack_${item.ID}`];
+		  if (item.Selected) {
+			PO_Value += Math.round(item.Count * item.UnitNetAmount * 100);
+		  }
+		  
+		  item.ExtendedNetAmount = item.Count && item.UnitNetAmount ? (Math.round(item.Count * item.UnitNetAmount * 100) / 100) : 0;
+		  config.dataset[`ExtendedNetAmount_${item.ID}`] = item.ExtendedNetAmount;
+		  if ($(`*[data-name="ExtendedNetAmount_${item.ID}"]`)) {
+			$(`*[data-name="ExtendedNetAmount_${item.ID}"]`).val(item.ExtendedNetAmount);
+		  }	  
+		});
+		PO_Value /= 100;
+		const filter = nbsf.fn.filter(config.dataset, poValueFilter);
+		if (filter) {
+		  config.dataset.PO_Value = PO_Value || 0;
+		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
+		}
+		config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+	  } else {
+		// quoteless && no upload data 
+		let res = 0;
+		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
+		  if (!deletedRepeater || deletedRepeater && deletedRepeater !== elem) {
+			let count = Number($(elem).find('*[data-name="Count"]').val() || 0);
+			let amount = Number($(elem).find('*[data-name="UnitNetAmount"]').val() || 0);
+			if (isNaN(amount)) {
+			  amount = 0;
+			}
+			if (isNaN(count)) {
+			  count = 0;
+			}
+			if ($(elem).find('*[data-name="ExtendedNetAmount"]')) {
+			  $(elem).find('*[data-name="ExtendedNetAmount"]').val(count * amount);
+			}	 
+			res += Math.round(count * amount * 100);
+		  }
+		});
+		res /= 100;
+		const filter = nbsf.fn.filter(config.dataset, poValueFilter);
+		if (filter) {
+		  config.dataset.PO_Value = res || 0;
+		  $('*[data-name="PO_Value"]').val(config.dataset.PO_Value);
+		}
+	  }
+	},
+	saveProductAndServices: function(config, callback, errorCallback) {
+	  if (config.dataset.EntryId && config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote_PartialOrder && quoteHelper.ucids.length) {
+		const promises = quoteHelper.ucids.map(ucid => {
+		  return new Promise((resolve, reject) => {
+			ucid.Request_Id = config.dataset.EntryId;
+			crud.create(6020, ucid, function(data) {
+			  if (typeof(data.EntryId) === "number") {
+				console.log('Successfully saved to UCID', data);
+				resolve(data);
+			  } else {
+				elog('Failed to create record in UCID');
+				reject('Failed to create record in UCID');
+			  }
+			});
+		  });
+		});
+		Promise.all(promises).then((results) => {
+		  console.log(results);
+		  if (callback) {
+			callback();
+		  }
+		}).catch((error) => {
+		  elog('Failed to delete record in UCID');
+		  if (errorCallback) {
+			errorCallback();
+		  }
+		});
+	  }
+	},
+	parseProductAndServicesRepeater: function (config, callback, errorCallback) {
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y' && config.dataset.ProductServicesRepeater) {
+		try {
+		  const ucids = [];
+		  const data = JSON.parse(config.dataset.ProductServicesRepeater);
+		  if (data && data.length) {
+			data.forEach(item => {
+			  if (item.Carepack !== 'Y') {
+				item.PreviouslyPurchasedProductDetails = null;
+				item.SerialNumberOfProducts = null;
+				item.ProductPurchasedDate = null;
+			  }
+			  item.Selected = 'Y';
+			  ucids.push({
+				Request_Id: config.dataset.EntryId,
+				Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+				ProductID: item.ProductID,
+				BundleID: item.BundleID,
+				Selected: item.Selected,
+				DealId: item.DealId,	
+				UCID: "",	
+				UnitNetAmount: item.UnitNetAmount,
+				ExtendedNetAmount: (item.Count || 0) * item.UnitNetAmount,
+				Quantity: "",
+				CfgSystemId: "",
+				CfgSystemName: "",
+				Count: item.Count,
+				ProductClassificationCode: "",
+				LineType: "Config",
+				ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+				PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
+				SerialNumberOfProducts: item.SerialNumberOfProducts,
+				ProductPurchasedDate: item.ProductPurchasedDate,
+			  });
+			});
+			quoteHelper.ucids = ucids;
+			config.dataset.Config_Quote_PartialOrder = JSON.stringify(quoteHelper.ucids);
+			config.dataset.ProductServicesRepeater = JSON.stringify(data);
+		  }
+		  if (callback) {
+		  	callback(ucids);
+		  }
+		} catch(e) {
+		  if (errorCallback) {
+			errorCallback(e);
+		  }
+		}
+	  }
+	},
+	onCloneProductAndServices: function(config, clone) {
+	  if (clone.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = clone.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		const initCarepackConfig = function(node) {
+		  var parent;
+		  if (node.nodeName.toLowerCase() == "span")
+			parent = node.parentNode.parentNode.parentNode.parentNode;
+		  else
+			parent = node.parentNode.parentNode.parentNode;
+
+		  var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+		  var target = parent.querySelector(".fmmcosmin label");
+
+		  var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+		  const fieldset = target.closest('fieldset');
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 6) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
+		  }
+		}
+		
+		for (i = 0; i < toggles.length; i++) {
+		  // initial state
+		  initCarepackConfig( toggles[i]);
+
+		  // click listener
+		  toggles[i].addEventListener("click", function(e) {
+			initCarepackConfig(e.target);
+		  });
+		}
+	  }
+	},
+	onDeCloneProductAndServices: function(config, clone) {
+	  // PRODUCT AND SERVICES MODULE
+	  if (config.pages[config.page].id === 'PS') {
+		quoteHelper.saveProductAndServicesConfig(config, clone);
+	  }
+	},
+	onInitProductAndServices: function(config) {
+	  if (document.querySelectorAll("label.wrapper.toggle .toggle").length > 0) {
+		var toggles = document.querySelectorAll("label.wrapper.ps-toggle.toggle .toggle");
+		for (i = 0; i < toggles.length; i++) {
+
+		  const initCarepackConfig = function(node) {
+			var parent;
+			if (node.nodeName.toLowerCase() == "span")
+			  parent = node.parentNode.parentNode.parentNode.parentNode;
+			else
+			  parent = node.parentNode.parentNode.parentNode;
+
+			var values = parent.querySelector(".fmmcosmin .toggle").getAttribute("data-values").split(",");
+
+			var target = parent.querySelector(".fmmcosmin label");
+
+			var isInactive = target.getAttribute("class") == null || target.getAttribute("class") == "";
+			const fieldset = target.closest('fieldset');
+			const wrappers = fieldset.querySelectorAll('label.wrapper');
+			for (j = 0; j < wrappers.length; j++) {
+			  if (j > 6) {
+				if (isInactive) {
+				  $(wrappers[j]).addClass('ps-hidden');
+				} else {
+				  $(wrappers[j]).removeClass('ps-hidden');
+				}
+			  }
+			}
+		  }
+				  
+		  if (i == 0) {
+			toggles[0].addEventListener("click", function(e) {
+			  initCarepackConfig(e.target);
+			});
+		  }
+		  
+		  const fieldset = toggles[i].closest('fieldset');
+		  const label = toggles[i].closest('label');
+		  var isInactive = label.getAttribute("class") == null || label.getAttribute("class") == "";
+		  const wrappers = fieldset.querySelectorAll('label.wrapper');
+		  for (j = 0; j < wrappers.length; j++) {
+			if (j > 6) {
+			  if (isInactive) {
+				$(wrappers[j]).addClass('ps-hidden');
+			  } else {
+				$(wrappers[j]).removeClass('ps-hidden');
+			  }
+			}
+		  }
+		}
+	  }
+	},
+	onInitQuoteCarepackProductAndServices: function(config) {
+	  if (config.dataset.Config_Quote == "Y" && quoteHelper.ucids) {
+		quoteHelper.ucids.forEach(ucid => {
+		  const toggle = document.querySelector(`#form-table .carepack_toggle.ID_${ucid.ID} .toggle`);
+		  const label = toggle.closest('label');
+		  const wrapper = toggle.closest('label.wrapper');
+		  $(wrapper).attr('id', ucid.ID);
+		  const isInactive = label.getAttribute("class") == null || label.getAttribute("class") == "";
+		  const pppd = $(`#form-table .Carepack_PPPD_${ucid.ID}`).closest('fieldset');
+		  const snp = $(`#form-table .Carepack_SNP_${ucid.ID}`).closest('fieldset');
+		  const ppd = $(`#form-table .Carepack_PPD_${ucid.ID}`).closest('fieldset');
+		  if (isInactive) {
+			$(pppd).hide();
+			$(snp).hide();
+			$(ppd).hide();
+		  }
+		  $(toggle).on("click", function() {
+			const wrapper = $(this).closest('label.wrapper');
+			const id = $(wrapper).attr("id");
+			const pppd = $(`#form-table .Carepack_PPPD_${id}`).closest('fieldset');
+			const snp = $(`#form-table .Carepack_SNP_${id}`).closest('fieldset');
+			const ppd = $(`#form-table .Carepack_PPD_${id}`).closest('fieldset');
+			$(pppd).toggle();
+			$(snp).toggle();
+			$(ppd).toggle();
+		  });
+		});
+	  }
+	},
+	clearPOData: function(config) {
+	  const sections = ['SoldTo', 'Payer', 'BillTo', 'ShipTo', 'Reseller', 'EndCx'];
+	  sections.forEach(section => {
+		if (config.dataset[`Config_${section}Details`] == 'Y') {
+		  quoteHelper.clearAddressData(config, section, 'address');
+		}
+		if (config.dataset[`Config_${section}Details_Contact`] == 'Y') {
+		  quoteHelper.clearAddressData(config, section, 'contact');
+		}
+	  });
+	},
   };
 
   const helper = {
-	buildFastClearAddressButton: function(section = 'SoldTo') {
+	buildFastClearAddressButton: function(section = 'SoldTo', isReviewPage = false) {
 	  const fastClearAddress = function() {
 		const fields = ['CompanyName', 'PartyId', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
 		fields.forEach((field) => {
@@ -12421,7 +13262,7 @@
 	  if (sectionPartyId) {
 		const row = document.querySelector('input[data-name="' + section + '_PartyId"]').closest('.row');
 		const heading = $(row).find('.heading');
-		if (heading) {
+		if (heading && !isReviewPage) {
 		  $(heading).append(`<svg class="${section} clear-option" viewBox="0 0 24 24" role="img" aria-label="trash" width="24px" height="24px">
 <path fill="none" stroke="#666" stroke-width="2" d="M4,5 L20,5 L20,23 L4,23 L4,5 Z M1,5 L23,5 M9,1 L15,1 L15,5 L9,5 L9,1 Z M9,1 L15,1 L15,5 L9,5 L9,1 Z M15,9 L15,19 M9,9 L9,19">
   </path>
@@ -12431,7 +13272,117 @@
 		  fastClearAddress();
 		});
 	  }
-	}
+	},
+	parseUcidsDataFromExcel: function(config, file, callback) {
+	  var reader = new FileReader();
+	  const res = {
+		success: false,
+		data: null,
+	  };
+	  reader.onload = function (e) {
+		var data = e.target.result;
+		var workbook = XLSX.read(data, {
+		  type: 'binary',
+		  cellDates: true,
+		});
+
+		const sheetName = workbook.SheetNames[0];
+		const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+
+		let rowsData = [];
+		if (page.length >= 5) {
+		  const header = page[4];
+		  const headerMap = new Map();
+		  Object.entries(header).forEach(([key, value], index) => {
+			if (value.includes("HPE Part Number")) {
+			  headerMap.set("ProductID", key);
+			}
+			if (value.includes("HPE Part Quantity")) {
+			  headerMap.set("Count", key);
+			}
+			if (value.includes("Deal ID")) {
+			  headerMap.set("DealId", key);
+			}
+			if (value.includes("Config ID")) {
+			  headerMap.set("BundleID", key);
+			}
+			if (value.includes("Unit Price")) {
+			  headerMap.set("UnitNetAmount", key);
+			}
+			if (value.includes("Extended Net Price")) {
+			  headerMap.set("ExtendedNetAmount", key);
+			}
+			if (value.includes("Previously Purchased Product Details")) {
+			  headerMap.set("PreviouslyPurchasedProductDetails", key);
+			}
+			if (value.includes("Serial number of the products")) {
+			  headerMap.set("SerialNumberOfProducts", key);
+			}
+			if (value.includes("Product Purchased Date")) {
+			  headerMap.set("ProductPurchasedDate", key);
+			}
+			if (value.includes("HPE Part Description")) {
+			  headerMap.set("HPEPartDescription", key);
+			}
+		  });
+		  
+		  for (let i = 5; i < page.length; i++) {
+			const rowInfo = page[i];
+			const productID = headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || "";
+			const count = headerMap.get("Count") && rowInfo[headerMap.get("Count")] || "";
+			const unitNetAmount = headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")] || "";
+			// if ProductID or Quantity or UnitNetAmount doesn't exist
+			if (!productID || !count || !unitNetAmount) {
+			  break;
+			}
+			let productPurchasedDate = null;
+			const ppd = headerMap.get("ProductPurchasedDate") && rowInfo[headerMap.get("ProductPurchasedDate")] || null;
+			if (ppd && ppd.toLocaleDateString) {
+			  try {
+				productPurchasedDate = ppd.toLocaleDateString('en-GB');
+			  } catch (e) {
+			  }
+			} else {
+			  productPurchasedDate = ppd;
+			}
+			const row = {
+			  Request_Id: config.dataset.EntryId,
+			  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
+			  UCID: "",
+			  BundleID: headerMap.get("BundleID") && rowInfo[headerMap.get("BundleID")] || "", //Config ID
+			  DealId: headerMap.get("DealId") && rowInfo[headerMap.get("DealId")] || "",
+			  UnitNetAmount: unitNetAmount,
+			  ExtendedNetAmount: headerMap.get("ExtendedNetAmount") && rowInfo[headerMap.get("ExtendedNetAmount")] || "",
+			  Quantity: "",
+			  CfgSystemId: "",
+			  CfgSystemName: "",
+			  Selected: "Y",
+			  Count: count,
+			  ProductID: productID,
+			  ProductClassificationCode: "",
+			  LineType: "Config",
+			  ID: productID.replace(/[\-]/g, '_') || '',
+			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
+			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
+			  ProductPurchasedDate: productPurchasedDate || "",
+			  HPEPartDescription: headerMap.get("HPEPartDescription") && rowInfo[headerMap.get("HPEPartDescription")] || "",
+			};
+			rowsData.push(row);
+		  }
+		}
+
+		res.success = true;
+		res.data = rowsData;
+		quoteHelper.ucids = rowsData;
+		quoteHelper.maxQuantity = null;
+		callback(res);
+	  };
+	  reader.onerror = function (ex) {
+		res.data = ex;
+		callback(res)
+	  };
+	  reader.readAsBinaryString(file);
+	}, 
   }
 </script>
 
@@ -12519,47 +13470,48 @@
 			  global.data.brt.channel = chnls;
 			  reference.countriesRequest();
 
-
-			  crud.q.stop(function() {
-				if (global.data.company.party) {
-				  mo.fn.overlay.show({
-					loading: true,
-					close: false
-				  });
-				  hpe.data.xref(global.data.company.party, function(d) {
-					mo.fn.overlay.hide();
-					if (d.status == 'SUCCESS') {
-					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
-					  //d.party[0].countryCode = 'IN'; //CFI
-					  //d.party[0].countryName = 'India'; //CFI
-					  reference.xref = d;
-					  config.locale = global.data.user.locale;
-					  config.dom = document.querySelector('div[tab-id="oob"]');
-					  nbsf.init(config, 0);
-					  nbsf.init(config, 0);
-					  //mo.fn.overlay.hide()
-					} else {
-					  //console.log('err');
-					  mo.fn.modal.show({
-						ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-						title: hpe.fn.lang("ErrorGeneric", config.locale, config.localizations),
-						content: '',
-						ctaCallback: function() {
-						  mo.fn.overlay.hide();
-						  mo.fn.events.closeAll();
-						}
-					  });
-					}
-				  })
-				} else {
-				  document.querySelector('span[tab-id="oob"]').innerText = hpe.fn.lang('Form069', config.locale, config.localizations)
-				  if (document.querySelector('span[tab-id="requests"]'))
-					document.querySelector('span[tab-id="requests"]').innerText = hpe.fn.lang('Form072', config.locale, config.localizations)
-				  config.dom = document.querySelector('div[tab-id="oob"]');
-				  nbsf.init(config, 0);
-				  nbsf.init(config, 0);
-				  //mo.fn.overlay.hide()
-				}
+			  loadPreferences().then(() => {
+				crud.q.stop(function() {
+				  if (global.data.company.party) {
+					mo.fn.overlay.show({
+					  loading: true,
+					  close: false
+					});
+					hpe.data.xref(global.data.company.party, function(d) {
+					  mo.fn.overlay.hide();
+					  if (d.status == 'SUCCESS') {
+						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
+						//d.party[0].countryCode = 'IN'; //CFI
+						//d.party[0].countryName = 'India'; //CFI
+						reference.xref = d;
+						config.locale = global.data.user.locale;
+						config.dom = document.querySelector('div[tab-id="oob"]');
+						nbsf.init(config, 0);
+						nbsf.init(config, 0);
+						//mo.fn.overlay.hide()
+					  } else {
+						//console.log('err');
+						mo.fn.modal.show({
+						  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+						  title: hpe.fn.lang("ErrorGeneric", config.locale, config.localizations),
+						  content: '',
+						  ctaCallback: function() {
+							mo.fn.overlay.hide();
+							mo.fn.events.closeAll();
+						  }
+						});
+					  }
+					})
+				  } else {
+					document.querySelector('span[tab-id="oob"]').innerText = hpe.fn.lang('Form069', config.locale, config.localizations)
+					if (document.querySelector('span[tab-id="requests"]'))
+					  document.querySelector('span[tab-id="requests"]').innerText = hpe.fn.lang('Form072', config.locale, config.localizations)
+					config.dom = document.querySelector('div[tab-id="oob"]');
+					nbsf.init(config, 0);
+					nbsf.init(config, 0);
+					//mo.fn.overlay.hide()
+				  }
+				});
 			  });
 			});
 		  } else {
@@ -12644,6 +13596,9 @@
 			document.querySelector(".search input").addEventListener('input', oob.grid._events._search);
 			oob.grid.load();
 		  })
+		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
+			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
+		  });
 		});
 	  });
 	},
@@ -12749,11 +13704,13 @@
 			  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
 			  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
 			  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+			  overview.querySelector(".cancelled strong").innerText = global.requests.userCancelled;
 			} else {
 			  // stats company
 			  overview.querySelector(".incomplete strong").innerText = global.requests.companyDraft;
 			  overview.querySelector(".pending strong").innerText = global.requests.companyInprogress;
 			  overview.querySelector(".completed strong").innerText = global.requests.companyCompleted;
+			  overview.querySelector(".cancelled strong").innerText = global.requests.companyCancelled;
 			}
 
 			// Update the filterable property of columns
@@ -12782,7 +13739,7 @@
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search", // todo: add a new setting
 			  type: "POST"
 			}
 		  },
@@ -13240,7 +14197,7 @@
                               field: "CountryEntity",
                               operator: "eq",
                               value: global.data.company.country
-                          },
+                          }, 
                           {
                               field: "PartnerBRT",
                               operator: "eq",
@@ -13401,7 +14358,7 @@
 		  '<div class="pending"><strong></strong><span>' + hpe.fn.lang('Form212', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('SubmittedPOProcessed', config.locale, config.localizations) + '</p></div>' +
 		  '<div class="completed"><strong></strong><span>' + hpe.fn.lang('Completed', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('OrderCreated', config.locale, config.localizations) + '</p></div>' +
 		  '<div class="failed" style="display:none"><strong></strong><span>' + hpe.fn.lang('Form214', config.locale, config.localizations) + '</span></div>' +
-		  '<span style="display:block;clear:both;"></span>';
+		  '<div class="cancelled" style=""><strong></strong><span>' + hpe.fn.lang('Form513', config.locale, config.localizations) + '</span><p>' + hpe.fn.lang('OrderCancelledDescr', config.locale, config.localizations) + '</p></div>';
 
 		const filterGrid = function(value) {
 		  oob.grid._appStats.status = value;
@@ -13417,6 +14374,7 @@
 		  overview.querySelector(".incomplete strong").innerText = global.requests.userDraft;
 		  overview.querySelector(".pending strong").innerText = global.requests.userInprogress;
 		  overview.querySelector(".completed strong").innerText = global.requests.userCompleted;
+		  overview.querySelector(".cancelled strong").innerText = global.requests.userCancelled;
 
 		  document.querySelector('#overview .incomplete').onclick = function() {
 			filterGrid("0");
@@ -13426,6 +14384,9 @@
 		  };
 		  document.querySelector('#overview .completed').onclick = function() {
 			filterGrid("3");
+		  };
+		  document.querySelector('#overview .cancelled').onclick = function() {
+			filterGrid("5");
 		  };
 		  mo.fn.overlay.hide();
 		});
@@ -13458,7 +14419,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: draftFilter,
@@ -13487,7 +14448,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: completedFilter,
@@ -13532,7 +14493,7 @@
 									 );
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: progressFilter,
@@ -13551,7 +14512,36 @@
 		const progressCompanyRequest = new Promise((resolve, reject) => {
 		  progressOverview(resolve, reject, true);
 		});
-		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest])
+		// Cancelled
+		const cancelledOverview  = function(resolve, reject, isCompany = false) {
+		  const cancelledFilter = Object.assign({}, oob.grid._filter(isCompany));
+		  cancelledFilter.filters.push({
+			field: "Status",
+			operator: "eq",
+			value: 5
+		  });
+		  hpe.api.dataset({
+			form: '989',
+			dataset: 'NOR_Overview', // todo: add a new setting
+			payload: {
+			  pageSize: 3000,
+			  filter: cancelledFilter,
+			}
+		  }, function(d) {
+			try {
+			  resolve(d.Total || 0);
+			} catch (e) {
+			  reject(e)
+			}
+		  });
+		}
+		const cancelledUserRequest = new Promise((resolve, reject) => {
+		  cancelledOverview(resolve, reject);
+		});
+		const cancelledCompanyRequest = new Promise((resolve, reject) => {
+		  cancelledOverview(resolve, reject, true);
+		});
+		Promise.all([draftUserRequest, draftCompanyRequest, completedUserRequest, completedCompanyRequest, progressUserRequest, progressCompanyRequest, cancelledUserRequest, cancelledCompanyRequest])
 		  .then((values) => {
 		  if (values && values.length) {
 			const result = {
@@ -13561,6 +14551,8 @@
 			  CompanyCompleted: values[3],
 			  UserInprogress: values[4],
 			  CompanyInprogress: values[5],
+				UserCancelled: values[6],
+			  CompanyCancelled: values[7],
 			};
 			callback(result);
 		  } else {
@@ -13578,17 +14570,21 @@
 			oob.grid._appStats.userDraft = d.UserDraft;
 			oob.grid._appStats.userInprogress = d.UserInprogress;
 			oob.grid._appStats.userCompleted = d.UserCompleted;
+			oob.grid._appStats.userCancelled = d.UserCancelled;
 			oob.grid._appStats.companyDraft = d.CompanyDraft;
 			oob.grid._appStats.companyInprogress = d.CompanyInprogress;
 			oob.grid._appStats.companyCompleted = d.CompanyCompleted;
+			oob.grid._appStats.companyCancelled = d.CompanyCancelled;
 			
 		  } else {
 			oob.grid._appStats.userDraft = 0;
 			oob.grid._appStats.userInprogress = 0;
 			oob.grid._appStats.userCompleted = 0;
+			oob.grid._appStats.userCancelled = 0;
 			oob.grid._appStats.companyDraft = 0;
 			oob.grid._appStats.companyInprogress = 0;
 			oob.grid._appStats.companyCompleted = 0;
+			oob.grid._appStats.companyCancelled = 0;
 		  }
 		  return cb(oob.grid._appStats);
 		});
@@ -13635,4 +14631,14 @@
 	})
   });
   hpe.fn.resizeable();
+</script>
+
+<script>
+  const appSettings = {
+	environment: 'PROD',
+	views: {
+	  prod: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-prod-qids',
+	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
+	},
+  };
 </script>
