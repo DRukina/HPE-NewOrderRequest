@@ -311,7 +311,7 @@
 	  },
 	  brts: [
 		{
-		  code: "VIR_OEM",
+		  code: "OEV",
 		  name: "Virtual OEM",
 		  channel: ["ICMOEM", "ICMChannelGeneral"]
 		},
@@ -1711,6 +1711,140 @@
 			  validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
 			  typing: "povaluetyping"
 			},
+		  ]
+		]
+	  },
+	  // Tax Amount & Purchase order amount (With Tax) with quote
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Config_Quote",
+				  operator: "eq",
+				  value: "Y"
+				},
+				/*{
+				  field: "Requestor_PO_Quote_ID",
+				  operator: "isnotempty",
+				  value: "1",
+				}*/
+			  ]
+			},
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "BR"
+			},
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form535",
+			data: "TaxAmount",
+			required: true,
+			disabled: true,
+			type: "text",
+			placeholder: "Tax Amount",
+			validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			typing: "povaluetyping"
+		  },
+		   {
+			 label: "Form536",
+			 data: "PO_Value_Tax",
+			 required: true,
+			 type: "text",
+			 placeholder: "Purchase order amount (With Tax)",
+			 validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			 typing: "povaluetyping"
+		   },
+		  ]
+		]
+	  },
+	  // Tax Amount & Purchase order amount (With Tax) without quote
+	  {
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  logic: "and",
+			  filters: [
+				{
+				  field: "Config_Quote",
+				  operator: "neq",
+				  value: "Y"
+				}
+			  ]
+			},
+			{
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: "BR"
+			},
+		  ]
+		},
+		header: "",
+		group: [
+		  [{
+			label: "Form535",
+			data: "TaxAmount",
+			required: true,
+			disabled: false,
+			type: "text",
+			placeholder: "Tax Amount",
+			validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			typing: "povaluetyping"
+		  },
+		   {
+			 label: "Form536",
+			 data: "PO_Value_Tax",
+			 required: true,
+			 disabled: true,
+			 type: "text",
+			 placeholder: "Purchase order amount (With Tax)",
+			 validation: ["povalue", "minLen|1", "maxLen|15", "noBlanksv2"],
+			 typing: "povaluetyping"
+		   },
+		  ]
+		]
+	  },
+	  // Currency
+	  {
+		filter: {
+		  logic: "or",
+		  filters: [{
+			field: "CountryCode",
+			operator: "in",
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+		  },
+					{
+					  logic: "and",
+					  filters: [{
+						field: "Region",
+						operator: "neq",
+						value: "APJ"
+					  },
+								{
+								  field: "SubRegion",
+								  operator: "neq",
+								  value: "UKI"
+								},
+								{
+								  field: "Geo",
+								  operator: "nin",
+								  value: ["DACH", "Europe South", "North West Europe"]
+								}
+							   ]
+					}
+				   ]
+		},
+		header: "",
+		group: [
+		  [
 			// PENDING CURRENCY TO COUNTRY MAPPING
 			{
 			  label: "Form007",
@@ -5581,7 +5715,7 @@
 			 required: true,
 			 type: "text",
 			 //placeholder: "Form161",
-			 validation: ["mixA", "minLen|1", "maxLen|60"],
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
 			 typing: "kpDefault"
 		   },
 		   {
@@ -7118,6 +7252,8 @@
 			[hpe.fn.lang("Form005", config.locale, config.localizations), "PO_Number"],
 			config.dataset.PO_Attachment ? "" : [hpe.fn.lang("Form007", config.locale, config.localizations), "PO_Currency"],
 			[hpe.fn.lang("Form335", config.locale, config.localizations), "PO_Value"],
+			[hpe.fn.lang("Form535", config.locale, config.localizations), "TaxAmount"],
+			[hpe.fn.lang("Form536", config.locale, config.localizations), "PO_Value_Tax"],
 			[hpe.fn.lang("Form334", config.locale, config.localizations), "PO_Category"],
 			[hpe.fn.lang("Form014", config.locale, config.localizations), "Rs_PO_Number"],
 			[hpe.fn.lang("Form016", config.locale, config.localizations), "Cx_PO_Number"],
@@ -9581,6 +9717,28 @@
 		document.querySelector('*[data-name="Requestor_PO_Opp_ID"]').closest('.row').classList.add("customFilteredClass");
 	  if (document.querySelector('*[data-name="Payment_TermsPlaceholder"]'))
 		document.querySelector('*[data-name="Payment_TermsPlaceholder"]').closest('.row').classList.add("customFilteredClass");
+	  if (document.querySelector('*[data-name="TaxAmount"]'))
+          document.querySelector('*[data-name="TaxAmount"]').closest('.row').classList.add("customFilteredClass");
+
+
+	  if (document.querySelector('input[data-name="PO_Value"]')) {
+		$('input[data-name="PO_Value"]').change(function() {
+		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
+			config.dataset.PO_Value = $(this).val();
+			config.dataset.PO_Value_Tax = (Math.round((config.dataset.TaxAmount || 0) * 10000) + Math.round((config.dataset.PO_Value || 0) * 10000)) / 10000;
+			nbsf.init(config, config.page);
+		  }
+		});
+	  }
+	  if (document.querySelector('input[data-name="TaxAmount"]')) {
+		$('input[data-name="TaxAmount"]').change(function() {
+		  if (config.dataset.Config_Quote !== 'Y' && config.dataset.CountryCode == 'BR') {
+			config.dataset.TaxAmount = $(this).val();
+			config.dataset.PO_Value_Tax = (Math.round((config.dataset.TaxAmount || 0) * 10000) + Math.round((config.dataset.PO_Value || 0) * 10000)) / 10000;
+			nbsf.init(config, config.page);
+		  }
+		});
+	  }
 
 	  if (document.querySelector('select[data-name="PO_Category"]')) {
 		$('select[data-name="PO_Category"] option').click(function() {
@@ -9820,6 +9978,8 @@
 	},
 	page3: function() {
 	  console.log('page3');
+	  if (document.querySelector('input[data-name="SoldTo_NationalID"]'))
+            $('*[data-name="SoldTo_NationalID"]').parent().parent().parent().parent().addClass('fixNationalID');
 	  $('input[data-name="SoldTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10) {
@@ -9829,7 +9989,7 @@
 			close: false
 		  })
 		  config.dataset.SoldTo_PartyId = currentVal;
-		  EMDMAddress(currentVal, 'SoldTo', false);
+		  EMDMAddress(currentVal, 'SoldTo', true);
 		}
 	  });
 
@@ -10641,8 +10801,8 @@
 	  if (!quoteHelper.quotePA.length) {
 		PANumbers = [...new Set(PANumbers)];
 		PANumbers.join(', ');
-		// comment for testing
-		// return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
+		// comment for testing - todo: add a setting
+		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
 	  
 	  const HpQuoteLineItems = quote.hpQuoteLineItemList.HpQuoteLineItems;
@@ -10681,8 +10841,10 @@
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
 		  SalesOrg,
+		  TotalTax,
 		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
+		const po_value = config.dataset.CountryCode == 'BR' ? ((Math.round(TotalNetPricewithBenefits * 100) - Math.round(TotalTax * 100)) / 100) : TotalNetPricewithBenefits;
 
 		const filterConfig = {
 		  PO_Currency: {
@@ -10761,7 +10923,7 @@
 						}
 					   ]
 			},
-			value: TotalNetPricewithBenefits,
+			value: po_value,
 		  },
 		  Payment_Terms: {
 			filter: {
@@ -10885,6 +11047,22 @@
 			},
 			value: PANumber || iCMPANumbers[0],
 		  },
+		  TaxAmount: {
+			filter: {
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: ["BR"]
+			},
+			value: TotalTax || "",
+		  },
+		  PO_Value_Tax: {
+			filter: {
+			  field: "CountryCode",
+			  operator: "eq",
+			  value: ["BR"]
+			},
+			value: TotalNetPricewithBenefits || "",
+		  },
 		  PO_BackgroundGroup: {
 			filter: {
 			  logic: "and",
@@ -10907,6 +11085,8 @@
 	  config.dataset.PO_Value = null;
 	  config.dataset.Payment_Terms = null;
 	  config.dataset.PO_HPEEntity = null;
+	  config.dataset.TaxAmount = null;
+	  config.dataset.PO_Value_Tax = null;
 	  config.dataset.PO_BackgroundGroup = null;
 	  quoteHelper.quotePA = [];
 	},
@@ -11306,6 +11486,19 @@
 					}
 				  }
 				}
+				// SoldTo NationalID
+				if (section == 'SoldTo') {
+				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
+					var externalidentifier = d.party[0].externalIdentifier;
+					for (i = 0; i < externalidentifier.length; i++) {
+					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
+						addressObj['NationalID'] = externalidentifier[i].identifierValue;
+						config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
+						break;
+					  }
+					}
+				  }
+				}
 
 				quoteHelper.addressArr.push(addressObj);
 
@@ -11330,7 +11523,7 @@
 			config.dataset[`${section}_Address_Postal`] = existingEntry['Address_Postal'];
 			config.dataset[`${section}_Address_Street`] = existingEntry['Address_Street'];
 			config.dataset[`${section}_Address_Street2`] = existingEntry['Address_Street2'];
-			if (section == 'ShipTo' || section == 'EndCx') {
+			if (section == 'ShipTo' || section == 'EndCx' || section == 'SoldTo') {
 			  config.dataset[`${section}_NationalID`] = existingEntry['NationalID'];
 			}
 		  }
@@ -11627,8 +11820,9 @@
 			[hpe.fn.lang("StateProvince", config.locale, config.localizations), "SoldTo_Address_State"],
 			[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_Address_Postal"],
 			[hpe.fn.lang("Country", config.locale, config.localizations), "SoldTo_Address_Country"],
-			//	[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_NationalID"],
-			['', 'blank'],
+			["Brazil"].includes(config.dataset.SoldTo_Address_Country) ? [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"] : ['', 'blank'],
+			// [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
+			// ['', 'blank'],
 			[hpe.fn.lang("FirstName", config.locale, config.localizations), "SoldTo_Contact_FirstName"],
 			[hpe.fn.lang("Surname", config.locale, config.localizations), "SoldTo_Contact_LastName"],
 			[hpe.fn.lang("Telephone", config.locale, config.localizations), "SoldTo_Contact_Phone"],
@@ -12012,6 +12206,9 @@
 		validationConfig.shipping.push("ShipTo_Address_Postal");
 		validationConfig.endcx.push("EndCx_Address_Postal");
 		validationConfig.reseller.push("Reseller_Address_Postal");
+	  }
+	  if (["Brazil"].includes(config.dataset.SoldTo_Address_Country)) {
+		validationConfig.shipping.push("SoldTo_NationalID");
 	  }
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
@@ -13540,7 +13737,7 @@
 		  type: "rfb-v2",
 		  transport: {
 			read: {
-			  url: "/form/data-set-provider/v2/989/NOR_Overview_DEV/kendo/data/search",
+			  url: "/form/data-set-provider/v2/989/NOR_Overview/kendo/data/search", // todo: add a new setting
 			  type: "POST"
 			}
 		  },
@@ -14220,7 +14417,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: draftFilter,
@@ -14249,7 +14446,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: completedFilter,
@@ -14294,7 +14491,7 @@
 									 );
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: progressFilter,
@@ -14323,7 +14520,7 @@
 		  });
 		  hpe.api.dataset({
 			form: '989',
-			dataset: 'NOR_Overview_DEV',
+			dataset: 'NOR_Overview', // todo: add a new setting
 			payload: {
 			  pageSize: 3000,
 			  filter: cancelledFilter,
