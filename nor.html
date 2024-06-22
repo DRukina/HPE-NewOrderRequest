@@ -1,3 +1,38 @@
+<!-- VERSION ROUTING-->
+<script>
+  function countryRouting(currCountryCode, usePilot = false) {
+	const isPilot = true; // True means this instance of NOR is for special list of countries
+	const countries = ["PE", "CO", "HK", "LK", "QA", "LV", "EE", "KW"];
+
+	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
+								: "/form/989/nor-prod-ww-v2";
+	const message = isPilot ? "This instance is for limited list of countries. Now You will be redirected to the page for regular countries." 
+							 : "This instance is for common list of countries. Now You will be redirected to the page for limited list of countries.";
+	const isForModern = countries.includes(currCountryCode);
+	if (isForModern === isPilot) return true;
+
+	if (!usePilot) {
+	  mo.fn.modal.show({
+		ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+		title: "Redirect",
+		content: message,
+		close: false,
+		ctaCallback: function() {
+		  mo.fn.events.closeAll();
+		  //document.location.href = redirectTo;
+		  window.location.replace(redirectTo);
+		}
+	  });
+	} else {
+	  window.location.replace(redirectTo);
+	}
+
+	return false;
+  }
+</script>
+
+
+
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -8571,6 +8606,7 @@
 						nbsf.init(config, config.page);
 						mo.fn.events.closeAll();
 						mo.fn.overlay.hide();
+						countryRouting(global.data.geo.code);
 					  });
 					});
 				  })
@@ -8732,6 +8768,7 @@
 					  nbsf.init(config, config.page);
 					  mo.fn.events.closeAll();
 					  mo.fn.overlay.hide();
+					  countryRouting(global.data.geo.code);
 					});
 				  });
 				});
