@@ -10583,6 +10583,7 @@
 			config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
 		  }
 		  config.dataset[`${addressCountryName}`] = $(this).val();
+		  if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[`${addressCountryName}`] = $(this).val();
 		  nbsf.init(config, config.page);
 		});
 	  });
@@ -13637,6 +13638,53 @@
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
 		  });
+
+		  function visitItems(cb) {
+			for (let a=0; a<config.pages.length; a++) {
+			  for (b = 0; b < config.pages[a].structure.length; b++) {
+				for (l = 0; l < config.pages[a].structure[b].group.length; l++) {
+				  for (k = 0; k < config.pages[a].structure[b].group[l].length; k++) {
+					cb(config.pages[a].structure[b].group[l][k]);
+				  }
+				}
+			  }
+			}
+		  }
+
+		  // Change "required" property on Email, Last Name and Country when corresponding First Name changed
+		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
+			const fieldName = e.target.getAttribute("data-name");
+			if (!["Payer_Contact_FirstName", "BillTo_Contact_FirstName", "ShipTo_Contact_FirstName"].includes(fieldName)) return;
+
+			const currVal = e.target.value;
+			const required = !!currVal;
+
+			config.dataset[fieldName] = currVal;
+			const fieldPrefix = fieldName.split("_")[0];
+			const fieldsToSwitch = [fieldPrefix + "_Contact_Email", fieldPrefix + "_Contact_Country", fieldPrefix + "_Contact_LastName"];
+			let prevRequired = null;
+
+			visitItems((item) => {
+			  if (fieldsToSwitch.includes(item.data)) {
+				if (prevRequired === null) prevRequired = item.required;
+				item.required = required;
+			  }
+			});
+
+			if (prevRequired !== required) {
+			  // Fill Contact Country from Address Country if it was empty and became mandatory
+			  if (required) {
+				const country = config.dataset[fieldPrefix + "_Address_Country"];
+				const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
+				if (!prevCountry || prevCountry == config.pages[config.page].selectone) {
+				  config.dataset[fieldPrefix + "_Contact_Country"] = country;
+				  if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = country;
+				}
+			  }
+			  // for Review pages nbsf.init(config, config.page) is executed after this event
+			  if (!config.pages[config.page].review) nbsf.init(config, config.page);
+			}
+		  }, true);
 		});
 	  });
 	},
