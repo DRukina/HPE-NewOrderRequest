@@ -10878,13 +10878,15 @@
 		  CurrencyIsoCode,
 		  PriceListType,
 		  OpportunityId,
+		  GrandTotal,
 		  TotalNetPricewithBenefits,
 		  PaymentTermDescription,
 		  SalesOrg,
 		  TotalTax,
 		  BusinessGroup
 		} = quoteHelper.quote.quoteHeader;
-		const po_value = config.dataset.CountryCode == 'BR' ? ((Math.round(TotalNetPricewithBenefits * 100) - Math.round(TotalTax * 100)) / 100) : TotalNetPricewithBenefits;
+		const totalValue = Number(TotalNetPricewithBenefits) == 0 ? GrandTotal : TotalNetPricewithBenefits;
+		const po_value = config.dataset.CountryCode == 'BR' ? ((Math.round(totalValue * 100) - Math.round(TotalTax * 100)) / 100) : totalValue;
 
 		const filterConfig = {
 		  PO_Currency: {
