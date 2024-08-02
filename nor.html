@@ -2769,6 +2769,14 @@
 	  callbacks.quotePreview();
 	  quoteHelper.checkResellerAddressData(config);
 	  quoteHelper.buildQuotePreviewPage(config);
+	  // NOR-800: expand Reseller Page when Reseller Party Id differs from SoldTo Party Id
+	  let resellerInputEl = document.querySelector("[data-name='Reseller_PartyId']");
+	  if (resellerInputEl) {
+		let collapseEl = resellerInputEl.closest(".row").querySelector(".collapse");
+		if (collapseEl.getAttribute("aria-label") == "up") {
+		  $(collapseEl).click();
+		}
+	  }
 	}
   };
 
@@ -3147,6 +3155,14 @@
 	],
 	callback: function() {
 	  callbacks.page2();
+	  // NOR-800: Force value of Config_ResellerDetails to N when Reseller Party Id differs from SoldTo Party Id
+	  let resellerEl = document.querySelector("[data-name='Config_ResellerDetails']");
+	  let ds = config.dataset;
+	  if (resellerEl && ds.Requestor_PO_Quote_ID && ds.Reseller_PartyId && ds.SoldTo_PartyId && ds.Reseller_PartyId != ds.SoldTo_PartyId) {
+		resellerEl.setAttribute("value", "N");
+		resellerEl.parentNode.classList.remove("active");
+		ds.Config_ResellerDetails = "N";
+	  }
 	}
   };
 
