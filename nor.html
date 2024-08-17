@@ -2782,7 +2782,8 @@
 	  quoteHelper.buildQuotePreviewPage(config);
 	  // NOR-800: expand Reseller Page when Reseller Party Id differs from SoldTo Party Id
 	  let resellerInputEl = document.querySelector("[data-name='Reseller_PartyId']");
-	  if (resellerInputEl) {
+	  let ds = config.dataset;
+	  if (resellerInputEl && ds.Requestor_PO_Quote_ID && ds.Reseller_PartyId && ds.SoldTo_PartyId && ds.Reseller_PartyId != ds.SoldTo_PartyId) {
 		let collapseEl = resellerInputEl.closest(".row").querySelector(".collapse");
 		if (collapseEl.getAttribute("aria-label") == "up") {
 		  $(collapseEl).click();
