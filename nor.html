@@ -2,7 +2,19 @@
 <script>
   function countryRouting(currCountryCode, usePilot = false) {
 	const isPilot = true; // True means this instance of NOR is for special list of countries
-	const countries = ["PE", "CO", "HK", "LK", "QA", "LV", "EE", "KW"];
+	const countries = [
+	  "PE", "CO", "HK", "LK", "QA", "LV", "EE", "KW"
+	  // All of AMS
+	  "AI", "AG", "AR", "AW", "BS", "BB", "BZ", "BM", "BO", "BQ", "BR", "CA", "KY", "CL", "CO", "CR", "CU", "CW", "DM", "DO", "EC", "SV", "FK", "GD", "GU", "GT", "GY", "HT", "HN", "JM", "MX", "MS", "AN", "NI", "MP", "PA", "PY", "PE", "PR", "BL", "SX", "GS", "KN", "LC", "MF", "VC", "SR", "TT", "TC", "US", "UY", "UM", "VE", "VG", "VI",
+	  // Middle east according to https://en.wikipedia.org/wiki/Middle_East
+	  "BH", "CY", "EG", "IR", "IQ", "IL", "JO", "KW", "LB", "OM", "PS", "QA", "SA", "SY", "TR", "AE", "YE",
+	  // Africa: Region=EMEA, Continent=AF
+	  "DZ", "AO", "BJ", "BW", "BF", "BI", "CM", "CV", "CF", "TD", "KM", "CG", "CD", "CI", "DJ", "EG", "GQ", "ER", "ET", "GA", "GM", "GH", "GN", "GW", "KE", "LS", "LR", "LY", "MG", "MW", "ML", "MR", "MU", "YT", "MA", "MZ", "NA", "NE", "NG", "RE", "RW", "SH", "ST", "SN", "SC", "SL", "SO", "ZA", "SS", "SD", "SZ", "TZ", "TG", "TN", "UG", "EH", "ZM", "ZW",
+	  // Central countries in EMEA: Region=EMEA, SubRegion=Central Europe
+	  "CZ", "HU", "PL", "RO", "SK",
+	  // Thailand, Korea in APJ
+	  "TH", "KR"
+	];
 
 	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
 								: "/form/989/nor-prod-ww-v2";
