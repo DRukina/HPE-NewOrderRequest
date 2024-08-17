@@ -85,6 +85,9 @@
 		})
 		// HIDDEN INPUT: SOLDTO
 		config.dataset[`${type}_Address_Country`] = d.party[0].countryName;
+		if (config.dataset[`${type}_Address_Country`] && !config.dataset[`${type}_Contact_Country`]) {
+		  $(`[data-name="${type}_Contact_Country"]`).val(d.party[0].countryName);
+		}
 		config.dataset[`${type}_PartyId`] = d.party[0].currentPartyID || d.party[0].submittedPartyID || currentVal;
 		$(`input[data-name="${type}_PartyId"]`).val(config.dataset[`${type}_PartyId`]);
 
@@ -9328,7 +9331,8 @@
 		
 		var subject = (config.dataset.CaseTitle_aaS ? config.dataset.CaseTitle_aaS : '') +
 			' ' +
-			(config.dataset.CaseReason ? config.dataset.CaseReason : 'N/A') +
+			//(config.dataset.CaseReason ? config.dataset.CaseReason : 'N/A') +
+			'Internet Order Submission' +
 			' / ' +
 			(config.dataset.PO_Number ? config.dataset.PO_Number : 'N/A') +
 			' / NORID ' +
@@ -10630,6 +10634,39 @@
 		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
 	  });
 	  
+	  // Payer
+	  if (config.dataset.Payer_Address_Country && !config.dataset.Payer_Contact_Country) {
+		$(`[data-name="Payer_Contact_Country"]`).val(config.dataset.Payer_Address_Country);
+	  }
+	  $(`[data-name="Payer_PartyId"]`).change(function() {
+		$(`[data-name="Payer_Contact_Country"]`).val(config.dataset.Payer_Address_Country);
+	  });
+	  $(`[data-name="Payer_Address_Country"]`).change(function() {
+		$(`[data-name="Payer_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // BillTo
+	  if (config.dataset.BillTo_Address_Country && !config.dataset.BillTo_Contact_Country) {
+		$(`[data-name="BillTo_Contact_Country"]`).val(config.dataset.BillTo_Address_Country);
+	  }
+	  $(`[data-name="BillTo_PartyId"]`).change(function() {
+		$(`[data-name="BillTo_Contact_Country"]`).val(config.dataset.BillTo_Address_Country);
+	  });
+	  $(`[data-name="BillTo_Address_Country"]`).change(function() {
+		$(`[data-name="BillTo_Contact_Country"]`).val($(this).val());
+	  });
+	  
+	  // ShipTo
+	  if (config.dataset.ShipTo_Address_Country && !config.dataset.ShipTo_Contact_Country) {
+		$(`[data-name="ShipTo_Contact_Country"]`).val(config.dataset.ShipTo_Address_Country);
+	  }
+	  $(`[data-name="ShipTo_PartyId"]`).change(function() {
+		$(`[data-name="ShipTo_Contact_Country"]`).val(config.dataset.ShipTo_Address_Country);
+	  });
+	  $(`[data-name="ShipTo_Address_Country"]`).change(function() {
+		$(`[data-name="ShipTo_Contact_Country"]`).val($(this).val());
+	  });
+	  
 	  // End Customer
 	  if (config.dataset.EndCx_Address_Country && !config.dataset.EndCx_Contact_Country) {
 		$(`[data-name="EndCx_Contact_Country"]`).val(config.dataset.EndCx_Address_Country);
@@ -10672,7 +10709,7 @@
 		}
 	  });
 
-	//  helper.buildFastClearAddressButton('AgentProgram');     
+	//  helper.buildFastClearAddressButton('AgentProgram');    
 	},
   };
 
@@ -11618,7 +11655,8 @@
 			for (let key in contactAssociations) {
 			  if (key === 'Country') {
 				const country = reference.countriesData.find((item) => item.ISO2 === quoteHelper.quote.quoteHeader[quoteSection].Contact[key]);
-				config.dataset[`${section}_${contactAssociations[key]}`] = country ? country.Name : null;
+				const countryName = country ? country.Name : config.dataset[`${section}_Address_Country`];
+				config.dataset[`${section}_${contactAssociations[key]}`] = countryName;
 			  } else {
 				config.dataset[`${section}_${contactAssociations[key]}`] = quoteHelper.quote.quoteHeader[quoteSection].Contact[key];
 			  }
@@ -12414,13 +12452,14 @@
 				  if (!productIds.includes(item.ProductID)) {
 					productIds.push(item.ProductID);
 					const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
+					
 					ucidConfig.push({
 					  Request_Id: config.dataset.EntryId,
 					  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
 					  UCID: item.UCID,
 					  BundleID: item.BundleID,
 					  DealId: item.DealId,
-					  UnitNetAmount: item.NetPriceWithBenefits,
+					  UnitNetAmount: Number(item.NetPriceWithBenefits) == 0 ? item.UnitNetAmount : item.NetPriceWithBenefits, // item.NetPriceWithBenefits,
 					  Count: curUcid ? curUcid.Count : 1,
 					  ExtendedNetAmount: item.ExtendedNetAmount,
 					  Quantity: item.Quantity,
