@@ -10574,12 +10574,18 @@
 		});
 
 		$(`*[data-name*="${partyIdNamePrefix}_"]`).change(function() {
-		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1) {
 			$(`*[data-name="${partyIdName}"]`).val('');
+			config.dataset[partyIdName] = null;
+			if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[partyIdName] = null;
+		  }
 		});
 		$(`*[data-name*="${partyIdNamePrefix}_"]`).keyup(function() {
-		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1)
-			$('*[data-name="SoldTo_PartyId"]').val('');
+		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1) {
+			$(`*[data-name="${partyIdName}"]`).val('');
+			config.dataset[partyIdName] = null;
+			if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[partyIdName] = null;
+		  }
 		});
 
 		// Disable some fields if quote is exist
