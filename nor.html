@@ -12729,7 +12729,6 @@
 			  },
 			  {
 				label: "Product Purchased Date:",
-				placeholder: "Form040",
 				value: ucid.ProductPurchasedDate,
 				data: "ProductPurchasedDate_" + ucid.ID,
 				required: false,
@@ -12741,8 +12740,8 @@
 				  format: 'd/m/Y',
 				  formatDate: 'd/m/Y',
 				  timepicker: false,
-				  minDate: 0,
-				  //maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+          minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+          maxDate: new Date().toLocaleDateString('en-GB'),
 				  onChangeDateTime: function(dp, $input) {
 
 				  }
@@ -12871,7 +12870,6 @@
 			},
 			{
 			  label: "Product Purchased Date:",
-			  placeholder: "Form040",
 			  data: "ProductPurchasedDate",
 			  required: false,
 			  type: "date",
@@ -12881,8 +12879,8 @@
 				format: 'd/m/Y',
 				formatDate: 'd/m/Y',
 				timepicker: false,
-				minDate: 0,
-				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+        minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+        maxDate: new Date().toLocaleDateString('en-GB'),
 				onChangeDateTime: function(dp, $input) {
 
 				}
