@@ -11325,7 +11325,8 @@
 	  ];
 	  disabledFields.forEach((field) => {
 		const node = document.querySelector(`*[data-name="${field}"]`);
-		let isValueExist = node && node.value && node.value !== 'Select one' && node.value !== 'OPE-';
+		const selectOne = config.pages[1].selectone || 'Select one';
+		let isValueExist = node && node.value && node.value !== selectOne && node.value !== 'OPE-';
 		if (node) {
 		  if (config.dataset.Config_Quote == 'N' || !config.dataset.Requestor_PO_Quote_ID || config.dataset.Quote_Error || !isValueExist) {
 			$(`*[data-name="${field}"]`).parent().parent().removeClass('wrapper-disabled');
@@ -12352,9 +12353,10 @@
 		  }
 		}
 	  } else {
+		const selectOne = config.pages[1].selectone || 'Select one';
 		for (let i = 0; i < billToFields.length; i++) {
 		  let field = billToFields[i];
-		  if (config.dataset[field] && config.dataset[field] != 'Select one') {
+		  if (config.dataset[field] && config.dataset[field] != selectOne) {
 			hidebill = false;
 			break;
 		  }
