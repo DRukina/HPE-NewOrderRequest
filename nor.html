@@ -11410,6 +11410,7 @@
 		  config.dataset.Payer_Address_Street2 = address2;
 		}
 	  }
+/* Do not prepopulate BillTo info. NOR-880
 	  // HIDDEN INPUT: BILLING
 	  if (config.dataset.BillTo_CompanyName == null || config.dataset.BillTo_CompanyName.length == 0) {
 		config.dataset.BillTo_PartyId = config.dataset.PartyId;
@@ -11431,6 +11432,7 @@
 		  config.dataset.BillTo_Address_Street2 = address2;
 		}
 	  }
+*/
 	},
 
 	initAddressQuoteData: async function(config, section = 'all') {
