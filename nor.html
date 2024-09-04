@@ -9831,7 +9831,7 @@
 			config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
 			config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
 			//nbsf.init(config, config.page);
-		  } else if (config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop' && config.dataset.Requestor_PO_Quote_ID) {
+		  } else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
 			paNumberChanged();
 		  }
