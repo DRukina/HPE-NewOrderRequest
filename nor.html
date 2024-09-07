@@ -10714,6 +10714,12 @@
 		  nbsf.init(config, config.page);
 		}
 	  });
+	  // NOR-989 hotfix. Reflect value for non-required fields in dataset immediately
+	  $("input[data-name]").on("input", (e) => {
+		let inputEl = e.target;
+		if (!!inputEl.parentNode.parentNode.querySelector(".name .required")) return;
+		config.dataset[inputEl.getAttribute("data-name")] = inputEl.value;
+	  });
 
 	//  helper.buildFastClearAddressButton('AgentProgram');    
 	},
