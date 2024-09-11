@@ -1,38 +1,3 @@
-<!-- VERSION ROUTING-->
-<script>
-  function countryRouting(currCountryCode, usePilot = false) {
-	const isPilot = true; // True means this instance of NOR is for special list of countries
-	const countries = ["PE", "CO", "HK", "LK", "QA", "LV", "EE", "KW"];
-
-	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
-								: "/form/989/nor-prod-ww-v2";
-	const message = isPilot ? "This instance is for limited list of countries. Now You will be redirected to the page for regular countries." 
-							 : "This instance is for common list of countries. Now You will be redirected to the page for limited list of countries.";
-	const isForModern = countries.includes(currCountryCode);
-	if (isForModern === isPilot) return true;
-
-	if (!usePilot) {
-	  mo.fn.modal.show({
-		ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
-		title: "Redirect",
-		content: message,
-		close: false,
-		ctaCallback: function() {
-		  mo.fn.events.closeAll();
-		  //document.location.href = redirectTo;
-		  window.location.replace(redirectTo);
-		}
-	  });
-	} else {
-	  window.location.replace(redirectTo);
-	}
-
-	return false;
-  }
-</script>
-
-
-
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
   let PO_CompleteDeliveryLogicCheck = false;
@@ -1710,7 +1675,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 		  },
 					{
 					  logic: "and",
@@ -1854,7 +1819,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 		  },
 					{
 					  logic: "and",
@@ -2072,7 +2037,7 @@
 								{
 								  field: "CountryCode",
 								  operator: "in",
-								  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+								  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 								},
 							   ]
 					}
@@ -2456,6 +2421,7 @@
 			  format: 'd/m/Y',
 			  formatDate: 'd/m/Y',
 			  timepicker: false,
+			  scrollInput: false,
 			  minDate: 0,
 			  maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
 			  onChangeDateTime: function(dp, $input) {
@@ -2484,6 +2450,7 @@
 			  format: 'd/m/Y',
 			  formatDate: 'd/m/Y',
 			  timepicker: false,
+			  scrollInput: false,
 			  minDate: 0,
 			  maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
 			  onChangeDateTime: function(dp, $input) {
@@ -2757,7 +2724,7 @@
 				{
 					field: "CountryCode",
 					operator: "in",
-					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW"]
+					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 				},
 				]
 	},  
@@ -2815,7 +2782,7 @@
 				{
 				  field: "CountryCode",
 				  operator: "nin",
-				  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW"]
+				  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 				},
 			   ]
 	},
@@ -7088,7 +7055,7 @@
 			{
 			  field: "CountryCode",
 			  operator: "in",
-			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 			},
 			{
 			  logic: "and",
@@ -8622,7 +8589,6 @@
 						nbsf.init(config, config.page);
 						mo.fn.events.closeAll();
 						mo.fn.overlay.hide();
-						countryRouting(global.data.geo.code);
 					  });
 					});
 				  })
@@ -8784,7 +8750,6 @@
 					  nbsf.init(config, config.page);
 					  mo.fn.events.closeAll();
 					  mo.fn.overlay.hide();
-					  countryRouting(global.data.geo.code);
 					});
 				  });
 				});
@@ -8907,7 +8872,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"].includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -9122,7 +9087,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"].includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -10663,7 +10628,7 @@
 		  nbsf.init(config, config.page);
 		}
 	  });
-	  // NOR-989 hotfix. Reflect value for non-required fields in dataset immediately
+	  // NOR-989 hotfix. Reflect values of non-required fields in dataset immediately
 	  $("input[data-name]").on("input", (e) => {
 		let inputEl = e.target;
 		if (!!inputEl.parentNode.parentNode.querySelector(".name .required")) return;
@@ -10872,7 +10837,7 @@
 		PANumbers = [...new Set(PANumbers)];
 		PANumbers.join(', ');
 		// comment for testing - todo: add a setting
-		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
+		// return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
 	  
 	  const HpQuoteLineItems = quote.hpQuoteLineItemList.HpQuoteLineItems;
@@ -10925,7 +10890,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 			  },
 						{
 						  logic: "and",
@@ -10972,7 +10937,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 			  },
 						{
 						  logic: "and",
@@ -11268,14 +11233,14 @@
 		//"SoldTo_Address_City",
 		//"SoldTo_Address_State",
 		// "SoldTo_Address_Postal",
-		// "SoldTo_Address_Country",
+		 "SoldTo_Address_Country", // NOR-915 urgent fix: remove comment
 		//"Payer_PartyId",
 		//"Payer_CompanyName",
 		//"Payer_Address_Street",
 		//"Payer_Address_City",
 		//"Payer_Address_State",
 		//"Payer_Address_Postal",
-		//"Payer_Address_Country",
+		"Payer_Address_Country", // NOR-915 urgent fix: remove comment
 		"EndCx_Address_Country",
 	  ];
 	  disabledFields.forEach((field) => {
@@ -11416,7 +11381,7 @@
 		  config.dataset.Payer_Address_Street2 = address2;
 		}
 	  }
-/* Do not prepopulate BillTo info. NOR-880
+/*
 	  // HIDDEN INPUT: BILLING
 	  if (config.dataset.BillTo_CompanyName == null || config.dataset.BillTo_CompanyName.length == 0) {
 		config.dataset.BillTo_PartyId = config.dataset.PartyId;
@@ -12757,8 +12722,9 @@
 				  format: 'd/m/Y',
 				  formatDate: 'd/m/Y',
 				  timepicker: false,
-				  minDate: 0,
-				  //maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				  scrollInput: false,
+				  minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+				  maxDate: new Date().toLocaleDateString('en-GB'),
 				  onChangeDateTime: function(dp, $input) {
 
 				  }
@@ -12897,8 +12863,9 @@
 				format: 'd/m/Y',
 				formatDate: 'd/m/Y',
 				timepicker: false,
-				minDate: 0,
-				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				scrollInput: false,
+				minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+				maxDate: new Date().toLocaleDateString('en-GB'),
 				onChangeDateTime: function(dp, $input) {
 
 				}
@@ -13022,7 +12989,7 @@
 		  {
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
 		  },
 		  {
 			logic: "and",
@@ -13689,10 +13656,7 @@
 		  // Change "required" property on Email, Last Name and Country when corresponding First Name changed
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
-			if (!["Payer_Contact_FirstName", "BillTo_Contact_FirstName", "ShipTo_Contact_FirstName",
-				"Payer_Contact_LastName", "BillTo_Contact_LastName", "ShipTo_Contact_LastName",
-				"Payer_Contact_Phone", "BillTo_Contact_Phone", "ShipTo_Contact_Phone"
-				].includes(fieldName)) return;
+			if (!["Payer_Contact_FirstName", "BillTo_Contact_FirstName", "ShipTo_Contact_FirstName"].includes(fieldName)) return;
 
 			const currVal = e.target.value;
 			const required = !!currVal;
@@ -14095,7 +14059,7 @@
 					 field: "EndCx_CompanyName",
 					 title: hpe.fn.lang("FormEndCx", config.locale, config.localizations),
 					 width: "200px",
-				//	 hidden: true,
+			//		 hidden: true,
 					 filterable: true,
 					 template: function(d) {
 					   if (d.EndCx_CompanyName) {
@@ -14755,14 +14719,4 @@
 	})
   });
   hpe.fn.resizeable();
-</script>
-
-<script>
-  const appSettings = {
-	environment: 'PROD',
-	views: {
-	  prod: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-prod-qids',
-	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
-	},
-  };
 </script>
