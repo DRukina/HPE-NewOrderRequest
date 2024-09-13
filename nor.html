@@ -9380,7 +9380,7 @@
 					errorHandler();
 				  }
 				});
-			  }, errorHandler);
+			  }, errorHandler, true);
 			}
 		  } else {
 			errorHandler();
@@ -13083,7 +13083,7 @@
 		}
 	  }
 	},
-	saveProductAndServices: function(config, callback, errorCallback) {
+	saveProductAndServices: function(config, callback, errorCallback, forceCallback) {
 	  if (config.dataset.EntryId && config.dataset.Config_PartialOrder == 'Y' && config.dataset.Config_Quote_PartialOrder && quoteHelper.ucids.length) {
 		const promises = quoteHelper.ucids.map(ucid => {
 		  return new Promise((resolve, reject) => {
@@ -13110,6 +13110,8 @@
 			errorCallback();
 		  }
 		});
+	  } else {
+		if (forceCallback && callback) callback();
 	  }
 	},
 	parseProductAndServicesRepeater: function (config, callback, errorCallback) {
