@@ -9801,16 +9801,17 @@
 			config.dataset.Config_EndCxDetails_Contact = "N";
 		  }
 		  if (config.dataset.PO_Category == 'Stage' && config.dataset.Requestor_PO_Quote_ID) {
-			config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
-			config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
-			config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
-			config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
-			config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
-			config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
+			// NOR-874: Ship to address to be left Blank
+			// config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
+			// config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
+			// config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
+			// config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
+			// config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
+			// config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
 			//nbsf.init(config, config.page);
 		  } else if (config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop' && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
@@ -11685,9 +11686,9 @@
 			}, {
 			  sectionName: 'BillTo',
 			  quoteSection: 'BillTo'
-			}, {
-			  sectionName: 'ShipTo',
-			  quoteSection: 'ShipTo'
+			//}, { // NOR-874: Ship to address to be left Blank
+			//  sectionName: 'ShipTo',
+			//  quoteSection: 'ShipTo'
 			}, {
 			  sectionName: 'Reseller',
 			  quoteSection: 'ResellerInfo'
@@ -11716,11 +11717,11 @@
 				  quoteSection: 'BillTo'
 				});
 				break;
-			  case 'ShipTo':
-				sectionsToInitialize.push({
-				  sectionName: 'ShipTo',
-				  quoteSection: 'ShipTo'
-				});
+			  case 'ShipTo': // NOR-874: Ship to address to be left Blank
+				//sectionsToInitialize.push({
+				//  sectionName: 'ShipTo',
+				//  quoteSection: 'ShipTo'
+				//});
 				break;
 			  case 'Reseller':
 				sectionsToInitialize.push({
