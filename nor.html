@@ -9286,10 +9286,10 @@
 			(config.dataset.EntryId ? config.dataset.EntryId : 'N/A');
 
 		if (config.dataset.CountryCode == 'JP') {
-		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A') +
-			' / End Customer ' +
-			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
-		} else {
+		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A');
+		}
+
+		if (config.dataset.PO_Category != "Stock") {
 		  subject += ' / End Customer ' +
 			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
 		}
@@ -9813,7 +9813,7 @@
 			// config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
 			// config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
 			//nbsf.init(config, config.page);
-		  } else if (config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop' && config.dataset.Requestor_PO_Quote_ID) {
+		  } else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
 			paNumberChanged();
 		  }
