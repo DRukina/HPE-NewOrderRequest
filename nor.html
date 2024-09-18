@@ -12547,7 +12547,7 @@
 				disabled: isDisabled,
 			  },
 			  {
-				label: "HPE Part Number",
+				label: "FormHPN",
 				data: "ProductID_" + ucid.ID,
 				value: ucid.ProductID,
 				required: false,
@@ -12556,7 +12556,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "HPE Part Quantity*",
+				label: "FormHPQ",
 				value: ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
@@ -12568,7 +12568,7 @@
 				disabled: isDisabled,
 			  },
 			  {
-				label: "Deal ID",
+				label: "FormDealId",
 				value: ucid.DealId,
 				disabled: true,
 				data: "DealId_" + ucid.ID,
@@ -12577,7 +12577,7 @@
 				validation: ['minLen|1'],
 			  },				
 			  {
-				label: "bundle ID / Icon ID",
+				label: "FormBIID",
 				value: ucid.BundleID,
 				disabled: true,
 				data: "BundleID_" + ucid.ID,
@@ -12586,7 +12586,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "Unit Price",
+				label: "FormUP",
 				value: ucid.UnitNetAmount,
 				disabled: true,
 				data: "UnitNetAmount_" + ucid.ID,
@@ -12595,7 +12595,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "Extended Net Price",
+				label: "FormENP",
 				value: ucid.ExtendedNetAmount,
 				data: "ExtendedNetAmount_" + ucid.ID,
 				required: true,
@@ -12611,7 +12611,7 @@
 			  });
 			} else {
 			  item.push({
-				label: "Carepack",
+				label: "FormCP",
 				data: "Carepack_" + ucid.ID,
 				required: false,
 				type: "toggle",
@@ -12629,7 +12629,7 @@
 				class: `Carepack_PPPD_${ucid.ID}`,
 			  },
 			  {
-				label: "Previously Purchased Product Details:",
+				label: "FormPPPD",
 				value: "Previously Purchased Product Details:",
 				data: "PPPD",
 				required: false,
@@ -12672,7 +12672,7 @@
 				class: `Carepack_SNP_${ucid.ID}`,
 			  },
 			  {
-				label: "Serial number of the products*:",
+				label: "FormSNP",
 				value: "Serial number of the products*:",
 				data: "SNP",
 				required: false,
@@ -12715,7 +12715,7 @@
 				class: `Carepack_PPD_${ucid.ID}`,
 			  },
 			  {
-				label: "Product Purchased Date:",
+				label: "FormPPD",
 				value: "Product Purchased Date:",
 				data: "PPD",
 				required: false,
@@ -12731,7 +12731,6 @@
 				data: "ProductPurchasedDate_" + ucid.ID,
 				required: false,
 				type: "date",
-				placeholder: "DD/MM/YYYY",
 				disabled: isDisabled,
 				class: "bordered-input",
 				dtp: {
@@ -12767,6 +12766,12 @@
 			if (!config.dataset.ProductServices_Attachment || isCarePack) {
 			  group.push(PPPD, SNP, PPD);
 			}
+
+			group.forEach(item => {
+			  if (item.label) {
+				item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
+			  }
+			});
 		  });
 		}
 		
@@ -12776,7 +12781,7 @@
 		  // add repeater 
 		  const PPPD = [
 			{
-			  label: "Previously Purchased Product Details:",
+			  label: "FormPPPD",
 			  value: "Previously Purchased Product Details:",
 			  data: "PPPD",
 			  required: false,
@@ -12817,7 +12822,7 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "Serial number of the products:",
+			  label: "FormSNP",
 			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
@@ -12858,7 +12863,7 @@
 		  ];
 		  const PPD = [
 			{
-			  label: "Product Purchased Date:",
+			  label: "FormPPD",
 			  value: "Product Purchased Date:",
 			  data: "PPD",
 			  required: false,
@@ -12873,7 +12878,6 @@
 			  data: "ProductPurchasedDate",
 			  required: false,
 			  type: "date",
-			  placeholder: "DD/MM/YYYY",
 			  class: "bordered-input",
 			  dtp: {
 				format: 'd/m/Y',
@@ -12911,7 +12915,7 @@
 		  ];
 		  let repeaterItem = [
 			{
-			  label: "HPE Part Number",
+			  label: "FormHPN",
 			  data: "ProductID",
 			  required: true,
 			  type: "text",
@@ -12919,7 +12923,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "HPE Part Quantity*",
+			  label: "FormHPQ",
 			  data: "Count",
 			  required: true,
 			  type: "text",
@@ -12928,7 +12932,7 @@
 			  class: "bordered-input",
 			},
 			{
-			  label: "Deal ID",
+			  label: "FormDealId",
 			  data: "DealId",
 			  required: false,
 			  type: "text",
@@ -12936,7 +12940,7 @@
 			  validation: ['minLen|1'],
 			},				
 			{
-			  label: "bundle ID / Icon ID",
+			  label: "FormBIID",
 			  data: "BundleID" ,
 			  required: false,
 			  type: "text",
@@ -12944,7 +12948,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "Unit Price*",
+			  label: "FormUP",
 			  data: "UnitNetAmount",
 			  required: true,
 			  type: "text",
@@ -12953,7 +12957,7 @@
 			  typing: "povaluetyping"
 			},
 			{
-			  label: "Extended Net Price*",
+			  label: "FormENP",
 			  data: "ExtendedNetAmount",
 			  required: true,
 			  disabled: true,
@@ -12963,7 +12967,7 @@
 			  class: "bordered-input-disabled",
 			},
 			{
-			  label: "Carepack",
+			  label: "FormCP",
 			  data: "Carepack",
 			  required: false,
 			  type: "toggle",
@@ -12972,6 +12976,13 @@
 			  class: "ps-toggle",
 			}];
 		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
+
+		  repeaterItem.forEach(item => {
+			if (item.label) {
+			  item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
+			}
+		  });
+
 		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
 			if (currentValue.id == "form-table-repeat") {
 			  return accumulator + 1;
