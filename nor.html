@@ -12767,11 +12767,11 @@
 			  group.push(PPPD, SNP, PPD);
 			}
 
-      group.forEach(item => {
-          if (item.label) {
-            item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
-          }
-        });
+			group.forEach(item => {
+			  if (item.label) {
+				item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
+			  }
+			});
 		  });
 		}
 		
@@ -12976,13 +12976,13 @@
 			  class: "ps-toggle",
 			}];
 		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
-      
-      repeaterItem.forEach(item => {
-        if (item.label) {
-          item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
-        }
-      });
-      
+
+		  repeaterItem.forEach(item => {
+			if (item.label) {
+			  item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
+			}
+		  });
+
 		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
 			if (currentValue.id == "form-table-repeat") {
 			  return accumulator + 1;
