@@ -7171,7 +7171,7 @@
 		const row = PS_Att.closest('.row');
 		const heading = $(row).find('.heading');
 		if (heading) {
-		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services.xlsx'>Download the template</a>`);
+		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>Download the template</a>`);
 		}
 	  }
 	  
@@ -8482,7 +8482,7 @@
 		  close: false
 		});
 
-		if (document.querySelector("select[data-name=OnBehalf_Type").value == 'Company') {
+		if (document.querySelector("select[data-name=OnBehalf_Type]").value == 'Company') {
 
 		  const PartySearch = new kendo.data.DataSource({
 			type: "rfb-v2",
@@ -8656,7 +8656,7 @@
 			}
 		  });
 
-		} else if (document.querySelector("select[data-name=OnBehalf_Type").value == 'User') {
+		} else if (document.querySelector("select[data-name=OnBehalf_Type]").value == 'User') {
 		  profile.get({
 			email: document.querySelector('input[data-name="OnBehalf_CreatedBy"]').value,
 			relationship: true,
@@ -9517,7 +9517,7 @@
 		const view = langDS.view();
 		console.log('langDS', view);
 		view.forEach(item => {
-		  $('select[data-name="Language"').append($('<option></option>').val(item.LanguageCode).html(item.LanguageName));
+		  $('select[data-name="Language"]').append($('<option></option>').val(item.LanguageCode).html(item.LanguageName));
 		});
 		//	document.querySelector('select[data-name="Language"').value = 'en_US';
 	  });
@@ -12586,7 +12586,6 @@
 		  "ProductPurchasedDate",
 		  "HPEPartDescription",
 		  "ITEM",
-		  "ListPrice",
 		  "Carepack",
 		];
 		const isDisabled = config.dataset.Config_Quote !== "Y";
