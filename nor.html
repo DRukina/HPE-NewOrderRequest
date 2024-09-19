@@ -13360,8 +13360,8 @@
 		const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
 		let rowsData = [];
-		if (page.length >= 5) {
-		  const header = page[4];
+		if (page.length >= 6) {
+		  const header = page[5];
 		  const headerMap = new Map();
 		  Object.entries(header).forEach(([key, value], index) => {
 			if (value.includes("HPE Part Number")) {
@@ -13396,7 +13396,7 @@
 			}
 		  });
 		  
-		  for (let i = 5; i < page.length; i++) {
+		  for (let i = 6; i < page.length; i++) {
 			const rowInfo = page[i];
 			const productID = headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || "";
 			const count = headerMap.get("Count") && rowInfo[headerMap.get("Count")] || "";
