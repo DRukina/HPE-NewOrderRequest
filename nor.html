@@ -10513,18 +10513,22 @@
 
 	  const selectedAllEl = document.querySelector("input[data-name='Selected_All']");
 	  if (selectedAllEl) {
-		selectedAllEl.addEventListener("change", (e) => {
-		  const selAllChecked = e.target.checked;
-		  const paramValue = selAllChecked ? "Y" : null;
-		  config.dom.querySelectorAll("input[type='checkbox'][data-name^='Selected_']").forEach((cbEl) => {
-			const paramName = cbEl.getAttribute("data-name");
-			if (paramName != "Selected_All") {
-			  cbEl.checked = selAllChecked;
-			  config.dataset[paramName] = paramValue;
-			}
+		if (document.querySelector("input[data-name='ProductServices_Attachment']")) {
+		  selectedAllEl.closest(".fmmcosmin").style.visibility = "hidden";
+		} else {
+		  selectedAllEl.addEventListener("change", (e) => {
+			const selAllChecked = e.target.checked;
+			const paramValue = selAllChecked ? "Y" : null;
+			config.dom.querySelectorAll("input[type='checkbox'][data-name^='Selected_']").forEach((cbEl) => {
+			  const paramName = cbEl.getAttribute("data-name");
+			  if (paramName != "Selected_All") {
+				cbEl.checked = selAllChecked;
+				config.dataset[paramName] = paramValue;
+			  }
+			});
+			nbsf.ev.global(config);
 		  });
-		  nbsf.ev.global(config);
-		});
+		}
 	  }
 	},
 	quotePreview: function() {
