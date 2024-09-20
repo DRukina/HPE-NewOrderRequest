@@ -13413,14 +13413,14 @@
 			  headerMap.set("HPEPartDescription", key);
 			}
 		  });
-		  
+
 		  for (let i = 6; i < page.length; i++) {
 			const rowInfo = page[i];
-			const productID = headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || "";
-			const count = headerMap.get("Count") && rowInfo[headerMap.get("Count")] || "";
-			const unitNetAmount = headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")] || "";
+			const productID = (headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")]) ?? "";
+			const count = (headerMap.get("Count") && rowInfo[headerMap.get("Count")]) ?? "";
+			const unitNetAmount = (headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")]) ?? "";
 			// if ProductID or Quantity or UnitNetAmount doesn't exist
-			if (!productID || !count || !unitNetAmount) {
+			if (productID === "" || count === "" || unitNetAmount === "") {
 			  break;
 			}
 			let productPurchasedDate = null;
@@ -13449,7 +13449,7 @@
 			  ProductID: productID,
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: productID.replace(/[\-]/g, '_') || '',
+			  ID: (productID + "").replace(/[\-]/g, '_'),
 			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
 			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
 			  ProductPurchasedDate: productPurchasedDate || "",
