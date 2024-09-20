@@ -10515,6 +10515,7 @@
 	  if (selectedAllEl) {
 		selectedAllEl.addEventListener("change", (e) => {
 		  const selAllChecked = e.target.checked;
+		  const paramValue = selAllChecked ? "Y" : null;
 		  config.dom.querySelectorAll("input[type='checkbox'][data-name^='Selected_']").forEach((cbEl) => {
 			const paramName = cbEl.getAttribute("data-name");
 			if (paramName != "Selected_All") {
