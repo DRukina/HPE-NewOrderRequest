@@ -7041,7 +7041,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "HPE Part Number*",
+			  label: "FormHPN",
 			  data: "HPE_Product_Nub",
 			  value: "HPE Part Number*",
 			  required: false,
@@ -7050,7 +7050,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "HPE Part Quantity*",
+			  label: "FormHPQ",
 			  value: "HPE Part Quantity*",
 			  data: "Quantity",
 			  required: false,
@@ -7059,7 +7059,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Deal ID",
+			  label: "FormDealId",
 			  value: "Deal ID",
 			  data: "Deal_Id",
 			  required: false,
@@ -7069,7 +7069,7 @@
 			},
 
 			{
-			  label: "bundle ID / Icon ID",
+			  label: "FormBIID",
 			  value: "bundle ID / Icon ID",
 			  data: "Test",
 			  required: false,
@@ -7078,7 +7078,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Unit Price*",
+			  label: "FormUP",
 			  value: "Unit Price*",
 			  data: "UnitPrice",
 			  required: false,
@@ -7087,7 +7087,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Extended Net Price*",
+			  label: "FormENP",
 			  value: "Extended Net Price*",
 			  data: "ExtendedNetPrice",
 			  required: false,
@@ -7982,9 +7982,16 @@
 			const psRow = app.querySelector(".row[review-id=" + key + "]");
 			const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
 			let PSTable = "<table class='ps-table'>" +
-				"<thead><tr><th>HPE Part Number</th><th>HPE Part Quantity</th><th>Deal ID</th><th>bundle ID / Icon ID</th><th>Unit Price</th><th>Extended Net Price</th>";
+				"<thead><tr><th>" + hpe.fn.lang('FormHPN', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormHPQ', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormDealId', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormBIID', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormUP', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormENP', config.locale, config.localizations) + "</th>";
 			if (prevProdExists) {
-			  PSTable = PSTable + `<th>Previously Purchased Product Details</th><th>Serial number of the products</th><th>Product Purchased Date</th>`;
+			  PSTable = PSTable + "<th>" + hpe.fn.lang('FormPPPD', config.locale, config.localizations) + "</th>" + 
+				"<th>" + hpe.fn.lang('FormSNP', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormPPD', config.locale, config.localizations) + "</th>";
 			}
 			PSTable = PSTable + "</tr></thead>" + PSData.map(item => {
 			  return `<tr>
@@ -12618,7 +12625,7 @@
 				disabled: isDisabled,
 			  },
 			  {
-				label: "HPE Part Number",
+				label: "FormHPN",
 				data: "ProductID_" + ucid.ID,
 				value: ucid.ProductID,
 				required: false,
@@ -12627,7 +12634,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "HPE Part Quantity*",
+				label: "FormHPQ",
 				value: ucid.Count,
 				data: "Count_" + ucid.ID,
 				required: false,
@@ -12639,7 +12646,7 @@
 				disabled: isDisabled,
 			  },
 			  {
-				label: "Deal ID",
+				label: "FormDealId",
 				value: ucid.DealId,
 				disabled: true,
 				data: "DealId_" + ucid.ID,
@@ -12648,7 +12655,7 @@
 				validation: ['minLen|1'],
 			  },				
 			  {
-				label: "bundle ID / Icon ID",
+				label: "FormBIID",
 				value: ucid.BundleID,
 				disabled: true,
 				data: "BundleID_" + ucid.ID,
@@ -12657,7 +12664,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "Unit Price",
+				label: "FormUP",
 				value: ucid.UnitNetAmount,
 				disabled: true,
 				data: "UnitNetAmount_" + ucid.ID,
@@ -12666,7 +12673,7 @@
 				validation: ['minLen|1'],
 			  },
 			  {
-				label: "Extended Net Price",
+				label: "FormENP",
 				value: ucid.ExtendedNetAmount,
 				data: "ExtendedNetAmount_" + ucid.ID,
 				required: true,
@@ -12682,7 +12689,7 @@
 			  });
 			} else {
 			  item.push({
-				label: "Carepack",
+				label: "FormCP",
 				data: "Carepack_" + ucid.ID,
 				required: false,
 				type: "toggle",
@@ -12700,7 +12707,7 @@
 				class: `Carepack_PPPD_${ucid.ID}`,
 			  },
 			  {
-				label: "Previously Purchased Product Details:",
+				label: "FormPPPD",
 				value: "Previously Purchased Product Details:",
 				data: "PPPD",
 				required: false,
@@ -12743,7 +12750,7 @@
 				class: `Carepack_SNP_${ucid.ID}`,
 			  },
 			  {
-				label: "Serial number of the products*:",
+				label: "FormSNP",
 				value: "Serial number of the products*:",
 				data: "SNP",
 				required: false,
@@ -12786,7 +12793,7 @@
 				class: `Carepack_PPD_${ucid.ID}`,
 			  },
 			  {
-				label: "Product Purchased Date:",
+				label: "FormPPD",
 				value: "Product Purchased Date:",
 				data: "PPD",
 				required: false,
@@ -12837,6 +12844,15 @@
 			if (!config.dataset.ProductServices_Attachment || isCarePack) {
 			  group.push(PPPD, SNP, PPD);
 			}
+
+			group.forEach(subgroup => {
+			  subgroup.forEach((item) => {
+				if (item.label) {
+				  item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ? hpe.fn.lang(item.label, config.locale, config.localizations) : item.label;
+				}
+				if (item.placeholder) item.placeholder = hpe.fn.lang(item.placeholder, config.locale, config.localizations) || item.placeholder;
+			  });
+			});
 		  });
 		}
 		
@@ -12846,7 +12862,7 @@
 		  // add repeater 
 		  const PPPD = [
 			{
-			  label: "Previously Purchased Product Details:",
+			  label: "FormPPPD",
 			  value: "Previously Purchased Product Details:",
 			  data: "PPPD",
 			  required: false,
@@ -12887,7 +12903,7 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "Serial number of the products:",
+			  label: "FormSNP",
 			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
@@ -12928,7 +12944,7 @@
 		  ];
 		  const PPD = [
 			{
-			  label: "Product Purchased Date:",
+			  label: "FormPPD",
 			  value: "Product Purchased Date:",
 			  data: "PPD",
 			  required: false,
@@ -12980,7 +12996,7 @@
 		  ];
 		  let repeaterItem = [
 			{
-			  label: "HPE Part Number",
+			  label: "FormHPN",
 			  data: "ProductID",
 			  required: true,
 			  type: "text",
@@ -12988,7 +13004,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "HPE Part Quantity*",
+			  label: "FormHPQ",
 			  data: "Count",
 			  required: true,
 			  type: "text",
@@ -12997,7 +13013,7 @@
 			  class: "bordered-input",
 			},
 			{
-			  label: "Deal ID",
+			  label: "FormDealId",
 			  data: "DealId",
 			  required: false,
 			  type: "text",
@@ -13005,7 +13021,7 @@
 			  validation: ['minLen|1'],
 			},				
 			{
-			  label: "bundle ID / Icon ID",
+			  label: "FormBIID",
 			  data: "BundleID" ,
 			  required: false,
 			  type: "text",
@@ -13013,7 +13029,7 @@
 			  validation: ['minLen|1'],
 			},
 			{
-			  label: "Unit Price*",
+			  label: "FormUP",
 			  data: "UnitNetAmount",
 			  required: true,
 			  type: "text",
@@ -13022,7 +13038,7 @@
 			  typing: "povaluetyping"
 			},
 			{
-			  label: "Extended Net Price*",
+			  label: "FormENP",
 			  data: "ExtendedNetAmount",
 			  required: true,
 			  disabled: true,
@@ -13041,6 +13057,13 @@
 			  class: "ps-toggle",
 			}];
 		  repeaterItem = [...repeaterItem, ...PPPD, ...SNP, ...PPD];
+
+		  repeaterItem.forEach(item => {
+			if (item.label) {
+			  item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
+			}
+		  });
+
 		  const sumRepeat = page.structure.reduce((accumulator, currentValue) => {
 			if (currentValue.id == "form-table-repeat") {
 			  return accumulator + 1;
