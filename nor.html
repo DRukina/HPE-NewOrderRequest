@@ -10721,7 +10721,7 @@
 		  nbsf.init(config, config.page);
 		}
 	  });
-	  // NOR-989 hotfix. Reflect value for non-required fields in dataset immediately
+	  // NOR-989 hotfix. Reflect values of non-required fields in dataset immediately
 	  $("input[data-name]").on("input", (e) => {
 		let inputEl = e.target;
 		if (!!inputEl.parentNode.parentNode.querySelector(".name .required")) return;
@@ -13439,8 +13439,8 @@
 		const page = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
 
 		let rowsData = [];
-		if (page.length >= 5) {
-		  const header = page[4];
+		if (page.length >= 6) {
+		  const header = page[5];
 		  const headerMap = new Map();
 		  Object.entries(header).forEach(([key, value], index) => {
 			if (value.includes("HPE Part Number")) {
@@ -13474,14 +13474,14 @@
 			  headerMap.set("HPEPartDescription", key);
 			}
 		  });
-		  
-		  for (let i = 5; i < page.length; i++) {
+
+		  for (let i = 6; i < page.length; i++) {
 			const rowInfo = page[i];
-			const productID = headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")] || "";
-			const count = headerMap.get("Count") && rowInfo[headerMap.get("Count")] || "";
-			const unitNetAmount = headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")] || "";
+			const productID = (headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")]) ?? "";
+			const count = (headerMap.get("Count") && rowInfo[headerMap.get("Count")]) ?? "";
+			const unitNetAmount = (headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")]) ?? "";
 			// if ProductID or Quantity or UnitNetAmount doesn't exist
-			if (!productID || !count || !unitNetAmount) {
+			if (productID === "" || count === "" || unitNetAmount === "") {
 			  break;
 			}
 			let productPurchasedDate = null;
@@ -13510,7 +13510,7 @@
 			  ProductID: productID,
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: productID.replace(/[\-]/g, '_') || '',
+			  ID: (productID + "").replace(/[\-]/g, '_'),
 			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
 			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
 			  ProductPurchasedDate: productPurchasedDate || "",
