@@ -6993,7 +6993,7 @@
 			  class: "title-cell-checkbox",
 			},
 			{
-			  label: "HPE Part Number*",
+			  label: "FormHPN",
 			  data: "HPE_Product_Nub",
 			  value: "HPE Part Number*",
 			  required: false,
@@ -7002,7 +7002,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "HPE Part Quantity*",
+			  label: "FormHPQ",
 			  value: "HPE Part Quantity*",
 			  data: "Quantity",
 			  required: false,
@@ -7011,7 +7011,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Deal ID",
+			  label: "FormDealId",
 			  value: "Deal ID",
 			  data: "Deal_Id",
 			  required: false,
@@ -7021,7 +7021,7 @@
 			},
 
 			{
-			  label: "bundle ID / Icon ID",
+			  label: "FormBIID",
 			  value: "bundle ID / Icon ID",
 			  data: "Test",
 			  required: false,
@@ -7030,7 +7030,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Unit Price*",
+			  label: "FormUP",
 			  value: "Unit Price*",
 			  data: "UnitPrice",
 			  required: false,
@@ -7039,7 +7039,7 @@
 			  class: "title-cell",
 			},
 			{
-			  label: "Extended Net Price*",
+			  label: "FormENP",
 			  value: "Extended Net Price*",
 			  data: "ExtendedNetPrice",
 			  required: false,
@@ -7934,9 +7934,16 @@
 			const psRow = app.querySelector(".row[review-id=" + key + "]");
 			const prevProdExists = PSData.some(item => !!item.PreviouslyPurchasedProductDetails || !!item.SerialNumberOfProducts || !!item.ProductPurchasedDate);
 			let PSTable = "<table class='ps-table'>" +
-				"<thead><tr><th>HPE Part Number</th><th>HPE Part Quantity</th><th>Deal ID</th><th>bundle ID / Icon ID</th><th>Unit Price</th><th>Extended Net Price</th>";
+				"<thead><tr><th>" + hpe.fn.lang('FormHPN', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormHPQ', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormDealId', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormBIID', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormUP', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormENP', config.locale, config.localizations) + "</th>";
 			if (prevProdExists) {
-			  PSTable = PSTable + `<th>Previously Purchased Product Details</th><th>Serial number of the products</th><th>Product Purchased Date</th>`;
+			  PSTable = PSTable + "<th>" + hpe.fn.lang('FormPPPD', config.locale, config.localizations) + "</th>" + 
+				"<th>" + hpe.fn.lang('FormSNP', config.locale, config.localizations) + "</th>" +
+				"<th>" + hpe.fn.lang('FormPPD', config.locale, config.localizations) + "</th>";
 			}
 			PSTable = PSTable + "</tr></thead>" + PSData.map(item => {
 			  return `<tr>
@@ -12786,10 +12793,13 @@
 			  group.push(PPPD, SNP, PPD);
 			}
 
-			group.forEach(item => {
-			  if (item.label) {
-				item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ?hpe.fn.lang(item.label, config.locale, config.localizations) + " :" : item.label;
-			  }
+			group.forEach(subgroup => {
+			  subgroup.forEach((item) => {
+				if (item.label) {
+				  item.label = hpe.fn.lang(item.label, config.locale, config.localizations) ? hpe.fn.lang(item.label, config.locale, config.localizations) : item.label;
+				}
+				if (item.placeholder) item.placeholder = hpe.fn.lang(item.placeholder, config.locale, config.localizations) || item.placeholder;
+			  });
 			});
 		  });
 		}
