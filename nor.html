@@ -8840,15 +8840,23 @@
 
 		// Don't override user's data if exist for case description
 		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.LastName)) {
-		config.dataset.FirstName = '[SSOData.FirstName]';
-		config.dataset.LastName = '[SSOData.LastName]';
+		  config.dataset.FirstName = '[SSOData.FirstName]';
+		  config.dataset.LastName = '[SSOData.LastName]';
 		}
 		
 		// Don't use empty value for Requestor_PO_Opp_ID
 		if (config.dataset.Requestor_PO_Opp_ID == 'OPE-') {
 		  config.dataset.Requestor_PO_Opp_ID = null;
 		}
-			
+
+		// Get rid of 'Select one' values in xxx_Country
+		const selectOneValue = config.pages[1].selectone;
+		Object.keys(config.dataset).forEach((key) => {
+		  if (key.endsWith("_Country") && config.dataset[key] == selectOneValue) {
+			config.dataset[key] = null;
+		  }
+		})
+
 		// Removed due to a request here https://hpheroes.atlassian.net/browse/NOR-664?focusedCommentId=57475
 		//quoteHelper.clearPOData(config);
 		
