@@ -8864,6 +8864,10 @@
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
 		
+		if (config.dataset.PO_Category == "Stock") {
+		  quoteHelper.clearAddressData(config, 'EndCustomer');
+		}
+		
 		// BUILD SFDC CASE DESCRIPTION
 		var pairs = [];
 		if (global.data.user.internal) {
@@ -11721,10 +11725,15 @@
 			}, {
 			  sectionName: 'Reseller',
 			  quoteSection: 'ResellerInfo'
-			}, {
-			  sectionName: 'EndCx',
-			  quoteSection: 'EndCustomer'
 			});
+			
+			if (config.dataset.PO_Category !== 'Stock') {
+			  sectionsToInitialize.push({
+				sectionName: 'EndCx',
+				quoteSection: 'EndCustomer'
+			  });
+			}
+			
 		  } else {
 			// Depending on the section specified, only push the relevant sections
 			switch (section) {
