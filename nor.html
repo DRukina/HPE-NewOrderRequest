@@ -9328,9 +9328,11 @@
 		  });
 		}
 
+		PDF.createPdf();
+
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
-		  if (typeof(data.EntryId) === "number") {			
+		  if (typeof(data.EntryId) === "number") {
 			const notDraftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
@@ -14752,6 +14754,351 @@
 		  return cb(oob.grid._appStats);
 		});
 	  }
+	}
+  }
+</script>
+
+<script>
+  const pdfDateRenderer = function(val) {
+	if (!val || typeof(val) !== "string" || val.length < 10) return val;
+	return val.substring(8, 10) + "/" + val.substring(5, 7) + "/" + val.substring(0, 4);
+  }
+
+  const PDF = {
+	l10n: function(l10nKey) {
+	  return hpe.fn.lang(l10nKey, config.locale, config.localizations) || l10nKey;
+	},
+
+	defaultCellRenderer: function(item) {
+	  const hasData = !!item.items.filter((itemDescr) => {
+		const val = config.dataset[itemDescr.key];
+		return val !== "" && val !== null && val !== undefined;
+	  }).length;
+
+	  if (!hasData) return null;
+
+	  let cell = item.items.filter((itemDescr) => {
+		const val = config.dataset[itemDescr.key];
+		return val !== "" && val !== null && val !== undefined;
+	  }).map((itemDescr) => {
+		let val = config.dataset[itemDescr.key];
+		if (itemDescr.renderer) val = itemDescr.renderer(val);
+		return "<tr><td width='45%' style='font-weight:bold;padding:4px;'>" + itemDescr.label + "</td>" +
+		  "<td width='55%' style='padding:4px;'>" + val + "</td></tr>"
+	  });
+
+	  return {
+		content: "<table><tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + cell.join("\n") + "</table>"
+	  }
+	},
+
+	structure: [
+	  {
+		header: "Purchase Order Information",
+		items: [
+		  {label: "Purchase order number:", key: "PO_Number"},
+		  {label: "Submission Date:", key: "SubmittedTimestamp", renderer: pdfDateRenderer},
+		  {label: "Purchase order category:", key: "PO_Category"},
+		  {label: "Purchase order amount:", key: "PO_Value"},
+		  {label: "Purchase order currency:", key: "PO_Currency"},
+		  {label: "Reseller purchase order number:", key: "Rs_PO_Number"},
+		  {label: "End customer purchase order number:", key: "Cx_PO_Number"},
+		]
+	  },
+	  {
+		header: "Submitter Information",
+		items: [
+		  {label: "Company:", key: "PartnerName"},
+		  {label: "First Name:", key: "FirstName"},
+		  {label: "Last Name:", key: "LastName"},
+		  {label: "Email:", key: "Email"},
+		  {label: "Country:", key: "Country"},
+		]
+	  },
+	  {
+		header: "Quote and contactual Information",
+		items: [
+		  {label: "Quote number:", key: "Requestor_PO_Quote_ID"},
+		  {label: "Deal number:", key: "Requestor_PO_Deal_ID"},
+		  {label: "Opportunity ID:", key: "Requestor_PO_Opp_ID"},
+		  {label: "Purchase agreement number:", key: "PA_Number"},
+		  {label: "HPE approved payment terms:", key: "Payment_Terms"},
+		]
+	  },
+	  {
+		header: "Delivery Information",
+		items: [
+		  {label: "Requested Delivery date:", key: "PO_DeliveryDate"},
+		  {label: "Delivery Incoterms:", key: "PO_DeliveryIncoterms"},
+		  {label: "Complete Delivery:", key: "PO_CompleteDelivery"},
+		  {label: "Business Model:", key: "PO_BusinessModel"},
+		]
+	  },
+	  {
+		header: "Sold to Information",
+		items: [
+		  {label: "Party ID:", key: "SoldTo_PartyId"},
+		  {label: "Company name:", key: "SoldTo_CompanyName"},
+		  {label: "Address 1:", key: "SoldTo_Address_Street"},
+		  {label: "Address 2:", key: "SoldTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "SoldTo_Address_Postal"},
+		  {label: "City:", key: "SoldTo_Address_City"},
+		  {label: "State / Province:", key: "SoldTo_Address_State"},
+		  {label: "Country:", key: "SoldTo_Address_Country"},
+		  {label: "Tax ID:", key: "SoldTo_NationalId"},
+		  {label: "First Name:", key: "SoldTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "SoldTo_Contact_LastName"},
+		  {label: "Phone:", key: "SoldTo_Contact_Phone"},
+		  {label: "Email:", key: "SoldTo_Contact_Email"},
+		  {label: "Country of residence:", key: "SoldTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Payer Information",
+		items: [
+		  {label: "Party ID:", key: "Payer_PartyId"},
+		  {label: "Company name:", key: "Payer_CompanyName"},
+		  {label: "Address 1:", key: "Payer_Address_Street"},
+		  {label: "Address 2:", key: "Payer_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "Payer_Address_Postal"},
+		  {label: "City:", key: "Payer_Address_City"},
+		  {label: "State / Province:", key: "Payer_Address_State"},
+		  {label: "Country:", key: "Payer_Address_Country"},
+		  {label: "Tax ID:", key: "Payer_NationalId"},
+		  {label: "First Name:", key: "Payer_Contact_FirstName"},
+		  {label: "Last Name:", key: "Payer_Contact_LastName"},
+		  {label: "Phone:", key: "Payer_Contact_Phone"},
+		  {label: "Email:", key: "Payer_Contact_Email"},
+		  {label: "Country of residence:", key: "Payer_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Bill to Information",
+		items: [
+		  {label: "Party ID:", key: "BillTo_PartyId"},
+		  {label: "Company name:", key: "BillTo_CompanyName"},
+		  {label: "Address 1:", key: "BillTo_Address_Street"},
+		  {label: "Address 2:", key: "BillTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "BillTo_Address_Postal"},
+		  {label: "City:", key: "BillTo_Address_City"},
+		  {label: "State / Province:", key: "BillTo_Address_State"},
+		  {label: "Country:", key: "BillTo_Address_Country"},
+		  {label: "Tax ID:", key: "BillTo_NationalId"},
+		  {label: "First Name:", key: "BillTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "BillTo_Contact_LastName"},
+		  {label: "Phone:", key: "BillTo_Contact_Phone"},
+		  {label: "Email:", key: "BillTo_Contact_Email"},
+		  {label: "Country of residence:", key: "BillTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Shipping Information",
+		items: [
+		  {label: "Party ID:", key: "ShipTo_PartyId"},
+		  {label: "Company name:", key: "ShipTo_CompanyName"},
+		  {label: "Address 1:", key: "ShipTo_Address_Street"},
+		  {label: "Address 2:", key: "ShipTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "ShipTo_Address_Postal"},
+		  {label: "City:", key: "ShipTo_Address_City"},
+		  {label: "State / Province:", key: "ShipTo_Address_State"},
+		  {label: "Country:", key: "ShipTo_Address_Country"},
+		  {label: "Tax ID:", key: "ShipTo_NationalId"},
+		  {label: "First Name:", key: "ShipTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "ShipTo_Contact_LastName"},
+		  {label: "Phone:", key: "ShipTo_Contact_Phone"},
+		  {label: "Email:", key: "ShipTo_Contact_Email"},
+		  {label: "Country of residence:", key: "ShipTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "End customer Information",
+		items: [
+		  {label: "Party ID:", key: "EndCx_PartyId"},
+		  {label: "Company name:", key: "EndCx_CompanyName"},
+		  {label: "Address 1:", key: "EndCx_Address_Street"},
+		  {label: "Address 2:", key: "EndCx_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "EndCx_Address_Postal"},
+		  {label: "City:", key: "EndCx_Address_City"},
+		  {label: "State / Province:", key: "EndCx_Address_State"},
+		  {label: "Country:", key: "EndCx_Address_Country"},
+		  {label: "Tax ID:", key: "EndCx_NationalId"},
+		  {label: "First Name:", key: "EndCx_Contact_FirstName"},
+		  {label: "Last Name:", key: "EndCx_Contact_LastName"},
+		  {label: "Phone:", key: "EndCx_Contact_Phone"},
+		  {label: "Email:", key: "EndCx_Contact_Email"},
+		  {label: "Country of residence:", key: "EndCx_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Reseller Information",
+		items: [
+		  {label: "Party ID:", key: "Reseller_PartyId"},
+		  {label: "Company name:", key: "Reseller_CompanyName"},
+		  {label: "Address 1:", key: "Reseller_Address_Street"},
+		  {label: "Address 2:", key: "Reseller_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "Reseller_Address_Postal"},
+		  {label: "City:", key: "Reseller_Address_City"},
+		  {label: "State / Province:", key: "Reseller_Address_State"},
+		  {label: "Country:", key: "Reseller_Address_Country"},
+		  {label: "Tax ID:", key: "Reseller_NationalId"},
+		  {label: "First Name:", key: "Reseller_Contact_FirstName"},
+		  {label: "Last Name:", key: "Reseller_Contact_LastName"},
+		  {label: "Phone:", key: "Reseller_Contact_Phone"},
+		  {label: "Email:", key: "Reseller_Contact_Email"},
+		  {label: "Country of residence:", key: "Reseller_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Custom Ship To Party Information",
+		items: [
+		  {label: "Party ID:", key: "CustomShipTo_PartyId"},
+		  {label: "Company name:", key: "CustomShipTo_CompanyName"},
+		  {label: "Address 1:", key: "CustomShipTo_Address"},
+		  {label: "Address 2:", key: "CustomShipTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "CustomShipTo_Address_Postal"},
+		  {label: "City:", key: "CustomShipTo_Address_City"},
+		  {label: "State / Province:", key: "CustomShipTo_Address_State"},
+		  {label: "Country:", key: "CustomShipTo_Address_Country"},
+		]
+	  },
+	  {
+		renderer: function() {
+		  if (!config.dataset.Config_Quote_PartialOrder) return null;
+		  let PSData = null;
+
+		  try {
+			PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder).filter(item => item.Selected == "Y");
+		  } catch(e) {}
+
+		  if (!PSData || !PSData.length) return null;
+
+		  const poCurrency = config.dataset.PO_Currency;
+
+		  const header = "<br>" +
+				"<table><tr><th style='padding: 6px; white-space: nowrap;' width='8%'>Item</td>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='24%'>Product Number / UCID / Icon ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='8%'>Qty</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Bundle ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Deal ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Unit Price (" + poCurrency + ")</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Extended Net Price (" + poCurrency + ")</th></tr>";
+
+		  const result = PSData.map((item, index) => {
+			let configId = [item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			return `<tr><td style='padding: 6px;'>${index + 1}</td>
+<td style='padding: 6px;'>${item.ProductID} <br> ${configId}</td>
+<td style='padding: 6px;'>${item.Count}</td>
+<td style='padding: 6px;'>${item.BundleID || ''}</td>
+<td style='padding: 6px;'>${item.DealID || ''}</td>
+<td style='padding: 6px;'>${item.UnitNetAmount}</td>
+<td style='padding: 6px;'>${item.ExtendedNetAmount}</td></tr>`;
+		  }).join("\n");
+
+		  return {
+			newline: true,
+			row: true,
+			content: header + result + "</table>"
+		  }
+		}
+	  },
+	  {
+		header: "Asset location Information",
+		items: [
+		  {label: "Party ID:", key: "AssLoc_PartyId"},
+		  {label: "Company name:", key: "AssLoc_CompanyName"},
+		  {label: "Address 1:", key: "AssLoc_Address_Street"},
+		  {label: "Address 2:", key: "AssLoc_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "AssLoc_Address_Postal"},
+		  {label: "City:", key: "AssLoc_Address_City"},
+		  {label: "State / Province:", key: "AssLoc_Address_State"},
+		  {label: "Country:", key: "AssLoc_Address_Country"},
+		]
+	  },
+	  {
+		header: "Preferred Service Provider Information",
+		items: [
+		  {label: "Party ID:", key: "PSP_PartyId"},
+		  {label: "Company name:", key: "PSP_CompanyName"},
+		  {label: "Address 1:", key: "PSP_Address_Street"},
+		  {label: "Address 2:", key: "PSP_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "PSP_Address_Postal"},
+		  {label: "City:", key: "PSP_Address_City"},
+		  {label: "State / Province:", key: "PSP_Address_State"},
+		  {label: "Country:", key: "PSP_Address_Country"},
+		]
+	  },
+	  {
+		header: "Entitled party Information",
+		items: [
+		  {label: "Party ID:", key: "EntPrty_PartyId"},
+		  {label: "Company name:", key: "EntPrty_CompanyName"},
+		  {label: "Address 1:", key: "EntPrty_Address_Street"},
+		  {label: "Address 2:", key: "EntPrty_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "EntPrty_Address_Postal"},
+		  {label: "City:", key: "EntPrty_Address_City"},
+		  {label: "State / Province:", key: "EntPrty_Address_State"},
+		  {label: "Country:", key: "EntPrty_Address_Country"},
+		  {label: "First Name:", key: "EntPrty_Contact_FirstName"},
+		  {label: "Last Name:", key: "EntPrty_Contact_LastName"},
+		  {label: "Phone:", key: "EntPrty_Contact_Phone"},
+		  {label: "Email:", key: "EntPrty_Contact_Email"},
+		]
+	  },
+	  {
+		header: "Comments",
+		items: [
+		  {label: "Tax details (and any exemptions)", key: "Comment_Tax"},
+		  {label: "Invoice comments", key: "Comment_Invoice"},
+		  {label: "Delivery comments", key: "Comment_Delivery"},
+		  {label: "Packing list comments", key: "Comment_Packing"},
+		  {label: "Additional comments", key: "Comment_Extra"},
+		]
+	  },
+	],
+
+	recreatePdf: function(norId) {
+	  crud.read("3180", "eid=" + norId, function(d) {
+		console.log("Record loaded: " + norId);
+		config.dataset = d.Rows[0];
+		if (!config.dataset.EntryId) throw "No Entry Id in the record";
+		PDF.createPdf();
+		crud.update(3163, norId, config.dataset, function(data) {
+		  console.log("Record saved: " + norId);
+		  config.dataset = {};
+		});
+	  })
+	},
+
+	createPdf: function() {
+	  let cells = PDF.structure.map((item) => {
+		const cellfunc = item.renderer || PDF.defaultCellRenderer;
+		return cellfunc(item);
+	  }).filter(cell => !!cell);
+
+	  let tableCells = cells.reduce((acc, cell, ndx, arr) => {
+		let row = acc[acc.length - 1];
+		if (row.length >= 2 || (ndx && arr[ndx-1].row)) {
+		  row = [];
+		  acc.push(row);
+		}
+
+		if (cell.newline && row.length == 1) {
+		  row.push(null);
+		  row = [];
+		  acc.push(row);
+		}
+
+		row.push(cell);
+		return acc;
+	  }, [[]]).map((row) => {
+		if (row.length == 1 && row[0].row) {
+		  return row[0].content;
+		}
+		return "<table style='width:100%;'>" +
+		  "<tr><td style='vertical-align: top;padding-top:10px;' width='50%'>" + row[0].content + "</td><td  style='width:10px;'>" +
+		  "<td style='vertical-align: top;padding-top:10px;' width='50%'>" + (row[1] ? row[1].content : "") + "</td></tr></table>";
+	  });
+	  config.dataset.q = tableCells.join("\n");
 	}
   }
 </script>
