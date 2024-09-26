@@ -9026,8 +9026,11 @@
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI018", config.locale, config.localizations) + "</strong><br>";
 			  } else {
-				if (pairs[i].ttl == "page-2")
+				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
+				  const po_n = config.dataset.PO_Number.replace(/\s/g, "_")
+				  caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?name=${po_n}` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				}
 				else if (pairs[i].ttl == "page-3")
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI019", config.locale, config.localizations) + "</strong><br>";
 				else
@@ -9228,6 +9231,8 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
+				const po_n = config.dataset.PO_Number.replace(/\s/g, "_")
+				caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?name=${po_n}` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			} else {
