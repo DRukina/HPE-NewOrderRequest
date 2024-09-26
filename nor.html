@@ -14778,12 +14778,12 @@
 	  }).map((itemDescr) => {
 		let val = config.dataset[itemDescr.key];
 		if (itemDescr.renderer) val = itemDescr.renderer(val);
-		return "<tr><td width='45%' style='font-weight:bold;padding:5px;'>" + itemDescr.label + "</td>" +
-		  "<td width='55%' style='padding:5px;'>" + val + "</td></tr>"
+		return "<tr><td width='45%' style='font-weight:bold;padding:4px;'>" + itemDescr.label + "</td>" +
+		  "<td width='55%' style='padding:4px;'>" + val + "</td></tr>"
 	  });
 
 	  return {
-		content: "<table><tr><th colspan='2' style='padding:6px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + cell.join("\n") + "</table>"
+		content: "<table><tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + cell.join("\n") + "</table>"
 	  }
 	},
 
@@ -15051,6 +15051,19 @@
 	  },
 	],
 
+	recreatePdf: function(norId) {
+	  crud.read("3180", "eid=" + norId, function(d) {
+		console.log("Record loaded: " + norId);
+		config.dataset = d.Rows[0];
+		if (!config.dataset.EntryId) throw "No Entry Id in the record";
+		PDF.createPdf();
+		crud.update(3163, norId, config.dataset, function(data) {
+		  console.log("Record saved: " + norId);
+		  config.dataset = {};
+		});
+	  })
+	},
+
 	createPdf: function() {
 	  let cells = PDF.structure.map((item) => {
 		const cellfunc = item.renderer || PDF.defaultCellRenderer;
@@ -15084,6 +15097,7 @@
 	}
   }
 </script>
+
 <!-- NOR application initialization -->
 <script>
   //we call the functions from app object to initiate the landing page.
