@@ -2648,6 +2648,10 @@
 		  }
 		});
 	  }
+	  if (config.dataset.CountryCode == "TH") {
+		let sbt = config.dom.querySelector(".header .subtitle");
+		if (sbt) sbt.innerHTML += "<br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
+	  }
 	  callbacks.page1();
 	},
 	validation: function() {
