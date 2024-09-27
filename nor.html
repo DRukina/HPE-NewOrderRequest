@@ -8906,6 +8906,11 @@
 		  config.dataset.FirstName = '[SSOData.FirstName]';
 		  config.dataset.LastName = '[SSOData.LastName]';
 		}
+		
+		// Don't use empty value for Requestor_PO_Opp_ID
+		if (config.dataset.Requestor_PO_Opp_ID == 'OPE-') {
+		  config.dataset.Requestor_PO_Opp_ID = null;
+		}
 
 		// Get rid of 'Select one' values in xxx_Country
 		const selectOneValue = config.pages[1].selectone;
@@ -8924,13 +8929,6 @@
 		let isDraft = config.dataset.isDraft;
 		if (config.dataset.PO_Category == "Stock") {
 		  quoteHelper.clearAddressData(config, 'EndCustomer');
-		}
-
-		if (!isDraft) {
-		  config.dataset.Status = '1';
-		  config.dataset.Submitted = 'Y';
-		  config.dataset.Workflow = '1';
-		  config.dataset.SubmittedTimestamp = t;
 		}
 
 		// BUILD SFDC CASE DESCRIPTION
@@ -9399,11 +9397,6 @@
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 		  if (typeof(data.EntryId) === "number") {
-			// UPDATE REFERENCE APPLICATION WITH RESPONSE
-			config.dataset = data;
-			nbsf.init(config, config.page);
-			mo.fn.overlay.hide();
-			
 			const notDraftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
@@ -9448,9 +9441,30 @@
 			}
 			
 			if (isDraft) {
+			  // UPDATE REFERENCE APPLICATION WITH RESPONSE
+			  config.dataset = data;
+			  nbsf.init(config, config.page);
+			  mo.fn.overlay.hide();
 			  draftHandler();
 			} else {
-			  quoteHelper.saveProductAndServices(config, notDraftHandler, errorHandler);
+			  quoteHelper.saveProductAndServices(config, function() {
+				// set Worflow after creating product and services
+				config.dataset.Status = '1';
+				config.dataset.Submitted = 'Y';
+				config.dataset.Workflow = '1';
+				config.dataset.SubmittedTimestamp = t;
+				crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
+				  if (typeof(data.EntryId) === "number") {
+					// UPDATE REFERENCE APPLICATION WITH RESPONSE
+					config.dataset = data;
+					nbsf.init(config, config.page);
+					mo.fn.overlay.hide();
+					notDraftHandler();
+				  } else {
+					errorHandler();
+				  }
+				});
+			  }, errorHandler, true);
 			}
 		  } else {
 			errorHandler();
