@@ -11693,10 +11693,11 @@
 		const initDataset = async function(section, quoteSection) {
 		  if (quoteHelper.quote.quoteHeader[quoteSection]) {
 			let partyId;
+			let distributorInfoPartyId =  (quoteHelper.quote.quoteHeader.DistributorInfo &&  quoteHelper.quote.quoteHeader.DistributorInfo.Company) ? quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID : null;
 
 			if (section == 'SoldTo') {
-			  if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+			  if (distributorInfoPartyId) {
+				partyId = distributorInfoPartyId;
 			  } else if (quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID) {
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 			  } else {
@@ -11708,8 +11709,8 @@
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 
 			  } else {
-				if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				  partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+				if (distributorInfoPartyId) {
+				  partyId = distributorInfoPartyId;
 				} else if (quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID) {
 				  partyId = quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID;
 				} else {
@@ -11720,11 +11721,7 @@
 			  console.log('Payer id', partyId);
 			} else {
 			  partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
-
 			}
-
-
-
 
 			if (partyId) {
 			  await processAddressAssociations(partyId, section, quoteSection);
