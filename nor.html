@@ -2432,8 +2432,8 @@
 		  logic: "and",
 		  filters: [{
 			field: "CountryCode",
-			operator: "eq",
-			value: "JP"
+		    operator: "in",
+		    value: ["JP", "KR"]
 		  }]
 		},
 		header: "",
@@ -2696,6 +2696,10 @@
 			this.value = this.value.slice(0, -2);
 		  }
 		});
+	  }
+	  if (config.dataset.CountryCode == "TH") {
+		let sbt = config.dom.querySelector(".header .subtitle");
+		if (sbt) sbt.innerHTML += "<br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
 	  }
 	  callbacks.page1();
 	},
@@ -3307,223 +3311,215 @@
 		   values: function() {
 			 return reference.countriesArray
 		   }
+		 },
+		 {
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: false,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			class: "review-address-taxid",
+			typing: "nationalID"
 		 }
 		]
 	  ]
 	},
-				{
-		header: "",
+	  {
+		//header: "Form056",
+		header: "Address",
 		filter: {
 		  logic: "and",
 		  filters: [{
 			field: "Config_SoldToDetails",
 			operator: "neq",
 			value: "Y"
-		  }, {
-			field: "SoldTo_Address_Country",
-			operator: "in",
-			value: ["Brazil"]
-		  }]
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "No"
+					},
+					{
+					  field: "CountryCode",
+					  operator: "in",
+					  value: ["HK", "MO"]
+					},
+				   ]
 		},
 		group: [
 		  [{
-			label: "Form495",
-			data: "SoldTo_NationalID",
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
+		  }],
+		  [{
+			label: "Form058",
+			data: "SoldTo_CompanyName",
 			required: true,
 			type: "text",
-			validation: ["nationalID", "minLen|1", "maxLen|14"],
-			class: "review-address-taxid",
-			typing: "nationalID"
+			//placeholder: "Form059",
+			validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			typing: "kpDefault"
+		  },
+		   {
+			 label: "Address",
+			 data: "SoldTo_Address_Street",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form216",
+			 validation: ["kpDefault", "minLen|2", "maxLen|65"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "AddressLineOptional",
+			 data: "SoldTo_Address_Street2",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form061",
+			 validation: ["kpDefault", "minLen|2", "maxLen|40"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "City",
+			 data: "SoldTo_Address_City",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form062",
+			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "StateProvince",
+			 data: "SoldTo_Address_State",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form063",
+			 validation: ["kpDefault", "minLen|2"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Postal code",
+			 data: "SoldTo_Address_Postal",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form087",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Country",
+			 data: "SoldTo_Address_Country",
+			 disabled: true,
+			 required: true,
+			 type: "select",
+			 class: "review-address-country",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   },
+		   {
+			 label: "Form495",
+			 data: "SoldTo_NationalID",
+			 required: true,
+			 type: "text",
+			 validation: ["nationalID", "minLen|1", "maxLen|14"],
+			 class: "review-address-taxid",
+			 typing: "nationalID"
+		   }
+		  ]
+		]
+	  },
+	  {
+		//header: "Form056",
+		header: "Address",
+		filter: {
+		  logic: "and",
+		  filters: [{
+			field: "Config_SoldToDetails",
+			operator: "neq",
+			value: "Y"
+		  },
+					{
+					  field: "xrefFail",
+					  operator: "eq",
+					  value: "Yes"
+					}
+				   ]
+		},
+		group: [
+		  [{
+			label: "Form086",
+			data: "SoldTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault"
 		  }]
 		]
 	  },
 	  {
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "No"
-							  },
-							  {
-								field: "CountryCode",
-								operator: "in",
-								value: ["HK", "MO"]
-							  },
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}],
-					[{
-					  label: "Form058",
-					  data: "SoldTo_CompanyName",
-					  required: true,
-					  type: "text",
-					  //placeholder: "Form059",
-					  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-					  typing: "kpDefault"
-					},
-					 {
-					   label: "Address",
-					   data: "SoldTo_Address_Street",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form216",
-					   validation: ["kpDefault", "minLen|2", "maxLen|65"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "AddressLineOptional",
-					   data: "SoldTo_Address_Street2",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form061",
-					   validation: ["kpDefault", "minLen|2", "maxLen|40"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "City",
-					   data: "SoldTo_Address_City",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form062",
-					   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "StateProvince",
-					   data: "SoldTo_Address_State",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form063",
-					   validation: ["kpDefault", "minLen|2"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Postal code",
-					   data: "SoldTo_Address_Postal",
-					   required: false,
-					   type: "text",
-					   //placeholder: "Form087",
-					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Country",
-					   data: "SoldTo_Address_Country",
-					   disabled: true,
-					   required: true,
-					   type: "select",
-					   class: "review-address-country",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-				{
-				  //header: "Form056",
-				  header: "Address",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_SoldToDetails",
-					  operator: "neq",
-					  value: "Y"
-					},
-							  {
-								field: "xrefFail",
-								operator: "eq",
-								value: "Yes"
-							  }
-							 ]
-				  },
-				  group: [
-					[{
-					  label: "Form086",
-					  data: "SoldTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault"
-					}]
-				  ]
-				},
-				{
-				  header: "Contact",
-				  filter: {
-					field: "Config_SoldToDetails",
-					operator: "neq",
-					value: "Y"
-				  },
-				  group: [
-					[{
-					  label: "FirstName",
-					  data: "SoldTo_Contact_FirstName",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form065",
-					  validation: ["kpDefault", "minLen|1"],
-					  typing: "kpDefault",
-					  class: "review-contact-firstname",
-					},
-					 {
-					   label: "Surname",
-					   data: "SoldTo_Contact_LastName",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form066",
-					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
-					   typing: "kpDefault"
-					 },
-					 {
-					   label: "Telephone",
-					   data: "SoldTo_Contact_Phone",
-					   required: false,
-					   type: "text",
-					   //placeholder: "1-888-666-5555",
-					   validation: ["typePhone", "minLen|8", "maxLen|18"],
-					   typing: "typePhone"
-					 },
-					 {
-					   label: "Email",
-					   data: "SoldTo_Contact_Email",
-					   required: true,
-					   type: "text",
-					   //placeholder: "Form067",
-					   validation: ["isEmail", "maxLen|96"],
-					   typing: "typeEmail"
-					 },
-					 {
-					   label: "CountryOfResidence",
-					   data: "SoldTo_Contact_Country",
+		header: "Contact",
+		filter: {
+		  field: "Config_SoldToDetails",
+		  operator: "neq",
+		  value: "Y"
+		},
+		group: [
+		  [{
+			label: "FirstName",
+			data: "SoldTo_Contact_FirstName",
+			required: false,
+			type: "text",
+			//placeholder: "Form065",
+			validation: ["kpDefault", "minLen|1"],
+			typing: "kpDefault",
+			class: "review-contact-firstname",
+		  },
+		   {
+			 label: "Surname",
+			 data: "SoldTo_Contact_LastName",
 			 required: true,
-					   type: "select",
-					   values: function() {
-						 return reference.countriesArray
-					   }
-					 }
-					]
-				  ]
-				},
-			   ],
+			 type: "text",
+			 //placeholder: "Form066",
+			 validation: ["kpDefault", "minLen|1", "maxLen|60"],
+			 typing: "kpDefault"
+		   },
+		   {
+			 label: "Telephone",
+			 data: "SoldTo_Contact_Phone",
+			 required: false,
+			 type: "text",
+			 //placeholder: "1-888-666-5555",
+			 validation: ["typePhone", "minLen|8", "maxLen|18"],
+			 typing: "typePhone"
+		   },
+		   {
+			 label: "Email",
+			 data: "SoldTo_Contact_Email",
+			 required: true,
+			 type: "text",
+			 //placeholder: "Form067",
+			 validation: ["isEmail", "maxLen|96"],
+			 typing: "typeEmail"
+		   },
+		   {
+			 label: "CountryOfResidence",
+			 data: "SoldTo_Contact_Country",
+			 required: true,
+			 type: "select",
+			 values: function() {
+			   return reference.countriesArray
+			 }
+		   }
+		  ]
+		]
+	  },
+	],
 	callback: function() {
 	  callbacks.page3();
 	}
@@ -7036,15 +7032,17 @@
 		group: [
 		  [
 			{
-			  data: "Field",
-			  type: "hidden",
-			  class: "title-cell",
+			  data: "Selected_All",
+			  type: "checkbox",
+			  required: false,
+			  values: ["Y",],
+			  class: "title-cell-checkbox",
 			},
 			{
 			  label: "FormHPN",
 			  data: "HPE_Product_Nub",
 			  value: "HPE Part Number*",
-			  required: false,
+			  required: true,
 			  type: "text",
 			  validation: ['minLen|1'],
 			  class: "title-cell",
@@ -7053,7 +7051,7 @@
 			  label: "FormHPQ",
 			  value: "HPE Part Quantity*",
 			  data: "Quantity",
-			  required: false,
+			  required: true,
 			  type: "text",
 			  validation: ['minLen|1'],
 			  class: "title-cell",
@@ -7081,7 +7079,7 @@
 			  label: "FormUP",
 			  value: "Unit Price*",
 			  data: "UnitPrice",
-			  required: false,
+			  required: true,
 			  type: "text",
 			  validation: ['minLen|1'],
 			  class: "title-cell",
@@ -7090,7 +7088,7 @@
 			  label: "FormENP",
 			  value: "Extended Net Price*",
 			  data: "ExtendedNetPrice",
-			  required: false,
+			  required: true,
 			  type: "text",
 			  validation: ['minLen|1'],
 			  class: "title-cell",
@@ -7872,7 +7870,10 @@
 				(typeof(config.dataset[item[1]]) === "string" && config.dataset[item[1]].length < 4)
 			  )
 			) value = "Pending";
-			else if (item[1] == "SuccessResult" && config.dataset[item[1]] != null) {
+			else if (item[1] == "PO_Number" && config.dataset[item[1]] && config.dataset.SubmittedTimestamp && config.dataset.PDF) {
+			  value = `<a style="color: blue;text-decoration: underline;" href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + config.dataset.PO_Number + '</a>';
+
+			} else if (item[1] == "SuccessResult" && config.dataset[item[1]] != null) {
 			  value = JSON.parse(config.dataset[item[1]]).CaseNumber;
 			} else if (item[1] == "SuccessResult" && config.dataset[item[1]] == null) {
 			  value = "N/A";
@@ -8898,20 +8899,32 @@
 
 		// Don't override user's data if exist for case description
 		if (!(config.dataset.OnBehalf_CreatedBy && config.dataset.LastName)) {
-		config.dataset.FirstName = '[SSOData.FirstName]';
-		config.dataset.LastName = '[SSOData.LastName]';
+		  config.dataset.FirstName = '[SSOData.FirstName]';
+		  config.dataset.LastName = '[SSOData.LastName]';
 		}
+		
+		// Don't use empty value for Requestor_PO_Opp_ID
+		if (config.dataset.Requestor_PO_Opp_ID == 'OPE-') {
+		  config.dataset.Requestor_PO_Opp_ID = null;
+		}
+
+		// Get rid of 'Select one' values in xxx_Country
+		const selectOneValue = config.pages[1].selectone;
+		Object.keys(config.dataset).forEach((key) => {
+		  if (key.endsWith("_Country") && config.dataset[key] == selectOneValue) {
+			config.dataset[key] = null;
+		  }
+		})
+
 		// Removed due to a request here https://hpheroes.atlassian.net/browse/NOR-664?focusedCommentId=57475
 		//quoteHelper.clearPOData(config);
 		
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
+
 		let isDraft = config.dataset.isDraft;
-		if (!isDraft) {
-		  config.dataset.Status = '1';
-		  config.dataset.Submitted = 'Y';
-		  config.dataset.Workflow = '1';
-		  config.dataset.SubmittedTimestamp = t;
+		if (config.dataset.PO_Category == "Stock") {
+		  quoteHelper.clearAddressData(config, 'EndCustomer');
 		}
 
 		// BUILD SFDC CASE DESCRIPTION
@@ -9072,8 +9085,11 @@
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI018", config.locale, config.localizations) + "</strong><br>";
 			  } else {
-				if (pairs[i].ttl == "page-2")
+				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
+				//  const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
+				  caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				}
 				else if (pairs[i].ttl == "page-3")
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI019", config.locale, config.localizations) + "</strong><br>";
 				else
@@ -9274,6 +9290,8 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
+			//	const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
+				caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			} else {
@@ -9345,11 +9363,11 @@
 			' / NORID ' +
 			(config.dataset.EntryId ? config.dataset.EntryId : 'N/A');
 
-		if (config.dataset.CountryCode == 'JP') {
-		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A') +
-			' / End Customer ' +
-			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
-		} else {
+		if (config.dataset.CountryCode == 'JP' || config.dataset.CountryCode == 'KR') {
+		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A');
+		}
+
+		if (config.dataset.PO_Category != "Stock") {
 		  subject += ' / End Customer ' +
 			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
 		}
@@ -9370,14 +9388,11 @@
 		  });
 		}
 
+		PDF.createPdf();
+
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 		  if (typeof(data.EntryId) === "number") {
-			// UPDATE REFERENCE APPLICATION WITH RESPONSE
-			config.dataset = data;
-			nbsf.init(config, config.page);
-			mo.fn.overlay.hide();
-			
 			const notDraftHandler = function() {
 			  mo.fn.modal.show({
 				ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
@@ -9422,9 +9437,30 @@
 			}
 			
 			if (isDraft) {
+			  // UPDATE REFERENCE APPLICATION WITH RESPONSE
+			  config.dataset = data;
+			  nbsf.init(config, config.page);
+			  mo.fn.overlay.hide();
 			  draftHandler();
 			} else {
-			  quoteHelper.saveProductAndServices(config, notDraftHandler, errorHandler);
+			  quoteHelper.saveProductAndServices(config, function() {
+				// set Worflow after creating product and services
+				config.dataset.Status = '1';
+				config.dataset.Submitted = 'Y';
+				config.dataset.Workflow = '1';
+				config.dataset.SubmittedTimestamp = t;
+				crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
+				  if (typeof(data.EntryId) === "number") {
+					// UPDATE REFERENCE APPLICATION WITH RESPONSE
+					config.dataset = data;
+					nbsf.init(config, config.page);
+					mo.fn.overlay.hide();
+					notDraftHandler();
+				  } else {
+					errorHandler();
+				  }
+				});
+			  }, errorHandler, true);
 			}
 		  } else {
 			errorHandler();
@@ -9845,18 +9881,19 @@
 			config.dataset.Config_EndCxDetails_Contact = "N";
 		  }
 		  if (config.dataset.PO_Category == 'Stage' && config.dataset.Requestor_PO_Quote_ID) {
-			config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
-			config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
-			config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
-			config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
-			config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
-			config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
+			// NOR-874: Ship to address to be left Blank
+			// config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
+			// config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
+			// config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
+			// config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
+			// config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
+			// config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
 			//nbsf.init(config, config.page);
-		  } else if (config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop' && config.dataset.Requestor_PO_Quote_ID) {
+		  } else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
 			paNumberChanged();
 		  }
@@ -10550,6 +10587,26 @@
 	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
 		 quoteHelper.onInitProductAndServices(config);
 	//	quoteHelper.onCloneProductAndServices(config, document);
+	  }
+
+	  const selectedAllEl = document.querySelector("input[data-name='Selected_All']");
+	  if (selectedAllEl) {
+		if (document.querySelector("input[data-name='ProductServices_Attachment']")) {
+		  selectedAllEl.closest(".fmmcosmin").style.visibility = "hidden";
+		} else {
+		  selectedAllEl.addEventListener("change", (e) => {
+			const selAllChecked = e.target.checked;
+			const paramValue = selAllChecked ? "Y" : null;
+			config.dom.querySelectorAll("input[type='checkbox'][data-name^='Selected_']").forEach((cbEl) => {
+			  const paramName = cbEl.getAttribute("data-name");
+			  if (paramName != "Selected_All") {
+				cbEl.checked = selAllChecked;
+				config.dataset[paramName] = paramValue;
+			  }
+			});
+			nbsf.ev.global(config);
+		  });
+		}
 	  }
 	},
 	quotePreview: function() {
@@ -11410,14 +11467,19 @@
 
 	  // NATIONAL ID
 	  let nationalId = null;
-	  if (reference.xref.party && countries_nationalId.indexOf(reference.xref.party[0].countryName) > -1) {
+	  let soldToNationalId = null;
+	  if (reference.xref.party) {
 		var externalidentifier = reference.xref.party[0].externalIdentifier;
 		for (i = 0; i < externalidentifier.length; i++) {
 		  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
-			nationalId = externalidentifier[i].identifierValue;
+			soldToNationalId = externalidentifier[i].identifierValue;
 			break;
 		  }
 		}
+	  }
+	  
+	  if (countries_nationalId.indexOf(reference.xref.party[0].countryName) > -1) {
+		nationalId = soldToNationalId;
 	  }
 
 
@@ -11449,8 +11511,8 @@
 		  config.dataset.SoldTo_Address_Street2 = address2;
 		}
 
-		if (nationalId) {
-		  config.dataset.SoldTo_NationalID = nationalId;
+		if (soldToNationalId) {
+		  config.dataset.SoldTo_NationalID = soldToNationalId;
 		}
 	  }
 	  // HIDDEN INPUT: PAYER
@@ -11619,16 +11681,14 @@
 					}
 				  }
 				}
-				// SoldTo NationalID
+				// SoldTo NationalID for all countries
 				if (section == 'SoldTo') {
-				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
-					var externalidentifier = d.party[0].externalIdentifier;
-					for (i = 0; i < externalidentifier.length; i++) {
-					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
-						addressObj['NationalID'] = externalidentifier[i].identifierValue;
-						config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
-						break;
-					  }
+				  var externalidentifier = d.party[0].externalIdentifier;
+				  for (i = 0; i < externalidentifier.length; i++) {
+					if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
+					  addressObj['NationalID'] = externalidentifier[i].identifierValue;
+					  config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
+					  break;
 					}
 				  }
 				}
@@ -11692,10 +11752,11 @@
 		const initDataset = async function(section, quoteSection) {
 		  if (quoteHelper.quote.quoteHeader[quoteSection]) {
 			let partyId;
+			let distributorInfoPartyId =  (quoteHelper.quote.quoteHeader.DistributorInfo &&  quoteHelper.quote.quoteHeader.DistributorInfo.Company) ? quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID : null;
 
 			if (section == 'SoldTo') {
-			  if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+			  if (distributorInfoPartyId) {
+				partyId = distributorInfoPartyId;
 			  } else if (quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID) {
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 			  } else {
@@ -11707,8 +11768,8 @@
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 
 			  } else {
-				if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				  partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+				if (distributorInfoPartyId) {
+				  partyId = distributorInfoPartyId;
 				} else if (quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID) {
 				  partyId = quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID;
 				} else {
@@ -11719,11 +11780,7 @@
 			  console.log('Payer id', partyId);
 			} else {
 			  partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
-
 			}
-
-
-
 
 			if (partyId) {
 			  await processAddressAssociations(partyId, section, quoteSection);
@@ -11760,19 +11817,24 @@
 			}, {
 			  sectionName: 'Payer',
 			  quoteSection: 'Payer'
-			}, {
-			  sectionName: 'BillTo',
-			  quoteSection: 'BillTo'
+			//}, { // NOR-874: Ship to address to be left Blank
+			//  sectionName: 'ShipTo',
+			//  quoteSection: 'ShipTo'
 			}, {
 			  sectionName: 'ShipTo',
 			  quoteSection: 'ShipTo'
 			}, {
 			  sectionName: 'Reseller',
 			  quoteSection: 'ResellerInfo'
-			}, {
-			  sectionName: 'EndCx',
-			  quoteSection: 'EndCustomer'
 			});
+
+			if (config.dataset.PO_Category !== 'Stock') {
+			  sectionsToInitialize.push({
+				sectionName: 'EndCx',
+				quoteSection: 'EndCustomer'
+			  });
+			}
+
 		  } else {
 			// Depending on the section specified, only push the relevant sections
 			switch (section) {
@@ -11794,11 +11856,11 @@
 				  quoteSection: 'BillTo'
 				});
 				break;
-			  case 'ShipTo':
-				sectionsToInitialize.push({
-				  sectionName: 'ShipTo',
-				  quoteSection: 'ShipTo'
-				});
+			  case 'ShipTo': // NOR-874: Ship to address to be left Blank
+				//sectionsToInitialize.push({
+				//  sectionName: 'ShipTo',
+				//  quoteSection: 'ShipTo'
+				//});
 				break;
 			  case 'Reseller':
 				sectionsToInitialize.push({
@@ -11855,8 +11917,8 @@
 	  // FIX?
 	  const fields = ["PO_BusinessModel",
 					  "PO_Category",
-					  "Requestor_PO_Opp_ID",
 					  "Requestor_PO_Deal_ID",
+					  "Requestor_PO_Opp_ID",
 					  "Config_UCID",
 					  "Config_UCIDQ",
 					  "Config_ConfigId",
@@ -11909,7 +11971,7 @@
 	clearAddressData: function(config, section = 'all') {
 	  // typeof section: all, SoldTo, Payer, BillTo, ShipTo, Reseller, EndCustomer, CustomShipTo, AgentProgram
 
-	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country',
+	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country', 'NationalID',
 					  'Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country', 'Address'
 					 ];
 	  fields.forEach((field) => {
@@ -11954,7 +12016,7 @@
 			[hpe.fn.lang("StateProvince", config.locale, config.localizations), "SoldTo_Address_State"],
 			[hpe.fn.lang("Postal code", config.locale, config.localizations), "SoldTo_Address_Postal"],
 			[hpe.fn.lang("Country", config.locale, config.localizations), "SoldTo_Address_Country"],
-			["Brazil"].includes(config.dataset.SoldTo_Address_Country) ? [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"] : ['', 'blank'],
+			[hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
 			// [hpe.fn.lang("Form495", config.locale, config.localizations), "SoldTo_NationalID"],
 			// ['', 'blank'],
 			[hpe.fn.lang("FirstName", config.locale, config.localizations), "SoldTo_Contact_FirstName"],
@@ -12341,9 +12403,9 @@
 		validationConfig.endcx.push("EndCx_Address_Postal");
 		validationConfig.reseller.push("Reseller_Address_Postal");
 	  }
-	  if (["Brazil"].includes(config.dataset.SoldTo_Address_Country)) {
-		validationConfig.shipping.push("SoldTo_NationalID");
-	  }
+
+	 // validationConfig.shipping.push("SoldTo_NationalID");
+
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
 	  }
@@ -12804,7 +12866,6 @@
 			  },
 			  {
 				label: "Product Purchased Date:",
-				placeholder: "Form040",
 				value: ucid.ProductPurchasedDate,
 				data: "ProductPurchasedDate_" + ucid.ID,
 				required: false,
@@ -12816,8 +12877,8 @@
 				  format: 'd/m/Y',
 				  formatDate: 'd/m/Y',
 				  timepicker: false,
-				  minDate: 0,
-				  //maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				  minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+				  maxDate: new Date().toLocaleDateString('en-GB'),
 				  onChangeDateTime: function(dp, $input) {
 
 				  }
@@ -12955,7 +13016,6 @@
 			},
 			{
 			  label: "Product Purchased Date:",
-			  placeholder: "Form040",
 			  data: "ProductPurchasedDate",
 			  required: false,
 			  type: "date",
@@ -12965,8 +13025,8 @@
 				format: 'd/m/Y',
 				formatDate: 'd/m/Y',
 				timepicker: false,
-				minDate: 0,
-				//maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
+				minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
+				maxDate: new Date().toLocaleDateString('en-GB'),
 				onChangeDateTime: function(dp, $input) {
 
 				}
@@ -13976,7 +14036,15 @@
 					 field: "PO_Number",
 					 filterable: false,
 					 title: hpe.fn.lang('PO', config.locale, config.localizations),
-					 width: "100px"
+					 width: "100px",
+					 template: function(d) {
+					   const el = "";
+					   if (d.SubmittedTimestamp && d.PDF && d.PO_Number) {
+					//	 const po_n = d.PO_Number.replace(/\s/g, "_");
+						 const url = `<a style="color: blue;text-decoration: underline;" href="https://hpe-rfb.it.hpe.com/form/989/attachments/${d.EntryId}/PDF` + '" target="_blank">' + d.PO_Number + '</a>';
+						 return url;
+					   }
+					   return d.PO_Number;
 				   },
 				   {
 					 field: "PartyId",
@@ -14788,6 +14856,351 @@
 		  return cb(oob.grid._appStats);
 		});
 	  }
+	}
+  }
+</script>
+
+<script>
+  const pdfDateRenderer = function(val) {
+	if (!val || typeof(val) !== "string" || val.length < 10) return val;
+	return val.substring(8, 10) + "/" + val.substring(5, 7) + "/" + val.substring(0, 4);
+  }
+
+  const PDF = {
+	l10n: function(l10nKey) {
+	  return hpe.fn.lang(l10nKey, config.locale, config.localizations) || l10nKey;
+	},
+
+	defaultCellRenderer: function(item) {
+	  const hasData = !!item.items.filter((itemDescr) => {
+		const val = config.dataset[itemDescr.key];
+		return val !== "" && val !== null && val !== undefined;
+	  }).length;
+
+	  if (!hasData) return null;
+
+	  let cell = item.items.filter((itemDescr) => {
+		const val = config.dataset[itemDescr.key];
+		return val !== "" && val !== null && val !== undefined;
+	  }).map((itemDescr) => {
+		let val = config.dataset[itemDescr.key];
+		if (itemDescr.renderer) val = itemDescr.renderer(val);
+		return "<tr><td width='45%' style='font-weight:bold;padding:4px;'>" + itemDescr.label + "</td>" +
+		  "<td width='55%' style='padding:4px;'>" + val + "</td></tr>"
+	  });
+
+	  return {
+		content: "<table><tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + cell.join("\n") + "</table>"
+	  }
+	},
+
+	structure: [
+	  {
+		header: "Purchase Order Information",
+		items: [
+		  {label: "Purchase order number:", key: "PO_Number"},
+		  {label: "Submission Date:", key: "SubmittedTimestamp", renderer: pdfDateRenderer},
+		  {label: "Purchase order category:", key: "PO_Category"},
+		  {label: "Purchase order amount:", key: "PO_Value"},
+		  {label: "Purchase order currency:", key: "PO_Currency"},
+		  {label: "Reseller purchase order number:", key: "Rs_PO_Number"},
+		  {label: "End customer purchase order number:", key: "Cx_PO_Number"},
+		]
+	  },
+	  {
+		header: "Submitter Information",
+		items: [
+		  {label: "Company:", key: "PartnerName"},
+		  {label: "First Name:", key: "FirstName"},
+		  {label: "Last Name:", key: "LastName"},
+		  {label: "Email:", key: "Email"},
+		  {label: "Country:", key: "Country"},
+		]
+	  },
+	  {
+		header: "Quote and contactual Information",
+		items: [
+		  {label: "Quote number:", key: "Requestor_PO_Quote_ID"},
+		  {label: "Deal number:", key: "Requestor_PO_Deal_ID"},
+		  {label: "Opportunity ID:", key: "Requestor_PO_Opp_ID"},
+		  {label: "Purchase agreement number:", key: "PA_Number"},
+		  {label: "HPE approved payment terms:", key: "Payment_Terms"},
+		]
+	  },
+	  {
+		header: "Delivery Information",
+		items: [
+		  {label: "Requested Delivery date:", key: "PO_DeliveryDate"},
+		  {label: "Delivery Incoterms:", key: "PO_DeliveryIncoterms"},
+		  {label: "Complete Delivery:", key: "PO_CompleteDelivery"},
+		  {label: "Business Model:", key: "PO_BusinessModel"},
+		]
+	  },
+	  {
+		header: "Sold to Information",
+		items: [
+		  {label: "Party ID:", key: "SoldTo_PartyId"},
+		  {label: "Company name:", key: "SoldTo_CompanyName"},
+		  {label: "Address 1:", key: "SoldTo_Address_Street"},
+		  {label: "Address 2:", key: "SoldTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "SoldTo_Address_Postal"},
+		  {label: "City:", key: "SoldTo_Address_City"},
+		  {label: "State / Province:", key: "SoldTo_Address_State"},
+		  {label: "Country:", key: "SoldTo_Address_Country"},
+		  {label: "Tax ID:", key: "SoldTo_NationalId"},
+		  {label: "First Name:", key: "SoldTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "SoldTo_Contact_LastName"},
+		  {label: "Phone:", key: "SoldTo_Contact_Phone"},
+		  {label: "Email:", key: "SoldTo_Contact_Email"},
+		  {label: "Country of residence:", key: "SoldTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Payer Information",
+		items: [
+		  {label: "Party ID:", key: "Payer_PartyId"},
+		  {label: "Company name:", key: "Payer_CompanyName"},
+		  {label: "Address 1:", key: "Payer_Address_Street"},
+		  {label: "Address 2:", key: "Payer_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "Payer_Address_Postal"},
+		  {label: "City:", key: "Payer_Address_City"},
+		  {label: "State / Province:", key: "Payer_Address_State"},
+		  {label: "Country:", key: "Payer_Address_Country"},
+		  {label: "Tax ID:", key: "Payer_NationalId"},
+		  {label: "First Name:", key: "Payer_Contact_FirstName"},
+		  {label: "Last Name:", key: "Payer_Contact_LastName"},
+		  {label: "Phone:", key: "Payer_Contact_Phone"},
+		  {label: "Email:", key: "Payer_Contact_Email"},
+		  {label: "Country of residence:", key: "Payer_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Bill to Information",
+		items: [
+		  {label: "Party ID:", key: "BillTo_PartyId"},
+		  {label: "Company name:", key: "BillTo_CompanyName"},
+		  {label: "Address 1:", key: "BillTo_Address_Street"},
+		  {label: "Address 2:", key: "BillTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "BillTo_Address_Postal"},
+		  {label: "City:", key: "BillTo_Address_City"},
+		  {label: "State / Province:", key: "BillTo_Address_State"},
+		  {label: "Country:", key: "BillTo_Address_Country"},
+		  {label: "Tax ID:", key: "BillTo_NationalId"},
+		  {label: "First Name:", key: "BillTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "BillTo_Contact_LastName"},
+		  {label: "Phone:", key: "BillTo_Contact_Phone"},
+		  {label: "Email:", key: "BillTo_Contact_Email"},
+		  {label: "Country of residence:", key: "BillTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Shipping Information",
+		items: [
+		  {label: "Party ID:", key: "ShipTo_PartyId"},
+		  {label: "Company name:", key: "ShipTo_CompanyName"},
+		  {label: "Address 1:", key: "ShipTo_Address_Street"},
+		  {label: "Address 2:", key: "ShipTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "ShipTo_Address_Postal"},
+		  {label: "City:", key: "ShipTo_Address_City"},
+		  {label: "State / Province:", key: "ShipTo_Address_State"},
+		  {label: "Country:", key: "ShipTo_Address_Country"},
+		  {label: "Tax ID:", key: "ShipTo_NationalId"},
+		  {label: "First Name:", key: "ShipTo_Contact_FirstName"},
+		  {label: "Last Name:", key: "ShipTo_Contact_LastName"},
+		  {label: "Phone:", key: "ShipTo_Contact_Phone"},
+		  {label: "Email:", key: "ShipTo_Contact_Email"},
+		  {label: "Country of residence:", key: "ShipTo_Contact_Country"},
+		]
+	  },
+	  {
+		header: "End customer Information",
+		items: [
+		  {label: "Party ID:", key: "EndCx_PartyId"},
+		  {label: "Company name:", key: "EndCx_CompanyName"},
+		  {label: "Address 1:", key: "EndCx_Address_Street"},
+		  {label: "Address 2:", key: "EndCx_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "EndCx_Address_Postal"},
+		  {label: "City:", key: "EndCx_Address_City"},
+		  {label: "State / Province:", key: "EndCx_Address_State"},
+		  {label: "Country:", key: "EndCx_Address_Country"},
+		  {label: "Tax ID:", key: "EndCx_NationalId"},
+		  {label: "First Name:", key: "EndCx_Contact_FirstName"},
+		  {label: "Last Name:", key: "EndCx_Contact_LastName"},
+		  {label: "Phone:", key: "EndCx_Contact_Phone"},
+		  {label: "Email:", key: "EndCx_Contact_Email"},
+		  {label: "Country of residence:", key: "EndCx_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Reseller Information",
+		items: [
+		  {label: "Party ID:", key: "Reseller_PartyId"},
+		  {label: "Company name:", key: "Reseller_CompanyName"},
+		  {label: "Address 1:", key: "Reseller_Address_Street"},
+		  {label: "Address 2:", key: "Reseller_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "Reseller_Address_Postal"},
+		  {label: "City:", key: "Reseller_Address_City"},
+		  {label: "State / Province:", key: "Reseller_Address_State"},
+		  {label: "Country:", key: "Reseller_Address_Country"},
+		  {label: "Tax ID:", key: "Reseller_NationalId"},
+		  {label: "First Name:", key: "Reseller_Contact_FirstName"},
+		  {label: "Last Name:", key: "Reseller_Contact_LastName"},
+		  {label: "Phone:", key: "Reseller_Contact_Phone"},
+		  {label: "Email:", key: "Reseller_Contact_Email"},
+		  {label: "Country of residence:", key: "Reseller_Contact_Country"},
+		]
+	  },
+	  {
+		header: "Custom Ship To Party Information",
+		items: [
+		  {label: "Party ID:", key: "CustomShipTo_PartyId"},
+		  {label: "Company name:", key: "CustomShipTo_CompanyName"},
+		  {label: "Address 1:", key: "CustomShipTo_Address"},
+		  {label: "Address 2:", key: "CustomShipTo_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "CustomShipTo_Address_Postal"},
+		  {label: "City:", key: "CustomShipTo_Address_City"},
+		  {label: "State / Province:", key: "CustomShipTo_Address_State"},
+		  {label: "Country:", key: "CustomShipTo_Address_Country"},
+		]
+	  },
+	  {
+		renderer: function() {
+		  if (!config.dataset.Config_Quote_PartialOrder) return null;
+		  let PSData = null;
+
+		  try {
+			PSData = JSON.parse(config.dataset.Config_Quote_PartialOrder).filter(item => item.Selected == "Y");
+		  } catch(e) {}
+
+		  if (!PSData || !PSData.length) return null;
+
+		  const poCurrency = config.dataset.PO_Currency;
+
+		  const header = "<br>" +
+				"<table><tr><th style='padding: 6px; white-space: nowrap;' width='8%'>Item</td>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='24%'>Product Number / UCID / Icon ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='8%'>Qty</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Bundle ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Deal ID</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Unit Price (" + poCurrency + ")</th>" +
+				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Extended Net Price (" + poCurrency + ")</th></tr>";
+
+		  const result = PSData.map((item, index) => {
+			let configId = [item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			return `<tr><td style='padding: 6px;'>${index + 1}</td>
+<td style='padding: 6px;'>${item.ProductID} <br> ${configId}</td>
+<td style='padding: 6px;'>${item.Count}</td>
+<td style='padding: 6px;'>${item.BundleID || ''}</td>
+<td style='padding: 6px;'>${item.DealID || ''}</td>
+<td style='padding: 6px;'>${item.UnitNetAmount}</td>
+<td style='padding: 6px;'>${item.ExtendedNetAmount}</td></tr>`;
+		  }).join("\n");
+
+		  return {
+			newline: true,
+			row: true,
+			content: header + result + "</table>"
+		  }
+		}
+	  },
+	  {
+		header: "Asset location Information",
+		items: [
+		  {label: "Party ID:", key: "AssLoc_PartyId"},
+		  {label: "Company name:", key: "AssLoc_CompanyName"},
+		  {label: "Address 1:", key: "AssLoc_Address_Street"},
+		  {label: "Address 2:", key: "AssLoc_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "AssLoc_Address_Postal"},
+		  {label: "City:", key: "AssLoc_Address_City"},
+		  {label: "State / Province:", key: "AssLoc_Address_State"},
+		  {label: "Country:", key: "AssLoc_Address_Country"},
+		]
+	  },
+	  {
+		header: "Preferred Service Provider Information",
+		items: [
+		  {label: "Party ID:", key: "PSP_PartyId"},
+		  {label: "Company name:", key: "PSP_CompanyName"},
+		  {label: "Address 1:", key: "PSP_Address_Street"},
+		  {label: "Address 2:", key: "PSP_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "PSP_Address_Postal"},
+		  {label: "City:", key: "PSP_Address_City"},
+		  {label: "State / Province:", key: "PSP_Address_State"},
+		  {label: "Country:", key: "PSP_Address_Country"},
+		]
+	  },
+	  {
+		header: "Entitled party Information",
+		items: [
+		  {label: "Party ID:", key: "EntPrty_PartyId"},
+		  {label: "Company name:", key: "EntPrty_CompanyName"},
+		  {label: "Address 1:", key: "EntPrty_Address_Street"},
+		  {label: "Address 2:", key: "EntPrty_Address_Street2"},
+		  {label: "ZIP / Postal Code:", key: "EntPrty_Address_Postal"},
+		  {label: "City:", key: "EntPrty_Address_City"},
+		  {label: "State / Province:", key: "EntPrty_Address_State"},
+		  {label: "Country:", key: "EntPrty_Address_Country"},
+		  {label: "First Name:", key: "EntPrty_Contact_FirstName"},
+		  {label: "Last Name:", key: "EntPrty_Contact_LastName"},
+		  {label: "Phone:", key: "EntPrty_Contact_Phone"},
+		  {label: "Email:", key: "EntPrty_Contact_Email"},
+		]
+	  },
+	  {
+		header: "Comments",
+		items: [
+		  {label: "Tax details (and any exemptions)", key: "Comment_Tax"},
+		  {label: "Invoice comments", key: "Comment_Invoice"},
+		  {label: "Delivery comments", key: "Comment_Delivery"},
+		  {label: "Packing list comments", key: "Comment_Packing"},
+		  {label: "Additional comments", key: "Comment_Extra"},
+		]
+	  },
+	],
+
+	recreatePdf: function(norId) {
+	  crud.read("3180", "eid=" + norId, function(d) {
+		console.log("Record loaded: " + norId);
+		config.dataset = d.Rows[0];
+		if (!config.dataset.EntryId) throw "No Entry Id in the record";
+		PDF.createPdf();
+		crud.update(3163, norId, config.dataset, function(data) {
+		  console.log("Record saved: " + norId);
+		  config.dataset = {};
+		});
+	  })
+	},
+
+	createPdf: function() {
+	  let cells = PDF.structure.map((item) => {
+		const cellfunc = item.renderer || PDF.defaultCellRenderer;
+		return cellfunc(item);
+	  }).filter(cell => !!cell);
+
+	  let tableCells = cells.reduce((acc, cell, ndx, arr) => {
+		let row = acc[acc.length - 1];
+		if (row.length >= 2 || (ndx && arr[ndx-1].row)) {
+		  row = [];
+		  acc.push(row);
+		}
+
+		if (cell.newline && row.length == 1) {
+		  row.push(null);
+		  row = [];
+		  acc.push(row);
+		}
+
+		row.push(cell);
+		return acc;
+	  }, [[]]).map((row) => {
+		if (row.length == 1 && row[0].row) {
+		  return row[0].content;
+		}
+		return "<table style='width:100%;'>" +
+		  "<tr><td style='vertical-align: top;padding-top:10px;' width='50%'>" + row[0].content + "</td><td  style='width:10px;'>" +
+		  "<td style='vertical-align: top;padding-top:10px;' width='50%'>" + (row[1] ? row[1].content : "") + "</td></tr></table>";
+	  });
+	  config.dataset.q = tableCells.join("\n");
 	}
   }
 </script>
