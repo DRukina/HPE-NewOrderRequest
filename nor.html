@@ -2432,8 +2432,8 @@
 		  logic: "and",
 		  filters: [{
 			field: "CountryCode",
-			operator: "eq",
-			value: "JP"
+		    operator: "in",
+		    value: ["JP", "KR"]
 		  }]
 		},
 		header: "",
@@ -9345,7 +9345,7 @@
 			' / NORID ' +
 			(config.dataset.EntryId ? config.dataset.EntryId : 'N/A');
 
-		if (config.dataset.CountryCode == 'JP') {
+		if (config.dataset.CountryCode == 'JP' || config.dataset.CountryCode == 'KR') {
 		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A');
 		}
 
@@ -11856,8 +11856,8 @@
 	  // FIX?
 	  const fields = ["PO_BusinessModel",
 					  "PO_Category",
-					  "Requestor_PO_Opp_ID",
 					  "Requestor_PO_Deal_ID",
+					  "Requestor_PO_Opp_ID",
 					  "Config_UCID",
 					  "Config_UCIDQ",
 					  "Config_ConfigId",
