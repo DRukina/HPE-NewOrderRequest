@@ -2381,8 +2381,8 @@
 		  logic: "and",
 		  filters: [{
 			field: "CountryCode",
-			operator: "eq",
-			value: "JP"
+			operator: "in",
+			value: ["JP", "KR"]
 		  }]
 		},
 		header: "",
@@ -8830,6 +8830,11 @@
 		config.dataset.RequestorRole = 'Partner';
 		if (global.data.user.internal) config.dataset.RequestorRole = 'HPE Internal';
 		let isDraft = config.dataset.isDraft;
+
+		if (config.dataset.PO_Category == "Stock") {
+		  quoteHelper.clearAddressData(config, 'EndCustomer');
+		}
+
 		if (!isDraft) {
 		  config.dataset.Status = '1';
 		  config.dataset.Submitted = 'Y';
@@ -9144,11 +9149,11 @@
 			' / NORID ' +
 			(config.dataset.EntryId ? config.dataset.EntryId : 'N/A');
 
-		if (config.dataset.CountryCode == 'JP') {
-		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A') +
-			' / End Customer ' +
-			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
-		} else {
+		if (config.dataset.CountryCode == 'JP' || config.dataset.CountryCode == 'KR') {
+		  subject += '/ ' + (config.dataset.Requestor_PO_Opp_ID ? config.dataset.Requestor_PO_Opp_ID : 'N/A');
+		}
+
+		if (config.dataset.PO_Category != "Stock") {
 		  subject += ' / End Customer ' +
 			(config.dataset.EndCx_CompanyName ? config.dataset.EndCx_CompanyName : 'N/A');
 		}
@@ -9604,18 +9609,19 @@
 			config.dataset.Config_EndCxDetails_Contact = "N";
 		  }
 		  if (config.dataset.PO_Category == 'Stage' && config.dataset.Requestor_PO_Quote_ID) {
-			config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
-			config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
-			config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
-			config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
-			config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
-			config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
-			config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
-			config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
+			// NOR-874: Ship to address to be left Blank
+			// config.dataset.ShipTo_PartyId = config.dataset.SoldTo_PartyId
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Country = config.dataset.SoldTo_Address_Country;
+			// config.dataset.ShipTo_CompanyName = config.dataset.SoldTo_CompanyName;
+			// config.dataset.ShipTo_Address_State = config.dataset.SoldTo_Address_State;
+			// config.dataset.ShipTo_Address_City = config.dataset.SoldTo_Address_City;
+			// config.dataset.ShipTo_Address_Postal = config.dataset.SoldTo_Address_Postal;
+			// config.dataset.ShipTo_Address_Street = config.dataset.SoldTo_Address_Street;
+			// config.dataset.ShipTo_Address_Street2 = config.dataset.SoldTo_Address_Street2;
+			// config.dataset.ShipTo_NationalID = config.dataset.SoldTo_NationalID;
 			//nbsf.init(config, config.page);
-		  } else if (config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop' && config.dataset.Requestor_PO_Quote_ID) {
+		} else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
 			paNumberChanged();
 		  }
@@ -11233,10 +11239,11 @@
 		const initDataset = async function(section, quoteSection) {
 		  if (quoteHelper.quote.quoteHeader[quoteSection]) {
 			let partyId;
+			let distributorInfoPartyId =  (quoteHelper.quote.quoteHeader.DistributorInfo &&  quoteHelper.quote.quoteHeader.DistributorInfo.Company) ? quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID : null;
 
 			if (section == 'SoldTo') {
-			  if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+			  if (distributorInfoPartyId) {
+				partyId = distributorInfoPartyId;
 			  } else if (quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID) {
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 			  } else {
@@ -11248,8 +11255,8 @@
 				partyId = quoteHelper.quote.quoteHeader[quoteSection].Company.PartyID;
 
 			  } else {
-				if (quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID) {
-				  partyId = quoteHelper.quote.quoteHeader.DistributorInfo.Company.PartyID;
+				if (distributorInfoPartyId) {
+				  partyId = distributorInfoPartyId;
 				} else if (quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID) {
 				  partyId = quoteHelper.quote.quoteHeader['SoldTo'].Company.PartyID;
 				} else {
@@ -11304,16 +11311,21 @@
 			}, {
 			  sectionName: 'BillTo',
 			  quoteSection: 'BillTo'
-			}, {
-			  sectionName: 'ShipTo',
-			  quoteSection: 'ShipTo'
+		//}, { // NOR-874: Ship to address to be left Blank
+			//  sectionName: 'ShipTo',
+			//  quoteSection: 'ShipTo'
 			}, {
 			  sectionName: 'Reseller',
 			  quoteSection: 'ResellerInfo'
-			}, {
-			  sectionName: 'EndCx',
-			  quoteSection: 'EndCustomer'
 			});
+
+			if (config.dataset.PO_Category !== 'Stock') {
+			  sectionsToInitialize.push({
+				sectionName: 'EndCx',
+				quoteSection: 'EndCustomer'
+			  });
+			}
+			
 		  } else {
 			// Depending on the section specified, only push the relevant sections
 			switch (section) {
@@ -11335,11 +11347,11 @@
 				  quoteSection: 'BillTo'
 				});
 				break;
-			  case 'ShipTo':
-				sectionsToInitialize.push({
-				  sectionName: 'ShipTo',
-				  quoteSection: 'ShipTo'
-				});
+			  case 'ShipTo': // NOR-874: Ship to address to be left Blank
+				//sectionsToInitialize.push({
+				//  sectionName: 'ShipTo',
+				//  quoteSection: 'ShipTo'
+				//});
 				break;
 			  case 'Reseller':
 				sectionsToInitialize.push({
@@ -11396,8 +11408,8 @@
 	  // FIX?
 	  const fields = ["PO_BusinessModel",
 					  "PO_Category",
-					  "Requestor_PO_Opp_ID",
 					  "Requestor_PO_Deal_ID",
+						"Requestor_PO_Opp_ID",
 					  "Config_UCID",
 					  "Config_UCIDQ",
 					  "Config_ConfigId",
