@@ -7190,10 +7190,20 @@
 		  }
 		}
 	  }
-	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {		
-		if (!result.fail.length) {
-		  quoteHelper.saveProductAndServicesConfig(config);
-		}
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
+		  if ($(elem).find('*[data-name="Carepack"]') && $(elem).find('*[data-name="Carepack"]').val() != 'N') {
+			let snp = $(elem).find('*[data-name="SerialNumberOfProducts"]');
+			if (snp && snp.val()) {
+			  result.pass.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "");
+			} else {
+			  result.fail.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "error");
+			}
+		  }
+		});
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 	  return result;
 	},
@@ -12720,7 +12730,7 @@
 				class: `Carepack_SNP_${ucid.ID}`,
 			  },
 			  {
-				label: "FormSNP",
+				label: "SerialNumberProductsReq",
 				value: "Serial number of the products*:",
 				data: "SNP",
 				required: false,
@@ -12775,6 +12785,7 @@
 			  {
 				label: "Product Purchased Date:",
 				placeholder: "Form040",
+				placeholder: "DD/MM/YYYY",
 				value: ucid.ProductPurchasedDate,
 				data: "ProductPurchasedDate_" + ucid.ID,
 				required: false,
@@ -12873,7 +12884,7 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "FormSNP",
+			  label: "SerialNumberProductsReq",
 			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
@@ -12926,6 +12937,7 @@
 			{
 			  label: "Product Purchased Date:",
 			  placeholder: "Form040",
+			  placeholder: "DD/MM/YYYY",
 			  data: "ProductPurchasedDate",
 			  required: false,
 			  type: "date",
@@ -13132,7 +13144,7 @@
 			  count = 0;
 			}
 			if ($(elem).find('*[data-name="ExtendedNetAmount"]')) {
-			  $(elem).find('*[data-name="ExtendedNetAmount"]').val(count * amount);
+			  $(elem).find('*[data-name="ExtendedNetAmount"]').val((Math.round(count * amount * 100) / 100));
 			}	 
 			res += Math.round(count * amount * 100);
 		  }
