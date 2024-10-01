@@ -12720,7 +12720,7 @@
 				class: `Carepack_SNP_${ucid.ID}`,
 			  },
 			  {
-				label: "FormSNP",
+				label: "SerialNumberProductsReq",
 				value: "Serial number of the products*:",
 				data: "SNP",
 				required: false,
@@ -12775,6 +12775,7 @@
 			  {
 				label: "Product Purchased Date:",
 				placeholder: "Form040",
+				placeholder: "DD/MM/YYYY",
 				value: ucid.ProductPurchasedDate,
 				data: "ProductPurchasedDate_" + ucid.ID,
 				required: false,
@@ -12873,7 +12874,7 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "FormSNP",
+			  label: "SerialNumberProductsReq",
 			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
@@ -12926,6 +12927,7 @@
 			{
 			  label: "Product Purchased Date:",
 			  placeholder: "Form040",
+			  placeholder: "DD/MM/YYYY",
 			  data: "ProductPurchasedDate",
 			  required: false,
 			  type: "date",
