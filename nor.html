@@ -15,7 +15,9 @@
 	  // SubRegion=ESE
 	  "AL", "AM", "AZ", "BA", "BG", "BY", "GE", "HR", "KG", "KZ", "MD", "ME", "MK", "MT", "RS", "SI", "TJ", "TM", "UA", "UZ", "XK",
 	  // Thailand, Korea in APJ
-	  "TH", "KR"
+	  "TH", "KR",
+	  // MTP 28/09/2024 NOR-895
+	  "BD", "KH", "MN", "LK", "LA", "NP", "PK", "BN", "BT", "MV", "AF", "MM", "TL", "ID", "VN"
 	]
 	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
 								: "/form/989/nor-prod-ww-v2";
@@ -2699,7 +2701,7 @@
 	  }
 	  if (config.dataset.CountryCode == "TH") {
 		let sbt = config.dom.querySelector(".header .subtitle");
-		if (sbt) sbt.innerHTML += "<br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
+		if (sbt) sbt.innerHTML += "<br><br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
 	  }
 	  callbacks.page1();
 	},
@@ -9088,7 +9090,9 @@
 				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
 				//  const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
-				  caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  if (config.dataset.CountryCode == "TH") {
+					caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  }
 				}
 				else if (pairs[i].ttl == "page-3")
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI019", config.locale, config.localizations) + "</strong><br>";
@@ -9291,7 +9295,9 @@
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
 			//	const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
-				caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				if (config.dataset.CountryCode == "TH") {
+				  caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				}
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			} else {
@@ -11075,9 +11081,9 @@
 		  },
 		  Requestor_PO_Opp_ID: {
 			filter: {
-			  field: "Region",
-			  operator: "eq",
-			  value: "AMS"
+			  field: "CountryCode",
+			  operator: "in",
+			  value: ["JP", "KR"]
 			},
 			value: OpportunityId,
 		  },
@@ -11821,9 +11827,6 @@
 			//  sectionName: 'ShipTo',
 			//  quoteSection: 'ShipTo'
 			}, {
-			  sectionName: 'ShipTo',
-			  quoteSection: 'ShipTo'
-			}, {
 			  sectionName: 'Reseller',
 			  quoteSection: 'ResellerInfo'
 			});
@@ -12554,7 +12557,7 @@
 					  ProductID: item.ProductID,
 					  ProductClassificationCode: item.ProductClassificationCode,
 					  LineType: item.LineType,
-					  ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+					  ID: item.ProductID && item.ProductID.replace(/[\s\-]/g, '_') || '',
 					  PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
 					  SerialNumberOfProducts: item.SerialNumberOfProducts,
 					  ProductPurchasedDate: item.ProductPurchasedDate,
@@ -12812,7 +12815,7 @@
 				class: `Carepack_SNP_${ucid.ID}`,
 			  },
 			  {
-				label: "FormSNP",
+				label: "SerialNumberProductsReq",
 				value: "Serial number of the products*:",
 				data: "SNP",
 				required: false,
@@ -12964,7 +12967,7 @@
 		  ];
 		  const SNP = [
 			{
-			  label: "FormSNP",
+			  label: "SerialNumberProductsReq",
 			  value: "Serial number of the products:",
 			  data: "SNP",
 			  required: false,
@@ -13262,6 +13265,8 @@
 			errorCallback();
 		  }
 		});
+	  } else {
+		callback();
 	  }
 	},
 	parseProductAndServicesRepeater: function (config, callback, errorCallback) {
@@ -13293,7 +13298,7 @@
 				Count: item.Count,
 				ProductClassificationCode: "",
 				LineType: "Config",
-				ID: item.ProductID && item.ProductID.replace(/[\-]/g, '_') || '',
+				ID: item.ProductID && item.ProductID.replace(/[\s\-]/g, '_') || '',
 				PreviouslyPurchasedProductDetails: item.PreviouslyPurchasedProductDetails,
 				SerialNumberOfProducts: item.SerialNumberOfProducts,
 				ProductPurchasedDate: item.ProductPurchasedDate,
@@ -13570,7 +13575,7 @@
 			  ProductID: productID,
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: (productID + "").replace(/[\-]/g, '_'),
+			  ID: (productID + "").replace(/[\s\-]/g, '_'),
 			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
 			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
 			  ProductPurchasedDate: productPurchasedDate || "",
@@ -14045,6 +14050,7 @@
 						 return url;
 					   }
 					   return d.PO_Number;
+					 }
 				   },
 				   {
 					 field: "PartyId",
