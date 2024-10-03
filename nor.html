@@ -7191,10 +7191,20 @@
 		  }
 		}
 	  }
-	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {		
-		if (!result.fail.length) {
-		  quoteHelper.saveProductAndServicesConfig(config);
-		}
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
+		  if ($(elem).find('*[data-name="Carepack"]') && $(elem).find('*[data-name="Carepack"]').val() != 'N') {
+			let snp = $(elem).find('*[data-name="SerialNumberOfProducts"]');
+			if (snp && snp.val()) {
+			  result.pass.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "");
+			} else {
+			  result.fail.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "error");
+			}
+		  }
+		});
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 	  return result;
 	},
@@ -13136,7 +13146,7 @@
 			  count = 0;
 			}
 			if ($(elem).find('*[data-name="ExtendedNetAmount"]')) {
-			  $(elem).find('*[data-name="ExtendedNetAmount"]').val(count * amount);
+			  $(elem).find('*[data-name="ExtendedNetAmount"]').val((Math.round(count * amount * 100) / 100));
 			}	 
 			res += Math.round(count * amount * 100);
 		  }
