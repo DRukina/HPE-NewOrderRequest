@@ -12446,13 +12446,14 @@
 				  if (!productIds.includes(item.ProductID)) {
 					productIds.push(item.ProductID);
 					const curUcid = currentUcids.find(el => el.ProductID === item.ProductID);
+					const isTW = config.dataset.CountryCode == "TW" && (!item.NetPriceWithBenefits || item.NetPriceWithBenefits == "0" || item.NetPriceWithBenefits == "0.0");
 					ucidConfig.push({
 					  Request_Id: config.dataset.EntryId,
 					  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
 					  UCID: item.UCID,
 					  BundleID: item.BundleID,
 					  DealId: item.DealId,
-					  UnitNetAmount: item.NetPriceWithBenefits,
+					  UnitNetAmount: isTW ? item.UnitNetAmount : item.NetPriceWithBenefits,
 					  Count: curUcid ? curUcid.Count : 1,
 					  ExtendedNetAmount: item.ExtendedNetAmount,
 					  Quantity: item.Quantity,
