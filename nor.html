@@ -278,6 +278,7 @@
 							 ];
   let global = {
 	ready: false,
+	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ", "MO"],
 	data: {
 	  brt: {
 		code: null,
@@ -1675,7 +1676,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -1819,7 +1820,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -2037,7 +2038,7 @@
 								{
 								  field: "CountryCode",
 								  operator: "in",
-								  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+								  value: global.nonPoModelCountries
 								},
 							   ]
 					}
@@ -2724,7 +2725,7 @@
 				{
 					field: "CountryCode",
 					operator: "in",
-					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+					value: global.nonPoModelCountries
 				},
 				]
 	},  
@@ -2782,7 +2783,7 @@
 				{
 				  field: "CountryCode",
 				  operator: "nin",
-				  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+				  value: global.nonPoModelCountries
 				},
 			   ]
 	},
@@ -7049,7 +7050,7 @@
 			{
 			  field: "CountryCode",
 			  operator: "in",
-			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+			  value: global.nonPoModelCountries
 			},
 			{
 			  logic: "and",
@@ -8888,7 +8889,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -9106,7 +9107,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -10950,7 +10951,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -10997,7 +10998,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -13070,7 +13071,7 @@
 		  {
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ"]
+			value: global.nonPoModelCountries
 		  },
 		  {
 			logic: "and",
