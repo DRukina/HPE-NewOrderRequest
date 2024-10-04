@@ -14865,7 +14865,7 @@
 	  if (!hasData & !PDF.l10nDebug) return null;
 
 	  const labelWidth = item.labelWidth == "auto" ? "" : " width='" + (item.labelWidth || "45%") + "'";
-	  const valueWidth = item.valueWidth == "auto" ? "" : " width='" + (item.valueWidth || "45%") + "'";
+	  const valueWidth = item.valueWidth == "auto" ? "" : " width='" + (item.valueWidth || "55%") + "'";
 
 	  let cell = item.items.filter((itemDescr) => {
 		if (PDF.l10nDebug) return true;
@@ -14879,7 +14879,7 @@
 	  });
 
 	  const content = (item.row ? "<br>" : "") + "<table" + (item.row ? " width='100%'" : "") + ">" +
-			"<tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + 
+			"<tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + PDF.l10n(item.header) + "</th></tr>" + 
 			cell.join("\n") + "</table>";
 
 	  return {
@@ -15008,7 +15008,7 @@
 		]
 	  },
 	  {
-		header: "Form138", // End customer Information
+		header: "End customer Information", // Form138
 		items: [
 		  {label: "Party ID:", key: "EndCx_PartyId"},
 		  {label: "Company name:", key: "EndCx_CompanyName"},
@@ -15091,6 +15091,16 @@
 			let extra = "";
 			if (item.PreviouslyPurchasedProductDetails || item.SerialNumberOfProducts || item.ProductPurchasedDate) {
 			  if (item.PreviouslyPurchasedProductDetails) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPPD") + "</b><br>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
+			  }
+			  if (item.SerialNumberOfProducts) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormSNP") + "</b><br>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
+			  }
+			  if (item.ProductPurchasedDate) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPD") + "</b><br>" + (item.ProductPurchasedDate || "") + "</td></tr>";
+			  }
+/*
+			  if (item.PreviouslyPurchasedProductDetails) {
 				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
 			  }
 			  if (item.SerialNumberOfProducts) {
@@ -15099,6 +15109,7 @@
 			  if (item.ProductPurchasedDate) {
 				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
 			  }
+*/
 /*
 			  extra = "<tr><td colspan='6' cellpadding='0'><table>" +
 				(item.PreviouslyPurchasedProductDetails ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td><td>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>" : "") +
@@ -15120,7 +15131,7 @@
 				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
 			  }
 */
-			  /*
+/*
 			  if (item.PreviouslyPurchasedProductDetails) {
 				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td>" +
 				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td><td colspan='4'></td></tr>";
@@ -15135,12 +15146,13 @@
 			  }
 */
 			}
-			const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			// const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
 			return `<tr><td style='padding: 6px;padding-bottom:3px;'>${index + 1}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${configId}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.Count}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.BundleID || ''}</td>
-<td style='padding: 6px;padding-bottom:3px;'>${item.DealID || ''}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.DealId || ''}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.UnitNetAmount}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.ExtendedNetAmount}</td></tr>${extra}`;
 		  }).join("\n");
