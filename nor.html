@@ -15,7 +15,9 @@
 	  // SubRegion=ESE
 	  "AL", "AM", "AZ", "BA", "BG", "BY", "GE", "HR", "KG", "KZ", "MD", "ME", "MK", "MT", "RS", "SI", "TJ", "TM", "UA", "UZ", "XK",
 	  // Thailand, Korea in APJ
-	  "TH", "KR"
+	  "TH", "KR",
+	  // MTP 28/09/2024 NOR-895
+	  "BD", "KH", "MN", "LK", "LA", "NP", "PK", "BN", "BT", "MV", "AF", "MM", "TL", "ID", "VN"
 	]
 	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
 								: "/form/989/nor-prod-ww-v2";
@@ -10472,7 +10474,7 @@
 		PANumbers = [...new Set(PANumbers)];
 		PANumbers.join(', ');
 		// comment for testing
-		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
+		 return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
 
 	  // clear big data
@@ -10566,9 +10568,9 @@
 		  },
 		  Requestor_PO_Opp_ID: {
 			filter: {
-			  field: "Region",
-			  operator: "eq",
-			  value: "AMS"
+			  field: "CountryCode",
+			  operator: "in",
+			  value: ["JP", "KR"]
 			},
 			value: OpportunityId,
 		  },
