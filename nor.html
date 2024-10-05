@@ -333,7 +333,7 @@
 							 ];
   let global = {
 	ready: false,
-	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "MO"],
+	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "MO"],
 	data: {
 	  brt: {
 		code: null,
@@ -2700,7 +2700,7 @@
 		  }
 		});
 	  }
-	  if (config.dataset.CountryCode == "TH") {
+	  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
 		let sbt = config.dom.querySelector(".header .subtitle");
 		if (sbt) sbt.innerHTML += "<br><br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
 	  }
@@ -7933,7 +7933,8 @@
 			  )
 			) value = "Pending";
 			else if (item[1] == "PO_Number" && config.dataset[item[1]] && config.dataset.SubmittedTimestamp && config.dataset.PDF) {
-			  value = `<a style="color: blue;text-decoration: underline;" href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + config.dataset.PO_Number + '</a>';
+			  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
+			  value = `<a style="color: blue;text-decoration: underline;" href="${pdfUrl}" target="_blank">${config.dataset.PO_Number}</a>`;
 
 			} else if (item[1] == "SuccessResult" && config.dataset[item[1]] != null) {
 			  value = JSON.parse(config.dataset[item[1]]).CaseNumber;
@@ -9149,9 +9150,9 @@
 			  } else {
 				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				//  const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
-				  if (config.dataset.CountryCode == "TH") {
-					caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+					let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
+					caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				  }
 				}
 				else if (pairs[i].ttl == "page-3")
@@ -9354,9 +9355,9 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-			//	const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
-				if (config.dataset.CountryCode == "TH") {
-				  caseDescription = caseDescription +  `<a href="https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF` + '" target="_blank">' + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+				  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
+				  caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				}
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
@@ -14109,8 +14110,8 @@
 					 template: function(d) {
 					   const el = "";
 					   if (d.SubmittedTimestamp && d.PDF && d.PO_Number) {
-					//	 const po_n = d.PO_Number.replace(/\s/g, "_");
-						 const url = `<a style="color: blue;text-decoration: underline;" href="https://hpe-rfb.it.hpe.com/form/989/attachments/${d.EntryId}/PDF` + '" target="_blank">' + d.PO_Number + '</a>';
+						 let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${d.EntryId}/PDF?downloadFileName=${encodeURIComponent(d.PO_Number)}.pdf`;
+						 const url = `<a style="color: blue;text-decoration: underline;" href="${pdfUrl}" target="_blank">` + d.PO_Number + '</a>';
 						 return url;
 					   }
 					   return d.PO_Number;
@@ -15452,4 +15453,5 @@
 	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
 	},
   };
+  console.log("====\nNOR Pilot 2024-10-05\n====");
 </script>
