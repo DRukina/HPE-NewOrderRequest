@@ -3314,15 +3314,6 @@
 		   values: function() {
 			 return reference.countriesArray
 		   }
-		 },
-		 {
-			label: "Form495",
-			data: "SoldTo_NationalID",
-			required: false,
-			type: "text",
-			validation: ["nationalID", "minLen|1", "maxLen|14"],
-			class: "review-address-taxid",
-			typing: "nationalID"
 		 }
 		]
 	  ]
@@ -3423,19 +3414,77 @@
 			 values: function() {
 			   return reference.countriesArray
 			 }
-		   },
-		   {
-			 label: "Form495",
-			 data: "SoldTo_NationalID",
-			 required: true,
-			 type: "text",
-			 validation: ["nationalID", "minLen|1", "maxLen|14"],
-			 class: "review-address-taxid",
-			 typing: "nationalID"
 		   }
 		  ]
 		]
 	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Config_SoldToDetails",
+			  operator: "neq",
+			  value: "Y"
+			}, 
+			{
+			  field: "xrefFail",
+			  operator: "eq",
+			  value: "No"
+			},
+			{
+			  field: "SoldTo_Address_Country",
+			  operator: "in",
+			  value: ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"]
+			}]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: true,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID",
+			class: "review-address-taxid"
+		  }]
+		]
+	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Config_SoldToDetails",
+			  operator: "neq",
+			  value: "Y"
+			}, 
+			{
+			  field: "xrefFail",
+			  operator: "eq",
+			  value: "No"
+			},
+			{
+			  field: "SoldTo_Address_Country",
+			  operator: "nin",
+			  value: ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"]
+			}]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: false,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID",
+			class: "review-address-taxid"
+		  }]
+		]
+	  },
+
 	  {
 		//header: "Form056",
 		header: "Address",
@@ -11528,8 +11577,8 @@
 		  config.dataset.SoldTo_Address_Street2 = address2;
 		}
 
-		if (soldToNationalId) {
-		  config.dataset.SoldTo_NationalID = soldToNationalId;
+		if (nationalId) {
+		  config.dataset.SoldTo_NationalID = nationalId;
 		}
 	  }
 	  // HIDDEN INPUT: PAYER
@@ -12418,7 +12467,9 @@
 		validationConfig.reseller.push("Reseller_Address_Postal");
 	  }
 
-	 // validationConfig.shipping.push("SoldTo_NationalID");
+	  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].includes(config.dataset.SoldTo_Address_Country)) {
+		validationConfig.shipping.push("SoldTo_NationalID");
+	  }
 
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
