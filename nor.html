@@ -17,7 +17,9 @@
 	  // Thailand, Korea in APJ
 	  "TH", "KR",
 	  // MTP 28/09/2024 NOR-895
-	  "BD", "KH", "MN", "LK", "LA", "NP", "PK", "BN", "BT", "MV", "AF", "MM", "TL", "ID", "VN"
+	  "BD", "KH", "MN", "LK", "LA", "NP", "PK", "BN", "BT", "MV", "AF", "MM", "TL", "ID", "VN",
+	  // MTP 05/10/2024 NOR-967
+	  "JP", "MO"
 	]
 	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
 								: "/form/989/nor-prod-ww-v2";
@@ -331,6 +333,7 @@
 							 ];
   let global = {
 	ready: false,
+	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "MO"],
 	data: {
 	  brt: {
 		code: null,
@@ -1728,7 +1731,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -1872,7 +1875,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -2090,7 +2093,7 @@
 								{
 								  field: "CountryCode",
 								  operator: "in",
-								  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+								  value: global.nonPoModelCountries
 								},
 							   ]
 					}
@@ -2163,22 +2166,18 @@
 	  {
 		filter: {
 		  logic: "and",
-		  filters: [{
-			field: "Region",
-			operator: "neq",
-			value: "AMS"
-		  },
-					/*			{
-					  field: "PartnerBRT",
-					  operator: "neq",
-					  value: "Master Area Partner"
-					},
-					{
-					  field: "CountryCode",
-					  operator: "neq",
-					  value: "TR"
-					}*/
-				   ]
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			{
+			  field: "CountryCode",
+			  operator: "neq",
+			  value: "JP"
+			}
+		  ]
 		},
 		header: "", //"Form258",
 		group: [
@@ -2474,6 +2473,7 @@
 			  format: 'd/m/Y',
 			  formatDate: 'd/m/Y',
 			  timepicker: false,
+			  scrollInput: false,
 			  minDate: 0,
 			  maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
 			  onChangeDateTime: function(dp, $input) {
@@ -2502,6 +2502,7 @@
 			  format: 'd/m/Y',
 			  formatDate: 'd/m/Y',
 			  timepicker: false,
+			  scrollInput: false,
 			  minDate: 0,
 			  maxDate: new Date(new Date().setDate(new Date().getDate() + 90)).toLocaleDateString('en-GB'),
 			  onChangeDateTime: function(dp, $input) {
@@ -2779,7 +2780,7 @@
 				{
 					field: "CountryCode",
 					operator: "in",
-					value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+					value: global.nonPoModelCountries
 				},
 				]
 	},  
@@ -2838,7 +2839,7 @@
 				{
 				  field: "CountryCode",
 				  operator: "nin",
-				  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				  value: global.nonPoModelCountries
 				},
 			   ]
 	},
@@ -3313,15 +3314,6 @@
 		   values: function() {
 			 return reference.countriesArray
 		   }
-		 },
-		 {
-			label: "Form495",
-			data: "SoldTo_NationalID",
-			required: false,
-			type: "text",
-			validation: ["nationalID", "minLen|1", "maxLen|14"],
-			class: "review-address-taxid",
-			typing: "nationalID"
 		 }
 		]
 	  ]
@@ -3422,19 +3414,77 @@
 			 values: function() {
 			   return reference.countriesArray
 			 }
-		   },
-		   {
-			 label: "Form495",
-			 data: "SoldTo_NationalID",
-			 required: true,
-			 type: "text",
-			 validation: ["nationalID", "minLen|1", "maxLen|14"],
-			 class: "review-address-taxid",
-			 typing: "nationalID"
 		   }
 		  ]
 		]
 	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Config_SoldToDetails",
+			  operator: "neq",
+			  value: "Y"
+			}, 
+			{
+			  field: "xrefFail",
+			  operator: "eq",
+			  value: "No"
+			},
+			{
+			  field: "SoldTo_Address_Country",
+			  operator: "in",
+			  value: ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"]
+			}]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: true,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID",
+			class: "review-address-taxid"
+		  }]
+		]
+	  },
+	  {
+		header: "",
+		filter: {
+		  logic: "and",
+		  filters: [
+			{
+			  field: "Config_SoldToDetails",
+			  operator: "neq",
+			  value: "Y"
+			}, 
+			{
+			  field: "xrefFail",
+			  operator: "eq",
+			  value: "No"
+			},
+			{
+			  field: "SoldTo_Address_Country",
+			  operator: "nin",
+			  value: ["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"]
+			}]
+		},
+		group: [
+		  [{
+			label: "Form495",
+			data: "SoldTo_NationalID",
+			required: false,
+			type: "text",
+			validation: ["nationalID", "minLen|1", "maxLen|14"],
+			typing: "nationalID",
+			class: "review-address-taxid"
+		  }]
+		]
+	  },
+
 	  {
 		//header: "Form056",
 		header: "Address",
@@ -7105,7 +7155,7 @@
 			{
 			  field: "CountryCode",
 			  operator: "in",
-			  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			  value: global.nonPoModelCountries
 			},
 			{
 			  logic: "and",
@@ -7246,10 +7296,20 @@
 		  }
 		}
 	  }
-	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {		
-		if (!result.fail.length) {
-		  quoteHelper.saveProductAndServicesConfig(config);
-		}
+	  else if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		$('*[data-rname="ProductServicesRepeater"]').each(function(i, elem) {
+		  if ($(elem).find('*[data-name="Carepack"]') && $(elem).find('*[data-name="Carepack"]').val() != 'N') {
+			let snp = $(elem).find('*[data-name="SerialNumberOfProducts"]');
+			if (snp && snp.val()) {
+			  result.pass.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "");
+			} else {
+			  result.fail.push(snp.closest('label')[0]);
+			  snp.closest('label').attr("data-state", "error");
+			}
+		  }
+		});
+		quoteHelper.saveProductAndServicesConfig(config);
 	  }
 	  return result;
 	},
@@ -8946,7 +9006,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -9166,7 +9226,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -11046,7 +11106,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -11093,7 +11153,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -11517,8 +11577,8 @@
 		  config.dataset.SoldTo_Address_Street2 = address2;
 		}
 
-		if (soldToNationalId) {
-		  config.dataset.SoldTo_NationalID = soldToNationalId;
+		if (nationalId) {
+		  config.dataset.SoldTo_NationalID = nationalId;
 		}
 	  }
 	  // HIDDEN INPUT: PAYER
@@ -12407,7 +12467,9 @@
 		validationConfig.reseller.push("Reseller_Address_Postal");
 	  }
 
-	 // validationConfig.shipping.push("SoldTo_NationalID");
+	  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].includes(config.dataset.SoldTo_Address_Country)) {
+		validationConfig.shipping.push("SoldTo_NationalID");
+	  }
 
 	  if (["Mexico", "Turkey"].includes(config.dataset.ShipTo_Address_Country)) {
 		validationConfig.shipping.push("ShipTo_NationalID");
@@ -12880,6 +12942,7 @@
 				  format: 'd/m/Y',
 				  formatDate: 'd/m/Y',
 				  timepicker: false,
+				  scrollInput: false,
 				  minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
 				  maxDate: new Date().toLocaleDateString('en-GB'),
 				  onChangeDateTime: function(dp, $input) {
@@ -13028,6 +13091,7 @@
 				format: 'd/m/Y',
 				formatDate: 'd/m/Y',
 				timepicker: false,
+				scrollInput: false,
 				minDate: new Date(new Date().setFullYear( new Date().getFullYear() - 3 )).toLocaleDateString('en-GB'),
 				maxDate: new Date().toLocaleDateString('en-GB'),
 				onChangeDateTime: function(dp, $input) {
@@ -13160,7 +13224,7 @@
 		  {
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: global.nonPoModelCountries
 		  },
 		  {
 			logic: "and",
@@ -13225,8 +13289,8 @@
 			  count = 0;
 			}
 			if ($(elem).find('*[data-name="ExtendedNetAmount"]')) {
-			  $(elem).find('*[data-name="ExtendedNetAmount"]').val(count * amount);
-			}	 
+			  $(elem).find('*[data-name="ExtendedNetAmount"]').val((Math.round(count * amount * 100) / 100));
+			}
 			res += Math.round(count * amount * 100);
 		  }
 		});
@@ -14872,8 +14936,16 @@
 	return val.substring(8, 10) + "/" + val.substring(5, 7) + "/" + val.substring(0, 4);
   }
 
+  const pdfYesNoRenderer = function(val) {
+	if (val == "Y") return "Yes";
+	if (val == "N") return "No";
+	return val || "";
+  }
+
   const PDF = {
+	l10nDebug: false, // set to TRUE to get template with localization keys. Development only.
 	l10n: function(l10nKey) {
+	  if (PDF.l10nDebug) return "[" + l10nKey + "]";
 	  return hpe.fn.lang(l10nKey, config.locale, config.localizations) || l10nKey;
 	},
 
@@ -14883,20 +14955,30 @@
 		return val !== "" && val !== null && val !== undefined;
 	  }).length;
 
-	  if (!hasData) return null;
+	  if (!hasData & !PDF.l10nDebug) return null;
+
+	  const labelWidth = item.labelWidth == "auto" ? "" : " width='" + (item.labelWidth || "45%") + "'";
+	  const valueWidth = item.valueWidth == "auto" ? "" : " width='" + (item.valueWidth || "55%") + "'";
 
 	  let cell = item.items.filter((itemDescr) => {
+		if (PDF.l10nDebug) return true;
 		const val = config.dataset[itemDescr.key];
 		return val !== "" && val !== null && val !== undefined;
 	  }).map((itemDescr) => {
 		let val = config.dataset[itemDescr.key];
 		if (itemDescr.renderer) val = itemDescr.renderer(val);
-		return "<tr><td width='45%' style='font-weight:bold;padding:4px;'>" + itemDescr.label + "</td>" +
-		  "<td width='55%' style='padding:4px;'>" + val + "</td></tr>"
+		return "<tr><td" + labelWidth + " style='font-weight:bold;padding:4px;'>" + PDF.l10n(itemDescr.label) + "</td>" +
+		  "<td" + valueWidth + " style='padding:4px;'>" + val + "</td></tr>"
 	  });
 
+	  const content = (item.row ? "<br>" : "") + "<table" + (item.row ? " width='100%'" : "") + ">" +
+			"<tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + PDF.l10n(item.header) + "</th></tr>" + 
+			cell.join("\n") + "</table>";
+
 	  return {
-		content: "<table><tr><th colspan='2' style='padding:4px;background-color:#415463;color:#ffffff;'>" + item.header + "</th></tr>" + cell.join("\n") + "</table>"
+		newline: item.newline,
+		row: item.row,
+		content: content
 	  }
 	},
 
@@ -14914,7 +14996,7 @@
 		]
 	  },
 	  {
-		header: "Submitter Information",
+		header: "Submitter Information", // Submitter
 		items: [
 		  {label: "Company:", key: "PartnerName"},
 		  {label: "First Name:", key: "FirstName"},
@@ -14924,7 +15006,7 @@
 		]
 	  },
 	  {
-		header: "Quote and contactual Information",
+		header: "Quote details", // Form075
 		items: [
 		  {label: "Quote number:", key: "Requestor_PO_Quote_ID"},
 		  {label: "Deal number:", key: "Requestor_PO_Deal_ID"},
@@ -14934,16 +15016,16 @@
 		]
 	  },
 	  {
-		header: "Delivery Information",
+		header: "Delivery Information", // Form472
 		items: [
 		  {label: "Requested Delivery date:", key: "PO_DeliveryDate"},
 		  {label: "Delivery Incoterms:", key: "PO_DeliveryIncoterms"},
-		  {label: "Complete Delivery:", key: "PO_CompleteDelivery"},
+		  {label: "Complete Delivery:", key: "PO_CompleteDelivery", renderer: pdfYesNoRenderer},
 		  {label: "Business Model:", key: "PO_BusinessModel"},
 		]
 	  },
 	  {
-		header: "Sold to Information",
+		header: "Sold to Information", // Form054
 		items: [
 		  {label: "Party ID:", key: "SoldTo_PartyId"},
 		  {label: "Company name:", key: "SoldTo_CompanyName"},
@@ -14962,7 +15044,7 @@
 		]
 	  },
 	  {
-		header: "Payer Information",
+		header: "Payer Information", // Form068
 		items: [
 		  {label: "Party ID:", key: "Payer_PartyId"},
 		  {label: "Company name:", key: "Payer_CompanyName"},
@@ -14981,7 +15063,7 @@
 		]
 	  },
 	  {
-		header: "Bill to Information",
+		header: "Bill to Information", // Form101
 		items: [
 		  {label: "Party ID:", key: "BillTo_PartyId"},
 		  {label: "Company name:", key: "BillTo_CompanyName"},
@@ -15000,7 +15082,7 @@
 		]
 	  },
 	  {
-		header: "Shipping Information",
+		header: "Shipping Information", // Form045
 		items: [
 		  {label: "Party ID:", key: "ShipTo_PartyId"},
 		  {label: "Company name:", key: "ShipTo_CompanyName"},
@@ -15019,7 +15101,7 @@
 		]
 	  },
 	  {
-		header: "End customer Information",
+		header: "End customer Information", // Form138
 		items: [
 		  {label: "Party ID:", key: "EndCx_PartyId"},
 		  {label: "Company name:", key: "EndCx_CompanyName"},
@@ -15038,7 +15120,7 @@
 		]
 	  },
 	  {
-		header: "Reseller Information",
+		header: "Reseller Information", // Form126
 		items: [
 		  {label: "Party ID:", key: "Reseller_PartyId"},
 		  {label: "Company name:", key: "Reseller_CompanyName"},
@@ -15057,7 +15139,7 @@
 		]
 	  },
 	  {
-		header: "Custom Ship To Party Information",
+		header: "Custom Ship To Party Information", // Form486
 		items: [
 		  {label: "Party ID:", key: "CustomShipTo_PartyId"},
 		  {label: "Company name:", key: "CustomShipTo_CompanyName"},
@@ -15069,7 +15151,7 @@
 		  {label: "Country:", key: "CustomShipTo_Address_Country"},
 		]
 	  },
-	  {
+	  { // Products and Services
 		renderer: function() {
 		  if (!config.dataset.Config_Quote_PartialOrder) return null;
 		  let PSData = null;
@@ -15080,26 +15162,92 @@
 
 		  if (!PSData || !PSData.length) return null;
 
+		  const colVisible = PSData.reduce((acc, item) => {
+			acc.pppd = acc.pppd || !!item.PreviouslyPurchasedProductDetails;
+			acc.snp = acc.snp || !!item.SerialNumberOfProducts;
+			acc.ppd = acc.ppd || !!item.ProductPurchasedDate;
+			return acc;
+		  }, {});
+
 		  const poCurrency = config.dataset.PO_Currency;
 
-		  const header = "<br>" +
-				"<table><tr><th style='padding: 6px; white-space: nowrap;' width='8%'>Item</td>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='24%'>Product Number / UCID / Icon ID</th>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='8%'>Qty</th>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Bundle ID</th>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Deal ID</th>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Unit Price (" + poCurrency + ")</th>" +
-				"<th style='padding: 6px; white-space: nowrap;' width='15%'>Extended Net Price (" + poCurrency + ")</th></tr>";
+		  const header = "<table><tr><th style='padding: 6px;' width='6%'>Item</td>" +
+				"<th style='padding: 6px;' width='26%'>" + PDF.l10n("FormHPN") + "</th>" +
+				"<th style='padding: 6px;' width='7%'>Qty</th>" +
+				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormBIID") + "</th>" +
+				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormDealId") + "</th>" +
+				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormUP") + " (" + poCurrency + ")</th>" +
+				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormENP") + " (" + poCurrency + ")</th>" +
+				"</tr>";
 
 		  const result = PSData.map((item, index) => {
-			let configId = [item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
-			return `<tr><td style='padding: 6px;'>${index + 1}</td>
-<td style='padding: 6px;'>${item.ProductID} <br> ${configId}</td>
-<td style='padding: 6px;'>${item.Count}</td>
-<td style='padding: 6px;'>${item.BundleID || ''}</td>
-<td style='padding: 6px;'>${item.DealID || ''}</td>
-<td style='padding: 6px;'>${item.UnitNetAmount}</td>
-<td style='padding: 6px;'>${item.ExtendedNetAmount}</td></tr>`;
+			let extra = "";
+			if (item.PreviouslyPurchasedProductDetails || item.SerialNumberOfProducts || item.ProductPurchasedDate) {
+			  if (item.PreviouslyPurchasedProductDetails) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPPD") + "</b><br>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
+			  }
+			  if (item.SerialNumberOfProducts) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormSNP") + "</b><br>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
+			  }
+			  if (item.ProductPurchasedDate) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPD") + "</b><br>" + (item.ProductPurchasedDate || "") + "</td></tr>";
+			  }
+/*
+			  if (item.PreviouslyPurchasedProductDetails) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
+			  }
+			  if (item.SerialNumberOfProducts) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
+			  }
+			  if (item.ProductPurchasedDate) {
+				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
+			  }
+*/
+/*
+			  extra = "<tr><td colspan='6' cellpadding='0'><table>" +
+				(item.PreviouslyPurchasedProductDetails ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td><td>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>" : "") +
+				(item.SerialNumberOfProducts ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td><td>" + (item.SerialNumberOfProducts || "") + "</td></tr>" : "") +
+				(item.ProductPurchasedDate ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td><td>" + (item.ProductPurchasedDate || "") + "</td></tr>" : "") +
+				"</table><td></tr>";
+*/
+			  /*
+			  if (item.PreviouslyPurchasedProductDetails) {
+				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPPD") + "</td>" +
+				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
+			  }
+			  if (item.SerialNumberOfProducts) {
+				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormSNP") + "</td>" +
+				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
+			  }
+			  if (item.ProductPurchasedDate) {
+				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPD") + "</td>" +
+				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
+			  }
+*/
+/*
+			  if (item.PreviouslyPurchasedProductDetails) {
+				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td>" +
+				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td><td colspan='4'></td></tr>";
+			  }
+			  if (item.SerialNumberOfProducts) {
+				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td>" +
+				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td><td colspan='4'></td></tr>";
+			  }
+			  if (item.ProductPurchasedDate) {
+				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td>" +
+				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td><td colspan='4'></td></tr>";
+			  }
+*/
+			}
+			// const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			return `<tr><td style='padding: 6px;padding-bottom:3px;'>${index + 1}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${configId}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.Count}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.BundleID || ''}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.DealId || ''}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.UnitNetAmount}</td>
+<td style='padding: 6px;padding-bottom:3px;'>${item.ExtendedNetAmount}</td></tr>${extra}`;
 		  }).join("\n");
 
 		  return {
@@ -15110,7 +15258,7 @@
 		}
 	  },
 	  {
-		header: "Asset location Information",
+		header: "Asset location Information", // Form519
 		items: [
 		  {label: "Party ID:", key: "AssLoc_PartyId"},
 		  {label: "Company name:", key: "AssLoc_CompanyName"},
@@ -15123,7 +15271,7 @@
 		]
 	  },
 	  {
-		header: "Preferred Service Provider Information",
+		header: "Preferred Service Provider Information", // Form529
 		items: [
 		  {label: "Party ID:", key: "PSP_PartyId"},
 		  {label: "Company name:", key: "PSP_CompanyName"},
@@ -15136,7 +15284,7 @@
 		]
 	  },
 	  {
-		header: "Entitled party Information",
+		header: "Entitled party Information", // Form520
 		items: [
 		  {label: "Party ID:", key: "EntPrty_PartyId"},
 		  {label: "Company name:", key: "EntPrty_CompanyName"},
@@ -15153,14 +15301,46 @@
 		]
 	  },
 	  {
-		header: "Comments",
+		header: "Comments", // Form186
 		items: [
-		  {label: "Tax details (and any exemptions)", key: "Comment_Tax"},
-		  {label: "Invoice comments", key: "Comment_Invoice"},
-		  {label: "Delivery comments", key: "Comment_Delivery"},
-		  {label: "Packing list comments", key: "Comment_Packing"},
-		  {label: "Additional comments", key: "Comment_Extra"},
+		  {label:"Tax details (and any exemptions)", labelKey: "Form189", key: "Comment_Tax"},
+		  {label:"Invoice comments", labelKey: "Form191", key: "Comment_Invoice"},
+		  {label: "Delivery comments", labelKey: "Form193", key: "Comment_Delivery"},
+		  {label: "Packing list comments", labelKey: "Form195", key: "Comment_Packing"},
+		  {label: "Additional comments", labelKey: "Form197", key: "Comment_Extra"},
 		]
+	  },
+	  {
+		header: "Additional information", // Form152
+		items: [
+		  {label: "Select file", key: "Optional_Attachment"},
+		  {label: "Are you ordering support / Installation services or Software licenses?", key: "Config_PI", renderer: pdfYesNoRenderer},
+		  {label: "Do you have a system manager contact apart from the provided end customer contact?", key: "Config_SystemManager", renderer: pdfYesNoRenderer},
+		  {label: "First name", key: "EndCx_SysMng_FirstName"},
+		  {label: "Last name", key: "EndCx_SysMng_LastName"},
+		  {label: "Phone", key: "EndCx_SysMng_Phone"},
+		  {label: "Email", key: "EndCx_SysMng_Email"},
+		  {label: "Country of residence", key: "EndCx_SysMng_Country"},
+		  {label: "Reservation ID", key: "Config_ResId"},
+		  {label: "Label order ID (LOID)", key: "Config_LOID"},
+		  {label: "Non-chargeable special logistics services", key: "Config_LogCode"},
+		  {label: "Do you belong to Public sector entity?", key: "Config_PublicSectionPartner", renderer: pdfYesNoRenderer},
+		  {label: "CIG", key: "Config_CIG"},
+		  {label: "CUP", key: "Config_CUP"},
+		  {label: "Is the asset location address the same as the end customer address?", key: "Config_LocationDetails", renderer: pdfYesNoRenderer},
+		  {label: "Is the entitled party information the same as the end customer information?", key: "Config_EntitledDetails", renderer: pdfYesNoRenderer},
+		  {label: "Do you have a Preferred Service Provider (PSP)", key: "Config_PSP", renderer: pdfYesNoRenderer},
+		  {label: "Do you have an acknowledgement Letter information?", key: "Config_ALI", renderer: pdfYesNoRenderer},
+		  {label: "Are you ordering a combined order with other departments (PointNext/CMS/Parts Sales)?", key: "Config_CombinedOrder", renderer: pdfYesNoRenderer},
+		  {label: "Which team is in charge of other product", key: "CombinedOrder_Team"},
+		  {label: "The total value of other product", key: "CombinedOrder_Total"},
+		  {label: "Combined Share point ID", key: "CombinedOrder_SharePointID"},
+		  {label: "The owner of combined order", key: "CombinedOrder_Owner"},
+		],
+		newline: true,
+		row: true,
+		labelWidth: "auto",
+		valueWidth: "auto"
 	  },
 	],
 
@@ -15200,13 +15380,26 @@
 		return acc;
 	  }, [[]]).map((row) => {
 		if (row.length == 1 && row[0].row) {
-		  return row[0].content;
+		  return "<br>" + row[0].content;
 		}
 		return "<table style='width:100%;'>" +
 		  "<tr><td style='vertical-align: top;padding-top:10px;' width='50%'>" + row[0].content + "</td><td  style='width:10px;'>" +
 		  "<td style='vertical-align: top;padding-top:10px;' width='50%'>" + (row[1] ? row[1].content : "") + "</td></tr></table>";
 	  });
-	  config.dataset.PdfContent = tableCells.join("\n");
+	  //config.dataset.PdfContent = "<h1 style='margin-top:10px;'>" + PDF.l10n("Form005") + " - <span>[PO_Number]</span></h1>" +  // Form005 = 'Purchase order number'
+	  config.dataset.PdfContent = "<h1 style='margin-top:10px;'>Purchase Order - <span>[PO_Number]</span></h1>" +  // Form005 = 'Purchase order number'
+		"<div style='font-weight:bold;'>THIS IS A COPY OF YOUR ELECTRONIC PURCHASE ORDER SUBMITTED WITH HPE</div>" +
+		tableCells.join("\n") +
+		"<br><p style='font-size:7pt'><i>The information provided above will be used for order creation and invoicing purpose.<br>Hewlett Packard Enterprise Confidential</i></p><br>" +
+		"<table style='width: 100%;'><tr>" +
+		"<td style='width:30%;vertical-align:bottom;'>" +
+		"    <img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAAAZCAYAAACrWNlOAAAABlBMVEUAAAABqYLY1jZUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAb0lEQVRoge3ZsQ3CQBAAQQ7Ro7txQDeu8mnAodcINBNedFpd8NLPHO/14HLPby/wr4SNCBsRNvI6G65tn7sX+WVnDwAXGxE2ImxE2IiwEWEjwkaEjQgbETYibETYiLARYSPjz6vhYiPCRoSNCBv5ACJhCIlJVOXyAAAAAElFTkSuQmCC'></td>" +
+		"<td style='width:70%;border-top:3px solid black;font-size:7pt;'>"+
+		"    <p>This is HPE Confidential and Proprietary Information. Do not share.</p>"+
+		"    <p>Hewlett Packard Enterprise uses automatic data collection tools to personalize your experience. For more information regarding Hewlett Packard Enterprise's privacy policies and practices, please visit our"+
+		"	    <a href='https://www.hpe.com/us/en/legal/privacy.html'>Privacy Statement</a> or <a href='https://www.hpe.com/us/en/about/legal/terms-of-use.html'>Terms of Use.</a> </p>" +
+		"    <p>©Copyright 2024 Hewlett Packard Enterprise Development LP. The information contained herein is subject to change without notice.</p>" +
+		"</td></tr></table>";
 	}
   }
 </script>
