@@ -2163,22 +2163,18 @@
 	  {
 		filter: {
 		  logic: "and",
-		  filters: [{
-			field: "Region",
-			operator: "neq",
-			value: "AMS"
-		  },
-					/*			{
-					  field: "PartnerBRT",
-					  operator: "neq",
-					  value: "Master Area Partner"
-					},
-					{
-					  field: "CountryCode",
-					  operator: "neq",
-					  value: "TR"
-					}*/
-				   ]
+		  filters: [
+			{
+			  field: "Region",
+			  operator: "neq",
+			  value: "AMS"
+			},
+			{
+			  field: "CountryCode",
+			  operator: "neq",
+			  value: "JP"
+			}
+		  ]
 		},
 		header: "", //"Form258",
 		group: [
