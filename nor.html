@@ -53,11 +53,30 @@
 			config.dataset[`${type}_Address_Postal`] = locationRes.postalcode || "";
 			config.dataset[`${type}_Address_Street`] = locationRes.addressLine1 || ""
 			config.dataset[`${type}_Address_Street2`] = locationRes.addressLine2 || "";
+			config.dataset[`${type}_Address_State`] = locationRes.stateName || "";
+			config.dataset[`${type}_NationalID`] = '';
 
 			if (hasNationalID) {
 			  // add 
 			}
 			nbsf.init(config, config.page);
+			if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
+			  $(`*[data-name="${type}_Address_Country"]`).val(loc_country || '');
+			if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
+			  $(`*[data-name="${type}_CompanyName"]`).val(locationRes.name || "");
+			if (document.querySelector(`*[data-name="${type}_Address_State"]`))
+			  $(`*[data-name="${type}_Address_State"]`).val(locationRes.stateName || "");
+			if (document.querySelector(`*[data-name="${type}_Address_City"]`))
+			  $(`*[data-name="${type}_Address_City"]`).val(locationRes.city || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
+			  $(`*[data-name="${type}_Address_Postal"]`).val(locationRes.postalcode || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
+			  $(`*[data-name="${type}_Address_Street"]`).val(locationRes.addressLine1 || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
+			  $(`*[data-name="${type}_Address_Street2"]`).val(locationRes.addressLine2 || "");
+			if (document.querySelector(`*[data-name="${type}_NationalID"]`))
+			  $(`*[data-name="${type}_NationalID"]`).val('');
+			
 			setTimeout(function() {
 			  mo.fn.overlay.hide();
 			  mo.fn.events.closeAll();
@@ -10846,6 +10865,26 @@
 		  locationAddress(currentVal, 'ShipTo', false);
 		}
 	  });
+	  
+	  /*
+	  // BillTo
+	  $('input[data-name="BillTo_PartyId"]').keyup(function() {
+		let currentVal = $(this).val();
+		if (currentVal.length == 10 && currentVal[0] == "1") {
+		  config.dataset.BillTo_PartyId = currentVal;
+		  nbsf.init(config, config.page);
+		  mo.fn.overlay.show({
+			progressText: hpe.fn.lang("FormCFI010", config.locale, config.localizations),
+			progressPercent: 10,
+			close: false
+		  })
+		  EMDMAddress(currentVal, 'BillTo', true);
+		} else if (currentVal.length == 10 && currentVal[0] == "2") {
+		  config.dataset.BillTo_PartyId = currentVal;
+		  locationAddress(currentVal, 'BillTo', false);
+		}
+	  });*/
+	  
 	  // NOR-989 hotfix. Reflect values of non-required fields in dataset immediately
 	  $("input[data-name]").on("input", (e) => {
 		let inputEl = e.target;
