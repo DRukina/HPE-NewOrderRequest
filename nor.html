@@ -18,7 +18,6 @@
 	})
   } // create error log
 
-  
   function locationAddress(currentVal, type, hasNationalID) {
 	mo.fn.overlay.show({
 	  progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
@@ -30,7 +29,7 @@
 	  if (xhr.readyState == 4) {
 		if (xhr.status == 200) {
 		  const response = JSON.parse(xhr.responseText);
-		  console.log('[readQuote] response:', response);
+		  console.log('[locationAddress] response:', response);
 		  if (response && response.status === 'SUCCESS' && response.searchList && response.searchList.length) {
 			mo.fn.overlay.show({
 			  progressText: hpe.fn.lang("FormCFI012", config.locale, config.localizations),
@@ -89,31 +88,11 @@
 				progressPercent: 100,
 				close: false
 			  });
-			  config.dataset[`${type}_Address_Country`] = null;
-			  config.dataset[`${type}_CompanyName`] = null;
-			  config.dataset[`${type}_Address_State`] = null;
-			  config.dataset[`${type}_Address_City`] = null;
-			  config.dataset[`${type}_Address_Postal`] = null;
-			  config.dataset[`${type}_Address_Street`] = null;
-			  config.dataset[`${type}_Address_Street2`] = null;
-			  config.dataset[`${type}_NationalID`] = null;
 
-			  if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-				$(`*[data-name="${type}_Address_Country"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-				$(`*[data-name="${type}_CompanyName"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-				$(`*[data-name="${type}_Address_State"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-				$(`*[data-name="${type}_Address_City"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-				$(`*[data-name="${type}_Address_Postal"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-				$(`*[data-name="${type}_Address_Street"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-				$(`*[data-name="${type}_Address_Street2"]`).val('');
-			  if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-				$(`*[data-name="${type}_NationalID"]`).val('');
+			  config.clearData({
+				fields: config.sectionAddressFields[type],
+				clearInput: true
+			  });
 
 			  nbsf.init(config, config.page);
 			  mo.fn.modal.show({
@@ -147,31 +126,11 @@
 		  progressPercent: 100,
 		  close: false
 		});
-		config.dataset[`${type}_Address_Country`] = null;
-		config.dataset[`${type}_CompanyName`] = null;
-		config.dataset[`${type}_Address_State`] = null;
-		config.dataset[`${type}_Address_City`] = null;
-		config.dataset[`${type}_Address_Postal`] = null;
-		config.dataset[`${type}_Address_Street`] = null;
-		config.dataset[`${type}_Address_Street2`] = null;
-		config.dataset[`${type}_NationalID`] = null;
 
-		if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-		  $(`*[data-name="${type}_Address_Country"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-		  $(`*[data-name="${type}_CompanyName"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-		  $(`*[data-name="${type}_Address_State"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-		  $(`*[data-name="${type}_Address_City"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-		  $(`*[data-name="${type}_Address_Postal"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-		  $(`*[data-name="${type}_Address_Street"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-		  $(`*[data-name="${type}_Address_Street2"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-		  $(`*[data-name="${type}_NationalID"]`).val('');
+		config.clearData({
+		  fields: config.sectionAddressFields[type],
+		  clearInput: true
+		});
 
 		nbsf.init(config, config.page);
 		mo.fn.modal.show({
@@ -287,31 +246,11 @@
 			progressPercent: 100,
 			close: false
 		  });
-		  config.dataset[`${type}_Address_Country`] = null;
-		  config.dataset[`${type}_CompanyName`] = null;
-		  config.dataset[`${type}_Address_State`] = null;
-		  config.dataset[`${type}_Address_City`] = null;
-		  config.dataset[`${type}_Address_Postal`] = null;
-		  config.dataset[`${type}_Address_Street`] = null;
-		  config.dataset[`${type}_Address_Street2`] = null;
-		  config.dataset[`${type}_NationalID`] = null;
 
-		  if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-			$(`*[data-name="${type}_Address_Country"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-			$(`*[data-name="${type}_CompanyName"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-			$(`*[data-name="${type}_Address_State"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-			$(`*[data-name="${type}_Address_City"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-			$(`*[data-name="${type}_Address_Postal"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-			$(`*[data-name="${type}_Address_Street"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-			$(`*[data-name="${type}_Address_Street2"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-			$(`*[data-name="${type}_NationalID"]`).val('');
+		  config.clearData({
+			fields: config.sectionAddressFields[type],
+			clearInput: true
+		  });
 
 		  nbsf.init(config, config.page);
 		  mo.fn.modal.show({
@@ -326,31 +265,12 @@
 		}, 1000);
 	  } else {
 		config.dataset.xrefFail = 'Yes';
-		config.dataset[`${type}_Address_Country`] = null;
-		config.dataset[`${type}_CompanyName`] = null;
-		config.dataset[`${type}_Address_State`] = null;
-		config.dataset[`${type}_Address_City`] = null;
-		config.dataset[`${type}_Address_Postal`] = null;
-		config.dataset[`${type}_Address_Street`] = null;
-		config.dataset[`${type}_Address_Street2`] = null;
-		config.dataset[`${type}_NationalID`] = null;
 
-		if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-		  $(`*[data-name="${type}_Address_Country"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-		  $(`*[data-name="${type}_CompanyName"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-		  $(`*[data-name="${type}_Address_State"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-		  $(`*[data-name="${type}_Address_City"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-		  $(`*[data-name="${type}_Address_Postal"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-		  $(`*[data-name="${type}_Address_Street"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-		  $(`*[data-name="${type}_Address_Street2"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-		  $(`*[data-name="${type}_NationalID"]`).val('');
+		config.clearData({
+		  fields: config.sectionAddressFields[type],
+		  clearInput: true
+		});
+
 		nbsf.init(config, config.page);
 		mo.fn.modal.show({
 		  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
@@ -8238,6 +8158,12 @@
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
 	},
+	addressField: ["Address_Country", "CompanyName", "Address_State", "Address_City", "Address_Postal", "Address_Street", "Address_Street2", "NationalID", "Address"],
+	contactField: ["Contact_FirstName", "Contact_LastName", "Contact_Phone", "Contact_Email", "Contact_Country"],
+	sectionName: ["SoldTo", "Payer", "BillTo", "ShipTo", "Reseller", "EndCustomer", "CustomShipTo", "AgentProgram"],
+	sectionAddressFields: {}, // Mapping sectionName:fieldname[] with address fields. Filled in init().
+	sectionContactFields: {}, // Mapping sectionName:fieldname[] with contact fields. Filled in init().
+	sectionFields: {}, // Mapping sectionName:fieldname[] with address and contact fields. Filled in init().
 	helper: true,
 	summary: {},
 	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
@@ -9588,6 +9514,31 @@
 	},
 	onDeClone: function(donor, clone) {
 	  quoteHelper.onDeCloneProductAndServices(config, clone);
+	},
+	clearData: function(cfg) {
+	  cfg.fields.forEach((fld) => {
+		config.dataset[fld] = null;
+		if (cfg.clearInput) {
+		  let el = document.querySelector(`*[data-name="${fld}"]`);
+		  if (el) $(el).val = "";
+		}
+	  });
+	},
+	init: function() {
+	  config.sectionName.forEach((sect) => {
+		let sectFields = []
+		config.sectionFields[sect] = sectFields;
+		config.sectionAddressFields[sect] = [];
+		config.sectionContactFields[sect] = [];
+		config.addressField.forEach((fld) => {
+		  sectFields.push(sect + "_" + fld);
+		  config.sectionAddressFields[sect].push(sect + "_" + fld);
+		});
+		config.contactField.forEach((fld) => {
+		  sectFields.push(sect + "_" + fld);
+		  config.sectionContactFields[sect].push(sect + "_" + fld);
+		});
+	  });
 	},
   };
 
@@ -12074,37 +12025,12 @@
 	  if (document.querySelector('*[data-name="Config_PPC_EndCx"]'))
 		$('*[data-name="Config_PPC_EndCx"]').val(config.dataset.Config_PPC_EndCx);
 	},
-	clearAddressData: function(config, section = 'all') {
-	  // typeof section: all, SoldTo, Payer, BillTo, ShipTo, Reseller, EndCustomer, CustomShipTo, AgentProgram
-
-	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country', 'NationalID',
-					  'Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country', 'Address'
-					 ];
-	  fields.forEach((field) => {
-		if (section === 'all' || section === 'SoldTo') {
-		  config.dataset[`SoldTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'Payer') {
-		  config.dataset[`Payer_${field}`] = null;
-		}
-		if (section === 'all' || section === 'BillTo') {
-		  config.dataset[`BillTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'ShipTo') {
-		  config.dataset[`ShipTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'Reseller') {
-		  config.dataset[`Reseller_${field}`] = null;
-		}
-		if (section === 'all' || section === 'EndCustomer') {
-		  config.dataset[`EndCx_${field}`] = null;
-		}
-		if (section === 'all' || section === 'CustomShipTo') {
-		  config.dataset[`CustomShipTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'AgentProgram') {
-		  config.dataset[`AgentProgram_${field}`] = null;
-		}
+	clearAddressData: function(cfg, section = 'all') {
+	  // section: "all" or one of config.sectionName
+	  config.sectionName.filter(sect => section === "all" || sect == section).forEach((sect) => {
+		config.clearData({
+		  fields: config.sectionFields[sect]
+		});
 	  });
 	},
 	buildQuotePreviewPage: function(config) {
@@ -15312,6 +15238,8 @@
 	  config.dataset.PdfContent = tableCells.join("\n");
 	}
   }
+
+  config.init();
 </script>
 
 <!-- NOR application initialization -->
