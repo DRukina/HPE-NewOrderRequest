@@ -89,7 +89,7 @@
 		})
 		// HIDDEN INPUT: SOLDTO
 		config.dataset[`${type}_Address_Country`] = d.party[0].countryName;
-		if (config.dataset[`${type}_Address_Country`] && !config.dataset[`${type}_Contact_Country`]) {
+		if (config.dataset[`${type}_Address_Country`] && !config.dataset[`${type}_Contact_Country`]) {		  		  
 		  $(`[data-name="${type}_Contact_Country"]`).val(d.party[0].countryName);
 		}
 		config.dataset[`${type}_PartyId`] = d.party[0].currentPartyID || d.party[0].submittedPartyID || currentVal;
@@ -10923,7 +10923,7 @@
 			config.dataset.Quote_Error = null;
 			const response = JSON.parse(xhr.responseText);
 			console.log('[readQuote] response:', response);
-			if (response && response.status === 'SUCCESS') {
+			if (response && response.status === 'SUCCESS') {			  
 			  return callback ? callback(response.hpQuote) : response.hpQuote;
 			}
 			return callback ? callback(null) : null;
@@ -11580,6 +11580,8 @@
 
 		if (nationalId) {
 		  config.dataset.SoldTo_NationalID = nationalId;
+		  // NOR-981: hotfix
+		  if ((nationalId + "").length > 14) config.dataset.SoldTo_NationalID = (nationalId + "").substring(0, 14);
 		}
 	  }
 	  // HIDDEN INPUT: PAYER
@@ -11754,7 +11756,12 @@
 				  for (i = 0; i < externalidentifier.length; i++) {
 					if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 					  addressObj['NationalID'] = externalidentifier[i].identifierValue;
-					  config.dataset[`${section}_NationalID`] = externalidentifier[i].identifierValue;
+					  // NOR-981: hotfix
+					  let nId = externalidentifier[i].identifierValue;
+					  if (nId && (nId+"").length > 14) nId = nId.substring(0, 14);
+					  addressObj['NationalID'] = nId;
+					  config.dataset[`${section}_NationalID`] = nId;
+					  if (config.reviewDataset) config.reviewDataset[`${section}_NationalID`] = nId;
 					  break;
 					}
 				  }
@@ -11802,7 +11809,7 @@
 			}
 		  } else {
 			for (let key in contactAssociations) {
-			  if (key === 'Country') {
+			  if (key === 'Country') {				
 				const country = reference.countriesData.find((item) => item.ISO2 === quoteHelper.quote.quoteHeader[quoteSection].Contact[key]);
 				const countryName = country ? country.Name : config.dataset[`${section}_Address_Country`];
 				config.dataset[`${section}_${contactAssociations[key]}`] = countryName;
