@@ -15274,7 +15274,8 @@
 */
 			}
 			// const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
-			const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			// const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			const configId = [item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
 			return `<tr><td style='padding: 6px;padding-bottom:3px;'>${index + 1}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${configId}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.Count}</td>
