@@ -15001,7 +15001,7 @@
 	  }).map((itemDescr) => {
 		let val = config.dataset[itemDescr.key];
 		if (itemDescr.renderer) val = itemDescr.renderer(val);
-		return "<tr><td" + labelWidth + " style='font-weight:bold;padding:4px;'>" + PDF.l10n(itemDescr.labelKey || itemDescr.label) + ":</td>" +
+		return "<tr><td" + labelWidth + " style='font-weight:bold;padding:4px;'>" + PDF.l10n(itemDescr.label) + ":</td>" +
 		  "<td" + valueWidth + " style='padding:4px;'>" + val + "</td></tr>"
 	  });
 
@@ -15021,11 +15021,7 @@
 			header: "PurchaseOrderInfo", // Purchase Order Information
 			items: [
 				{ label: "Form005", key: "PO_Number" }, // Purchase order number
-				{
-					label: "Form444", // Submission Date
-					key: "SubmittedTimestamp",
-					renderer: pdfDateRenderer,
-				},
+				{ label: "Form444", key: "SubmittedTimestamp", renderer: pdfDateRenderer }, // Submission Date
 				{ label: "Form010", key: "PO_Category" }, // Purchase order category
 				{ label: "Form008", key: "PO_Value" }, // Purchase order amount
 				{ label: "Form007", key: "PO_Currency" }, // Purchase order currency
@@ -15058,11 +15054,7 @@
 			items: [
 				{ label: "Form039", key: "PO_DeliveryDate" }, // Requested Delivery date
 				{ label: "Form476", key: "PO_DeliveryIncoterms" }, // Delivery Incoterms
-				{
-					label: "Form477", // Complete Delivery
-					key: "PO_CompleteDelivery",
-					renderer: pdfYesNoRenderer,
-				},
+				{ label: "Form477", key: "PO_CompleteDelivery", renderer: pdfYesNoRenderer }, // Complete Delivery
 				{ label: "Form465", key: "PO_BusinessModel" }, // Business Model
 			],
 		},
@@ -15234,55 +15226,7 @@
 			  if (item.ProductPurchasedDate) {
 				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPD") + "</b><br>" + (item.ProductPurchasedDate || "") + "</td></tr>";
 			  }
-/*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
-			  }
-*/
-/*
-			  extra = "<tr><td colspan='6' cellpadding='0'><table>" +
-				(item.PreviouslyPurchasedProductDetails ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td><td>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>" : "") +
-				(item.SerialNumberOfProducts ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td><td>" + (item.SerialNumberOfProducts || "") + "</td></tr>" : "") +
-				(item.ProductPurchasedDate ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td><td>" + (item.ProductPurchasedDate || "") + "</td></tr>" : "") +
-				"</table><td></tr>";
-*/
-			  /*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPPD") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormSNP") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPD") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
-			  }
-*/
-/*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td><td colspan='4'></td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td><td colspan='4'></td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td><td colspan='4'></td></tr>";
-			  }
-*/
 			}
-			// const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
-			// const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
 			const configId = [item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
 			return `<tr><td style='padding: 6px;padding-bottom:3px;'>${index + 1}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${configId}</td>
@@ -15346,47 +15290,19 @@
 	{
 		header: "Form186", // Comments
 		items: [
-			{
-				label: "Tax details (and any exemptions)",
-				labelKey: "Form189",
-				key: "Comment_Tax",
-			},
-			{
-				label: "Invoice comments",
-				labelKey: "Form191",
-				key: "Comment_Invoice",
-			},
-			{
-				label: "Delivery comments",
-				labelKey: "Form193",
-				key: "Comment_Delivery",
-			},
-			{
-				label: "Packing list comments",
-				labelKey: "Form195",
-				key: "Comment_Packing",
-			},
-			{
-				label: "Additional comments",
-				labelKey: "Form197",
-				key: "Comment_Extra",
-			},
+			{ label: "Form189", key: "Comment_Tax" }, // Tax details (and any exemptions)
+			{ label: "Form191", key: "Comment_Invoice" }, // Invoice comments
+			{ label: "Form193", key: "Comment_Delivery" }, // Delivery comments
+			{ label: "Form195", key: "Comment_Packing" }, // Packing list comments
+			{ label: "Form197", key: "Comment_Extra" }, // Additional comments
 		],
 	},
 	{
 		header: "Form152", // Additional information
 		items: [
 			{ label: "FormCFI06", key: "Optional_Attachment" }, // Select file
-			{
-				label: "Form156", // Are you ordering support / Installation services or Software licenses?
-				key: "Config_PI",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form157",
-				key: "Config_SystemManager", // Do you have a system manager contact apart from the provided end customer contact?
-				renderer: pdfYesNoRenderer,
-			},
+			{ label: "Form156", key: "Config_PI", renderer: pdfYesNoRenderer }, // Are you ordering support / Installation services or Software licenses?
+			{ label: "Form157", key: "Config_SystemManager", renderer: pdfYesNoRenderer}, // Do you have a system manager contact apart from the provided end customer contact?
 			{ label: "FirstName", key: "EndCx_SysMng_FirstName" }, // First name
 			{ label: "LastName", key: "EndCx_SysMng_LastName" }, // Last name
 			{ label: "Telephone", key: "EndCx_SysMng_Phone" }, // Phone
@@ -15394,54 +15310,18 @@
 			{ label: "CountryOfResidence", key: "EndCx_SysMng_Country" }, // Country of residence
 			{ label: "Form163", key: "Config_ResId" }, // Reservation ID
 			{ label: "Form165", key: "Config_LOID" }, // Label order ID (LOID)
-			{
-				label: "Form454", // Non-chargeable special logistics services
-				key: "Config_LogCode",
-			},
-			{
-				label: "Form481", // Do you belong to Public sector entity?
-				key: "Config_PublicSectionPartner",
-				renderer: pdfYesNoRenderer,
-			},
+			{ label: "Form454", key: "Config_LogCode" }, // Non-chargeable special logistics services
+			{ label: "Form481", key: "Config_PublicSectionPartner", renderer: pdfYesNoRenderer }, // Do you belong to Public sector entity?
 			{ label: "Form482", key: "Config_CIG" }, // CIG
 			{ label: "Form484", key: "Config_CUP" }, // CUP
-			{
-				label: "Form052", // Is the asset location address the same as the end customer address?
-				key: "Config_LocationDetails",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form053", // Is the entitled party information the same as the end customer information?
-				key: "Config_EntitledDetails",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form528", // Do you have a Preferred Service Provider (PSP)
-				key: "Config_PSP",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form240", // Do you have an acknowledgement Letter information?
-				key: "Config_ALI",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form242", // Are you ordering a combined order with other departments (PointNext/CMS/Parts Sales)?
-				key: "Config_CombinedOrder",
-				renderer: pdfYesNoRenderer,
-			},
-			{
-				label: "Form244", // Which team is in charge of other product
-				key: "CombinedOrder_Team",
-			},
-			{
-				label: "Form245", // The total value of other product
-				key: "CombinedOrder_Total",
-			},
-			{
-				label: "Form246", // Combined Share point ID
-				key: "CombinedOrder_SharePointID",
-			},
+			{ label: "Form052", key: "Config_LocationDetails", renderer: pdfYesNoRenderer }, // Is the asset location address the same as the end customer address?
+			{ label: "Form053", key: "Config_EntitledDetails", renderer: pdfYesNoRenderer }, // Is the entitled party information the same as the end customer information?
+			{ label: "Form528", key: "Config_PSP", renderer: pdfYesNoRenderer }, // Do you have a Preferred Service Provider (PSP)
+			{ label: "Form240", key: "Config_ALI", renderer: pdfYesNoRenderer }, // Do you have an acknowledgement Letter information?
+			{ label: "Form242", key: "Config_CombinedOrder", renderer: pdfYesNoRenderer }, // Are you ordering a combined order with other departments (PointNext/CMS/Parts Sales)?
+			{ label: "Form244", key: "CombinedOrder_Team" }, // Which team is in charge of other product
+			{ label: "Form245", key: "CombinedOrder_Total" }, // The total value of other product
+			{ label: "Form246", key: "CombinedOrder_SharePointID" }, // Combined Share point ID
 			{ label: "Form247", key: "CombinedOrder_Owner" }, // The owner of combined order
 		],
 		newline: true,
@@ -15493,7 +15373,6 @@
 		  "<tr><td style='vertical-align: top;padding-top:10px;' width='50%'>" + row[0].content + "</td><td  style='width:10px;'>" +
 		  "<td style='vertical-align: top;padding-top:10px;' width='50%'>" + (row[1] ? row[1].content : "") + "</td></tr></table>";
 	  });
-	  //config.dataset.PdfContent = "<h1 style='margin-top:10px;'>" + PDF.l10n("Form005") + " - <span>[PO_Number]</span></h1>" +  // Form005 = 'Purchase order number'
 	  config.dataset.PdfContent =
 			"<h1 style='margin-top:10px;'>" +
 			PDF.l10n("Form005") +
