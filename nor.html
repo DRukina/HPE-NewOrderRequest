@@ -7234,30 +7234,57 @@
 	],      
 	callback: function() {  
 	  const PS_Att = document.querySelector('[data-name="ProductServices_Attachment"]');
+	  const clearPSAttachment = function () {
+		config.dataset.ProductServicesRepeater = null;
+		config.dataset.Config_Quote_PartialOrder = null;
+		config.dataset.ProductServices_Attachment = null;
+		quoteHelper.ucids = [];
+		quoteHelper.maxQuantity = null;
+		quoteHelper.buildProductAndServices(config, config.pages[config.page]);
+		nbsf.init(config, config.page);
+	  };
 	  if (PS_Att) {
 		const kendoOptAtt = $(PS_Att).data('kendoUpload');
 		kendoOptAtt.bind("upload", function(e) {            
 		  if (e.files && e.files.length) {
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
-			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
-			  if (data.success && data.data && data.data.length) {
-				config.dataset.ProductServicesRepeater = null;
-				config.dataset.Config_Quote_PartialOrder = null;
-				config.dataset.ProductServices_Attachment =
-				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
-				// build product and services page
-				quoteHelper.buildProductAndServices(config, config.pages[config.page]);
-				nbsf.init(config, config.page);
+			try {
+			  helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => {
+				if (data.success && data.data && data.data.length) {
+				  config.dataset.ProductServicesRepeater = null;
+				  config.dataset.Config_Quote_PartialOrder = null;
+				  config.dataset.ProductServices_Attachment =
+					new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
+				  // build product and services page
+				  quoteHelper.buildProductAndServices(config,	config.pages[config.page]);
+				  nbsf.init(config, config.page);
+				} else {
+				  clearPSAttachment();
+				}
 			  }
-			});
+			);
+			} catch (e) {
+			  console.error(e);
+			  // clear data
+			  clearPSAttachment();
+			}
 		  }
 		});
 		
 		const row = PS_Att.closest('.row');
 		const heading = $(row).find('.heading');
 		if (heading) {
-		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>Download the template</a>`);
+		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>Download the template</a>`);
+		  $(".k-dropzone").css({width: "100%", display: "flex", justifyContent: "space-between",});
+
+		  $(".k-dropzone").append(`<div class="k-button kUpload-reset" aria-label="Reset file" style="margin: 8px 0 15px 8px;"><span>${hpe.fn.lang("ResetSelectedFile", config.locale, config.localizations)}</span></div>`);
+
+		  $(".kUpload-reset").click(function (event) {
+			if (config.dataset.ProductServices_Attachment) clearPSAttachment();
+			event.preventDefault();
+			event.stopPropagation();
+		  });
 		}
 	  }
 	  
