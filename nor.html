@@ -13930,18 +13930,31 @@
 		  // Change "required" property on Email, Last Name and Country when corresponding First Name changed
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
-			if (!["Payer_Contact_FirstName", "BillTo_Contact_FirstName", "ShipTo_Contact_FirstName"].includes(fieldName)) return;
-
+			const contactFieldPattern = /^(SoldTo|Payer|BillTo|ShipTo|EndCx|Reseller)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
+			if (!contactFieldPattern.test(fieldName)) return;
+			
 			const currVal = e.target.value;
-			const required = !!currVal;
+			let required = false;
 
-			config.dataset[fieldName] = currVal;
 			const fieldPrefix = fieldName.split("_")[0];
-			const fieldsToSwitch = [fieldPrefix + "_Contact_Email", fieldPrefix + "_Contact_Country", fieldPrefix + "_Contact_LastName"];
+			const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
+			config.dataset[fieldName] = currVal;
+			const allContactFieldsWithSamePrefix = [fieldPrefix + "_Contact_Email", fieldPrefix + "_Contact_LastName", fieldPrefix + "_Contact_FirstName", fieldPrefix + "_Contact_Phone"];
 			let prevRequired = null;
 
+			let allFieldsEmpty = allContactFieldsWithSamePrefix.every(field => {
+				let value = config.dataset[field];
+				return value === '' || value === null || value === config.pages[config.page].selectone;
+			});
+
+			required = !allFieldsEmpty;
+
+			if (!required) {
+				config.dataset[fieldPrefix + "_Contact_Country"] = null;
+				if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = null;
+			}
 			visitItems((item) => {
-			  if (fieldsToSwitch.includes(item.data)) {
+			  if (allContactFieldsWithSamePrefix.includes(item.data)) {
 				if (prevRequired === null) prevRequired = item.required;
 				item.required = required;
 			  }
@@ -13951,7 +13964,6 @@
 			  // Fill Contact Country from Address Country if it was empty and became mandatory
 			  if (required) {
 				const country = config.dataset[fieldPrefix + "_Address_Country"];
-				const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
 				if (!prevCountry || prevCountry == config.pages[config.page].selectone) {
 				  config.dataset[fieldPrefix + "_Contact_Country"] = country;
 				  if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = country;
