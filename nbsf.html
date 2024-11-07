@@ -2801,7 +2801,7 @@
             },
             translateValidation: function(config, key, lang) {
                 try {
-                    if (typeof(lang) === "undefined") lang = config.lang;
+                    if (typeof(lang) === "undefined") lang = config.locale;
                     if (typeof(lang) === "undefined" || lang == null) lang = "en_US";
                     if (typeof(config.reference.validationLanguages[key]) !== "undefined") {
                         if (typeof(config.reference.validationLanguages[key][lang]) !== "undefined") return config.reference.validationLanguages[key][lang];
