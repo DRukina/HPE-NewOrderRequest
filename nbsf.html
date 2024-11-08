@@ -3400,7 +3400,10 @@
                 if (item.type == "select") {
                     try {
                         // IF VALUES KEY IS FUNCTION
-                        if (item.required || el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations)) {
+                        if (
+                          item.required 
+                          || (el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations) && el[0].value !== "")
+                        ) {
                             if (typeof(item.values) === "function" && item.values().indexOf(el[0].value) == -1) count++;
                             // IF VALUES KEY IS ARRAY
                             else if (typeof(item.values) === "object" && item.values.indexOf(el[0].value) == -1) count++;
@@ -3429,7 +3432,7 @@
                 // ONE ITEM IS SELECTED
                 // THEN CHECK IF SELECTED ITEMS
                 // AR PART OF PROVIDED ARRAY
-                if (item.type == "checkbox") {
+                if (item.type == "checkbox" && item.required == true) {
                     for (index = 0; index < el.length; index++) {
                         if (el[index].checked) break;
                         if (index == el.length - 1) count++;
@@ -3446,7 +3449,7 @@
                 // SELECTED VALUE SHOULD BE IN PROVIDED VALUES ARRAY
                 if (item.type == "multiselect") {
                     var options = el[0].querySelectorAll("option:checked");
-                    if (options.length == 0) count++;
+                    if (item.required && options.length == 0) count++;
                     else {
                         options.forEach(function(option) {
                             if (typeof(item.values) === "function" && item.values().indexOf(option.value) == -1) count++;
