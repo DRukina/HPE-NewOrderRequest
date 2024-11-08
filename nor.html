@@ -13969,7 +13969,7 @@
 		  // Change "required" property on Email, Last Name and Country when corresponding First Name changed
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
-			const contactFieldPattern = /^(SoldTo|Payer|BillTo|ShipTo|EndCx|Reseller)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
+			const contactFieldPattern = /^(Payer|BillTo|ShipTo|EndCx|AssLoc)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
 			if (!contactFieldPattern.test(fieldName)) return;
 			
 			const currVal = e.target.value;
