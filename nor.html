@@ -378,7 +378,7 @@
 		channel: null,
 		pas: null
 	  },
-	  userPreferences:{}, // Map PANumber:UserPreferences
+	  userPreferences:{}, // Map PartyId:UserPreferences
 	  company: {
 		party: null,
 		country: null,
@@ -488,6 +488,7 @@
 		  global.data.brt.channel = global.data.brts[i].channel;
 	  }
 	  global.data.brt.pas = [];
+	  global.data.brt.partyId = [];
 
 	  global.data.company.party = "[SSOData.PartyId]";
 	  global.data.company.country = "[SSOData.CountryEntityId]";
@@ -594,6 +595,7 @@
 		global.data.brt.channel = global.data.brts[i].channel;
 	}
 	global.data.brt.pas = [];
+	global.data.brt.partyId = [];
 
 	global.data.company.party = "[SSOData.PartyId]";
 	global.data.company.country = "[SSOData.CountryEntityId]";
@@ -8177,8 +8179,8 @@
 </script>
 <script>
   // MAIN CONFIG
-  const paNumberChanged = function(newVal) {
-	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PA_Number : newVal];
+  const partyIdChanged = function(newVal) {
+	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PartyId : newVal];
 	if (!prefs) return;
 	
 	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
@@ -8208,7 +8210,7 @@
 			serverFiltering: true,
 			filter: {
 			  logic: "or",
-			  filters: global.data.brt.pas.map((pa) => ({field: "PANumber", operator: "eq", value: pa}))
+			  filters: global.data.brt.partyId.map((partyId) => ({field: "PartyId", operator: "eq", value: partyId}))
 			},
 			serverSorting: true,
 			sort: {
@@ -8223,15 +8225,15 @@
 			const prefs = {}
 			data.forEach((row) => {
 				try {
-				  if (row.Preferences) prefs[row.PANumber] = JSON.parse(row.Preferences);
+				  if (row.Preferences) prefs[row.PartyId] = JSON.parse(row.Preferences);
 				} catch(e) {
 				  // The string with wrong preferences is not the reason to fall
 				  console.log("Error parsing preferences", row);
 				}
 			});
-			global.data.brt.pas.forEach((pa) => {
-			  if (!prefs[pa]) prefs[pa] = {};
-			  if (!prefs[pa].Payment_Terms) prefs[pa].Payment_Terms = "NT30 - Within 30 days due net";
+			global.data.brt.partyId.forEach((pid) => {
+			  if (!prefs[pid]) prefs[pid] = {};
+			  if (!prefs[pid].Payment_Terms) prefs[pid].Payment_Terms = "NT30 - Within 30 days due net";
 			});
 			global.data.userPreferences = prefs;
 			resolve();
@@ -8757,8 +8759,10 @@
 					})
 				  }
 				  global.data.brt.pas = [];
+				  global.data.brt.partyId = [];
 				  reference.agreements.forEach(function(agreement) {
 					global.data.brt.pas.push(agreement.iCMPANumber);
+					global.data.brt.partyId.push(agreement.iCMPartyID);
 				  });
 				  let chnls = global.data.brts.filter(function(item) {
 					return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -8918,8 +8922,10 @@
 				  })
 				}
 				global.data.brt.pas = [];
+				global.data.brt.partyId = [];
 				reference.agreements.forEach(function(agreement) {
 				  global.data.brt.pas.push(agreement.iCMPANumber);
+				  global.data.brt.partyId.push(agreement.iCMPartyID);
 				});
 				let chnls = global.data.brts.filter(function(item) {
 				  return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -9867,7 +9873,7 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
-			paNumberChanged();
+			partyIdChanged();
 		} else {
 		  config.dataset.ProductServices_Attachment = null;
 		  config.dataset.ProductServicesRepeater = null;
@@ -9917,7 +9923,7 @@
 			  }
 			  config.dataset.SIM_Country = $('select[data-name="SIM_Country"]').val();
 			  quoteHelper.initCountry(config);
-			  paNumberChanged();
+			  partyIdChanged();
 			  nbsf.init(config, config.page);
 
 			  mo.fn.overlay.hide();
@@ -9943,7 +9949,7 @@
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
-			paNumberChanged();
+			partyIdChanged();
 			nbsf.init(config, config.page);
 		  }
 
@@ -10054,7 +10060,7 @@
 			//nbsf.init(config, config.page);
 		  } else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
-			paNumberChanged();
+			partyIdChanged();
 		  }
 
 
@@ -10148,7 +10154,7 @@
 		if (paOpts.length > 1) {
 		  const paValue = paOpts[1].innerText;
 		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
-		  paNumberChanged(paValue); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
+		  partyIdChanged(); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
 	  
@@ -13813,8 +13819,10 @@
 				})
 			  }
 			  global.data.brt.pas = [];
+				global.data.brt.partyId = [];
 			  reference.agreements.forEach(function(agreement) {
 				global.data.brt.pas.push(agreement.iCMPANumber);
+				global.data.brt.partyId.push(agreement.iCMPartyID);
 			  });
 			  let chnls = global.data.brts.filter(function(item) {
 				return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -13951,7 +13959,7 @@
 			oob.grid.load();
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
-			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
+			if (e.target.getAttribute("data-name") == "PartyId") partyIdChanged();
 		  });
 
 		  function visitItems(cb) {
