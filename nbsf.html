@@ -1,5 +1,6 @@
 <script>
     const nbsf = {
+        callbacks: [],
         init: function(config, page) {
             // POLYFILL FOR IE
             nbsf.fn.closest();
@@ -66,6 +67,8 @@
             if (!!config.pages[page].review && config.pages[page].review.editable && config.pages[page].review.collapsible && config.pages[page].review.collapsed) {
                 nbsf.fn.openCollapsedBlocks(config, page, validationResult);
             }
+            // EXECUTE COMMON PAGE CALLBACKS
+            nbsf.callbacks.forEach(f => f(config, page));
             // EXECUTE PAGE CALLBACK IF AVAILABLE
             if (typeof(config.pages[page].callback) === "function")
                 config.pages[page].callback(config);
