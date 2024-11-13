@@ -2767,16 +2767,14 @@
             },
             translateValidation: function(config, key, lang) {
                 try {
-                    if (typeof(lang) === "undefined") lang = config.locale;
-                    if (typeof(lang) === "undefined" || lang == null) lang = "en_US";
-                    if (typeof(config.reference.validationLanguages[key]) !== "undefined") {
-                        if (typeof(config.reference.validationLanguages[key][lang]) !== "undefined") return config.reference.validationLanguages[key][lang];
-                        else if (typeof(config.reference.validationLanguages[key]["en_US"]) !== "undefined") return config.reference.validationLanguages[key]["en_US"];
-                    } else if (typeof(key) === "string") {
-                        return key && nbsf.vldConfig[key] || key;
-                    } else {
-                        return "Error: MLK";
+                    lang = lang || config.locale || "en_US";
+                    if (config.reference && config.reference.validationLanguages && config.reference.validationLanguages[key]) {
+                        return config.reference.validationLanguages[key][lang] || config.reference.validationLanguages[key]["en_US"] || key;
                     }
+                    if (typeof key === "string") {
+                        return (key && nbsf.vldConfig[key]) || key;
+                    }
+                    return "Error: MLK";
                 } catch (err) {
                     return key && nbsf.vldConfig[key] || key;
                 }
