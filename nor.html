@@ -8789,6 +8789,7 @@
 						mo.fn.overlay.hide();
 					  });
 					});
+					partyIdChanged();
 				  })
 				});
 
@@ -8952,6 +8953,7 @@
 					  mo.fn.overlay.hide();
 					});
 				  });
+				  partyIdChanged();
 				});
 			  });
 			} else {
@@ -9817,6 +9819,7 @@
 		  config.dataset[input.name] = global.data[input.group][input.value];
 		  document.querySelector("input[type=hidden][data-name=" + input.name + "]").value = global.data[input.group][input.value];
 		});
+		partyIdChanged();
 	  }
 	  config.dataset.internalUser = global.data.user.internal;
 	  config.dataset.Email = '[SSOData.Email]';
@@ -10148,15 +10151,6 @@
 		  $('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
 		}
 	  }
-
-	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
-		const paOpts = $('select[data-name="PA_Number"] option');
-		if (paOpts.length > 1) {
-		  const paValue = paOpts[1].innerText;
-		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
-		  partyIdChanged(); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
-		}
-	  }
 	  
 	  if (document.querySelector('select[data-name="PO_BusinessModel"]') && document.querySelector('select[data-name="PO_BusinessModel"]').value == config.pages[1].selectone) {
 		$('select[data-name="PO_BusinessModel"]').val($('select[data-name="PO_BusinessModel"] option')[1].innerText).trigger('change');
@@ -10195,6 +10189,14 @@
 		if (config.dataset.CountryCode == 'TR' || countryInfo && countryInfo.MAP == "Y") {
 		  config.dataset.Config_Quote = "N";
 		  nbsf.init(config, config.page);
+		}
+	  }
+
+	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && (document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone || document.querySelector('select[data-name="PA_Number"]').value == '')) {
+		const paOpts = $('select[data-name="PA_Number"] option');
+		if (paOpts.length > 1) {
+		  const paValue = paOpts[1].innerText;
+		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
 		}
 	  }
 
