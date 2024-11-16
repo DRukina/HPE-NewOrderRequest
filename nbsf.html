@@ -659,7 +659,7 @@
                     var inputList = group.filter((input) => nbsf.fn.filter(config.dataset, input.filter));
                     if (inputList.length) {
                       var fieldset = nbsf.fn.node("fieldset");
-                      inputList.forEach(function(input, inputIndex) {
+                      group.forEach(function(input, inputIndex) {
                         var address = [page, structureIndex, groupIndex, inputIndex].join(",");
                         nbsf.builder.input(config, page, structure, group, input, fieldset, address);
                       });
@@ -710,7 +710,7 @@
                         name.setAttribute("class", "name");
                         name.innerHTML = nbsf.ui.translate(config, cItem.label);
                         // ADD REQUIRED FLAG
-                        if (typeof(cItem.required) !== "undefined" && cItem.required != null && cItem.required == true) {
+                        if (typeof(cItem.required) !== "undefined" && cItem.required != null && nbsf.fn.bool(cItem.required) == true) {
                             var req = document.createElement("span");
                             req.setAttribute("class", "required");
                             req.innerText = "*";
@@ -801,12 +801,12 @@
                             var selectOne = nbsf.fn.node("option", {
                                 'disabled': true,
                                 'selected': true,
-							    'value': ""
+                                'value': ""
                             });
-                            if (!cItem.required)
-                                var selectOne = nbsf.fn.node("option", {
+                            if (!nbsf.fn.bool(cItem.required))
+                                selectOne = nbsf.fn.node("option", {
                                     'selected': true,
-							        'value': ""
+                                    'value': ""
                                 });
                             selectOne.innerText = nbsf.ui.translate(config, config.pages[page].selectone);
                             input.appendChild(selectOne);
@@ -815,10 +815,13 @@
                             else
                                 vals = cItem.values;
 
+                            var opts = cItem.options;
+                            if (typeof(opts) === "function") opts = opts();
+
                             for (vIndex = 0; vIndex < vals.length; vIndex++) {
                                 var label = vals[vIndex];
-                                if (typeof(cItem.options) === "object" && vals.length == cItem.options.length)
-                                    label = cItem.options[vIndex];
+                                if (typeof(opts) === "object" && vals.length == opts.length)
+                                    label = opts[vIndex];
                                 var option = nbsf.fn.node("option", {
                                     'value': vals[vIndex]
                                 });
@@ -2452,9 +2455,9 @@
                             healthResult.count &&
                             // skip empty optional validation
                             (
-                                typeof(targetConfig.required) === 'boolean' &&
+                                (typeof(targetConfig.required) === 'boolean' || typeof(targetConfig.required) === 'function') &&
                                 (
-                                    targetConfig.required ||
+                                    nbsf.fn.bool(targetConfig.required) ||
                                     (targetConfig.type == 'select' && targetConfig.selectedIndex > 0) ||
                                     (targetConfig.type == 'confirm' && (targetNodes[0].value.length > 0 || targetNodes[1].value.length > 0)) ||
                                     (targetConfig.type != 'select' && targetNodes[0].value.length > 0)
@@ -3274,7 +3277,7 @@
                 // AGREE IS VALID AS LONG AS
                 // THE CHECKBOX IS CHECKED AND VALUE IS Y
                 if (item.type == "agree") {
-                    if (item.required == true && (el.length != 1 || typeof(el[0].value) == "undefined" || el[0].value != item.values[0] || el[0].checked == false)) {
+                    if (nbsf.fn.bool(item.required) == true && (el.length != 1 || typeof(el[0].value) == "undefined" || el[0].value != item.values[0] || el[0].checked == false)) {
                         count++;
                         vldMessages.push(nbsf.vldMessage(config, 'accepted', item));
                     }
@@ -3309,7 +3312,7 @@
                     try {
                         // IF VALUES KEY IS FUNCTION
                         if (
-                          item.required 
+                          nbsf.fn.bool(item.required)
                           || (el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations) && el[0].value !== "")
                         ) {
                             if (typeof(item.values) === "function" && item.values().indexOf(el[0].value) == -1) count++;
@@ -3340,7 +3343,7 @@
                 // ONE ITEM IS SELECTED
                 // THEN CHECK IF SELECTED ITEMS
                 // AR PART OF PROVIDED ARRAY
-                if (item.type == "checkbox" && item.required == true) {
+                if (item.type == "checkbox" && nbsf.fn.bool(item.required) == true) {
                     for (index = 0; index < el.length; index++) {
                         if (el[index].checked) break;
                         if (index == el.length - 1) count++;
@@ -3357,7 +3360,7 @@
                 // SELECTED VALUE SHOULD BE IN PROVIDED VALUES ARRAY
                 if (item.type == "multiselect") {
                     var options = el[0].querySelectorAll("option:checked");
-                    if (item.required && options.length == 0) count++;
+                    if (nbsf.fn.bool(item.required) && options.length == 0) count++;
                     else {
                         options.forEach(function(option) {
                             if (typeof(item.values) === "function" && item.values().indexOf(option.value) == -1) count++;
@@ -3391,7 +3394,7 @@
                 if (item.type == "text" || item.type == "confirm" || item.type == "textarea") {
                     var cValue = el[0].value;
                     // BLANK INPUT NOT ALLOWED FOR REQUIRED FIELDS
-                    if (cValue.replace(/\s/g, '').length == 0 && item.required) count++;
+                    if (cValue.replace(/\s/g, '').length == 0 && nbsf.fn.bool(item.required)) count++;
                     else {
                         if (item.validation && cValue.replace(/\s/g, '').length != 0)
                             for (l = 0; l < item.validation.length; l++) {
@@ -3441,7 +3444,7 @@
 
                 // TYPE KENDO UPLOAD
                 if (item.type == "kUpload") {
-                    if (el[el.length - 1].getAttribute("uploaded") != "true" && item.required)
+                    if (el[el.length - 1].getAttribute("uploaded") != "true" && nbsf.fn.bool(item.required))
                         count++;
                 }
 
