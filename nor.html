@@ -370,7 +370,8 @@
 							 ];
   let global = {
 	ready: false,
-	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "TW", "AU", "NZ", "MO"],
+	nonPoModelCountries: ["AF", "AU", "BD", "BN", "BT", "CN", "HK", "ID", "JP", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW", "VN"],
+	pdfCreateCountries: ["AU", "BD", "BN", "BT", "CN", "HK", "KH", "KR", "LA", "LK", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL"],
 	data: {
 	  brt: {
 		code: null,
@@ -2739,7 +2740,7 @@
 		  }
 		});
 	  }
-	  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+	  if (global.pdfCreateCountries.indexOf(config.dataset.CountryCode) >= 0) {
 		let sbt = config.dom.querySelector(".header .subtitle");
 		if (sbt) sbt.innerHTML += "<br><br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
 	  }
@@ -9227,9 +9228,10 @@
 			  } else {
 				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				//  const po_n = config.dataset.PO_Number && config.dataset.PO_Number.replace(/\s/g, "_") || "nor";
-				  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-				  caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
+					let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
+					caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  }
 				}
 				else if (pairs[i].ttl == "page-3")
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("FormCFI019", config.locale, config.localizations) + "</strong><br>";
@@ -9431,8 +9433,10 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-				caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
+				  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
+				  caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				}
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
 			} else {
@@ -9528,7 +9532,7 @@
 		  });
 		}
 
-		PDF.createPdf();
+		PDF.createPdfByCountry();
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
@@ -10148,7 +10152,6 @@
 		  $('select[data-name="PO_Currency"]').val($('select[data-name="PO_Currency"] option')[1].innerText).trigger('change');
 		}
 	  }
-
 	  if (document.querySelector('select[data-name="PA_Number"]') && global.data.brt.pas.length == 1 && document.querySelector('select[data-name="PA_Number"]').value == config.pages[1].selectone) {
 		const paOpts = $('select[data-name="PA_Number"] option');
 		if (paOpts.length > 1) {
@@ -13819,7 +13822,7 @@
 				})
 			  }
 			  global.data.brt.pas = [];
-				global.data.brt.partyId = [];
+			  global.data.brt.partyId = [];
 			  reference.agreements.forEach(function(agreement) {
 				global.data.brt.pas.push(agreement.iCMPANumber);
 				global.data.brt.partyId.push(agreement.iCMPartyID);
@@ -15401,6 +15404,12 @@
 		  config.dataset = {};
 		});
 	  })
+	},
+
+	createPdfByCountry: function() {
+	  config.dataset.PdfContent = null;
+	  if (!global.pdfCreateCountries.includes(config.dataset.CountryCode)) return;
+	  PDF.createPdf();
 	},
 
 	createPdf: function() {
