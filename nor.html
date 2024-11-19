@@ -8512,7 +8512,7 @@
 				content: template,
 				contentCallback: function() {
 				  document.querySelector("#viewExisting").addEventListener("click", function(e) {
-					config.dataset = data.Rows[0];
+					config.dataset = config.processOnLoad(data.Rows[0]);
 					mo.fn.modal.hide();
 					mo.fn.overlay.show({
 					  loading: true,
@@ -8533,7 +8533,7 @@
 				  crud.create(3158, config.dataset, function(data) {
 					if (typeof(data.EntryId) === "number") {
 					  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-					  config.dataset = data;
+					  config.dataset = config.processOnLoad(data);
 					  config.dataset.internalUser = global.data.user.internal;
 					  nbsf.init(config, config.page + 1);
 					  mo.fn.events.closeAll();
@@ -8574,7 +8574,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8601,7 +8601,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8622,7 +8622,7 @@
 			  crud.create(3158, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -9769,7 +9769,7 @@
 			
 			if (isDraft) {
 			  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-			  config.dataset = data;
+			  config.dataset = config.processOnLoad(data);
 			  nbsf.init(config, config.page);
 			  mo.fn.overlay.hide();
 			  draftHandler();
@@ -9783,7 +9783,7 @@
 				crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				  if (typeof(data.EntryId) === "number") {
 					// UPDATE REFERENCE APPLICATION WITH RESPONSE
-					config.dataset = data;
+					config.dataset = config.processOnLoad(data);
 					nbsf.init(config, config.page);
 					mo.fn.overlay.hide();
 					notDraftHandler();
@@ -9814,10 +9814,13 @@
 		}
 	  });
 	},
+	processOnLoad: function(rec) {
+	  config.onLoadCallbacks.forEach(cb => cb(rec));
+	  return rec;
+	},
 	loadRecord: function(entryId, callback) {
 	  crud.read("3180", "eid=" + entryId, function(d) {
-		const rec = d.Rows.length > 0 ? d.Rows[0] : {};
-		config.onLoadCallbacks.forEach(cb => cb(rec));
+		const rec = config.processOnLoad(d.Rows.length > 0 ? d.Rows[0] : {});
 		callback(rec);
 	  })
 	},
@@ -14147,13 +14150,13 @@
                               $('span[tab-id="oob"]').hide();
                           }*/
 		  $('span[tab-id="otherIcons"] > svg.add').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('.tabs span[tab-id="oob"]').click();
 		  });
 		  $('span[tab-id="otherIcons"] > svg.refresh').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('[tab-id=requests] .grid').data('kendoGrid').dataSource.read();
@@ -14698,14 +14701,14 @@
 		  });
 		},
 		_edit: function(data) {
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
 		},
 		_view: function(data) {
 		  console.log('_view', data);
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, config.pages.length - 1);
 		  nbsf.init(config, config.pages.length - 1);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -14776,7 +14779,7 @@
 
 		  data.Status = 0;
 		  data.Clone = true;
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -15732,13 +15735,13 @@
 	  if (!(dataName || "").endsWith("_Predefined")) return;
 	  const dataParam = dataName.slice(0, -suffixLen);
 	  const val = e.target.value;
-	  config.dataset[dataParam] = val === " " ? null : val;
-	  config.dataset[dataName] = val;
 	  // the same hack to preserve values after init()
 	  let completedData = document.querySelectorAll('*[data-name]');
 	  for (let i = 0; i < completedData.length; i++) {
 		config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
 	  }
+	  config.dataset[dataParam] = val === " " ? null : val;
+	  config.dataset[dataName] = val;
 	  nbsf.init(config, config.page);
 	},
 
