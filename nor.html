@@ -2914,6 +2914,12 @@
 		  $(collapseEl).click();
 		}
 	  }
+
+	  document.querySelectorAll(".review-contact-firstname").forEach((el) => {
+		let separatorEl = document.createElement("div");
+		separatorEl.classList.add("review-separator");
+		el.parentNode.insertBefore(separatorEl, el)
+	  });
 	}
   };
 
@@ -4211,7 +4217,7 @@
 			filter: () => multiValues.hasValues("ShipTo_PartyId"),
 			label: "Form086",
 			data: "ShipTo_PartyId_Predefined",
-			required: false,
+			required: true,
 			type: "select",
 			values: () => multiValues.getValues("ShipTo_PartyId"),
 			options: () => multiValues.getOptions("ShipTo_PartyIdName")
@@ -4315,7 +4321,7 @@
 					  filter: () => multiValues.hasValues("ShipTo_PartyId"),
 					  label: "Form086",
 					  data: "ShipTo_PartyId_Predefined",
-					  required: false,
+					  required: true,
 					  type: "select",
 					  values: () => multiValues.getValues("ShipTo_PartyId"),
 					  options: () => multiValues.getOptions("ShipTo_PartyIdName")
@@ -4397,8 +4403,6 @@
 					]
 				  ]
 				},
-
-
 				{
 				  header: "Address",
 				  filter: {
@@ -15747,9 +15751,10 @@
 	  Object.entries(multiValues.data).forEach(([field, values]) => {
 		const recVal = rec[field];
 		rec[field + "_Predefined"] = values.indexOf(recVal) >= 0 ? recVal : " ";
+		if (!recVal) rec[field + "_Predefined"] = null;
 	  });
 	},
-	
+
 	handleChange: function(e) {
 	  const suffixLen = "_Predefined".length;
 	  const dataName = e.target.getAttribute("data-name");
