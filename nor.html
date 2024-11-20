@@ -8327,6 +8327,34 @@
 	multiValues.resetPredefinedProps(config.dataset);
   }
 
+  function visitItems(cb) {
+    for (let a=0; a<config.pages.length; a++) {
+  	  for (b = 0; b < config.pages[a].structure.length; b++) {
+	    for (l = 0; l < config.pages[a].structure[b].group.length; l++) {
+		  for (k = 0; k < config.pages[a].structure[b].group[l].length; k++) {
+		    cb(config.pages[a].structure[b].group[l][k]);
+		  }
+	    }
+	  }
+    }
+  }
+
+  const initializeContactFields = function (fieldPrefix){
+	const allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
+	  if (field === `${fieldPrefix}_Contact_Country`) return true;
+	  let value = global.data.userPreferences && global.data.userPreferences[config.dataset.PartyId] && global.data.userPreferences[config.dataset.PartyId][field];
+	  return !value || value === config.pages[config.page].selectone;
+	});
+
+	const required = !allFieldsEmpty;
+
+	visitItems((item) => {
+	  if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
+	    item.required = required;
+	  } 
+	});
+  };
+
   const loadPreferences = function() {
       // Load preferences for all PA in global.data.brt.pas
       return new Promise((resolve, reject) => {
@@ -8440,7 +8468,7 @@
 	},
 	addressField: ["Address_Country", "CompanyName", "Address_State", "Address_City", "Address_Postal", "Address_Street", "Address_Street2", "NationalID", "Address"],
 	contactField: ["Contact_FirstName", "Contact_LastName", "Contact_Phone", "Contact_Email", "Contact_Country"],
-	sectionName: ["SoldTo", "Payer", "BillTo", "ShipTo", "Reseller", "EndCustomer", "CustomShipTo", "AgentProgram"],
+	sectionName: ["SoldTo", "Payer", "BillTo", "ShipTo", "Reseller", "EndCustomer", "CustomShipTo", "AgentProgram", "EndCx", "AssLoc"],
 	sectionAddressFields: {}, // Mapping sectionName:fieldname[] with address fields. Filled in init().
 	sectionContactFields: {}, // Mapping sectionName:fieldname[] with contact fields. Filled in init().
 	sectionFields: {}, // Mapping sectionName:fieldname[] with address and contact fields. Filled in init().
@@ -10047,6 +10075,11 @@
 			document.querySelector("select[data-name=PO_BackgroundGroup]").value = config.dataset.PO_BackgroundGroup;
 		}
 	  }
+
+	  ['Payer', 'BillTo', 'ShipTo', 'EndCx', 'AssLoc'].forEach(fieldPrefix => {
+		initializeContactFields(fieldPrefix);
+	  });
+
 	  config.dataset.aggrVal = "0";
 	  if (global.data.brt.pas.length > 0)
 		config.dataset.aggrVal = "1";
@@ -14177,19 +14210,7 @@
 			if (e.target.getAttribute("data-name") == "PartyId") partyIdChanged();
 		  });
 
-		  function visitItems(cb) {
-			for (let a=0; a<config.pages.length; a++) {
-			  for (b = 0; b < config.pages[a].structure.length; b++) {
-				for (l = 0; l < config.pages[a].structure[b].group.length; l++) {
-				  for (k = 0; k < config.pages[a].structure[b].group[l].length; k++) {
-					cb(config.pages[a].structure[b].group[l][k]);
-				  }
-				}
-			  }
-			}
-		  }
-
-		  // Change "required" property on Email, Last Name and Country when corresponding First Name changed
+		  // Change "required" property on Email, First, Last Name, Phone and Country
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
 			const contactFieldPattern = /^(Payer|BillTo|ShipTo|EndCx|AssLoc)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
@@ -14201,10 +14222,10 @@
 			const fieldPrefix = fieldName.split("_")[0];
 			const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
 			config.dataset[fieldName] = currVal;
-			const allContactFieldsWithSamePrefix = [fieldPrefix + "_Contact_Email", fieldPrefix + "_Contact_LastName", fieldPrefix + "_Contact_FirstName", fieldPrefix + "_Contact_Phone"];
 			let prevRequired = null;
 
-			let allFieldsEmpty = allContactFieldsWithSamePrefix.every(field => {
+			let allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
+				if (field === `${fieldPrefix}_Contact_Country`) return true;
 				let value = config.dataset[field];
 				return value === '' || value === null || value === config.pages[config.page].selectone;
 			});
@@ -14216,7 +14237,7 @@
 				if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = null;
 			}
 			visitItems((item) => {
-			  if (allContactFieldsWithSamePrefix.includes(item.data)) {
+			  if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
 				if (prevRequired === null) prevRequired = item.required;
 				item.required = required;
 			  }
