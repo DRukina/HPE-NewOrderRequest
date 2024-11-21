@@ -833,7 +833,7 @@
 	countriesRequest: function() {
 	  hpe.api.dataset({
 		form: '989',
-		dataset: 'NOR_COUNTRIES',
+		dataset: 'NOR_Countries_Settings',
 		payload: {
 		  pageSize: '1000'
 		}
@@ -3421,7 +3421,7 @@
 			{
 			  label: "StateProvince",
 			  data: "SoldTo_Address_State",
-			  required: false,
+			  required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
 			  type: "text",
 			  //placeholder: "Form063",
 			  validation: ["kpDefault", "minLen|2"],
@@ -3430,7 +3430,7 @@
 			{
 			  label: "Postal code",
 			  data: "SoldTo_Address_Postal",
-			  required: true,
+			  required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
 			  type: "text",
 			  //placeholder: "Form087",
 			  validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -3531,7 +3531,7 @@
 		   {
 			 label: "StateProvince",
 			 data: "SoldTo_Address_State",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
 			 type: "text",
 			 //placeholder: "Form063",
 			 validation: ["kpDefault", "minLen|2"],
@@ -3540,7 +3540,7 @@
 		   {
 			 label: "Postal code",
 			 data: "SoldTo_Address_Postal",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
 			 type: "text",
 			 //placeholder: "Form087",
 			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -3805,7 +3805,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "Payer_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "Payer_Address_Country", "Payer_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form095",
 		   validation: ["kpDefault", "minLen|2"],
@@ -3814,7 +3814,7 @@
 		 {
 		   label: "Postal code",
 		   data: "Payer_Address_Postal",
-		   required: true,
+		   required: () => isStateOrPostalRequired(config.dataset, "Payer_Address_Country", "Payer_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form096",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -3893,7 +3893,7 @@
 					 {
 					   label: "StateProvince",
 					   data: "Payer_Address_State",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "Payer_Address_Country", "Payer_Address_Street", reference.countriesData, "RegionRequired"),
 					   type: "text",
 					   //placeholder: "Form095",
 					   validation: ["kpDefault", "minLen|2"],
@@ -3902,7 +3902,7 @@
 					 {
 					   label: "Postal code",
 					   data: "Payer_Address_Postal",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "Payer_Address_Country", "Payer_Address_Street", reference.countriesData, "PostalRequired"),
 					   type: "text",
 					   //placeholder: "Form096",
 					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4057,7 +4057,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "BillTo_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "BillTo_Address_Country", "BillTo_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form109",
 		   validation: ["kpDefault", "minLen|2"],
@@ -4066,7 +4066,7 @@
 		 {
 		   label: "Postal code",
 		   data: "BillTo_Address_Postal",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "BillTo_Address_Country", "BillTo_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form110",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4272,7 +4272,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "ShipTo_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form121",
 		   validation: ["kpDefault", "minLen|2"],
@@ -4281,7 +4281,7 @@
 		 {
 		   label: "Postal code",
 		   data: "ShipTo_Address_Postal",
-		   required: true,
+		   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form122",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4375,7 +4375,7 @@
 					 {
 					   label: "StateProvince",
 					   data: "ShipTo_Address_State",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "RegionRequired"),
 					   type: "text",
 					   //placeholder: "Form121",
 					   validation: ["kpDefault", "minLen|2"],
@@ -4384,7 +4384,7 @@
 					 {
 					   label: "Postal code",
 					   data: "ShipTo_Address_Postal",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "PostalRequired"),
 					   type: "text",
 					   //placeholder: "Form122",
 					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4494,7 +4494,7 @@
 					 {
 					   label: "StateProvince",
 					   data: "ShipTo_Address_State",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "RegionRequired"),
 					   type: "text",
 					   //placeholder: "Form121",
 					   validation: ["kpDefault", "minLen|2"],
@@ -4503,7 +4503,7 @@
 					 {
 					   label: "Postal code",
 					   data: "ShipTo_Address_Postal",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "ShipTo_Address_Country", "ShipTo_Address_Street", reference.countriesData, "PostalRequired"),
 					   type: "text",
 					   //placeholder: "Form122",
 					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4812,7 +4812,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "EndCx_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "EndCx_Address_Country", "EndCx_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form145",
 		   validation: ["kpDefault", "minLen|2"],
@@ -4821,7 +4821,7 @@
 		 {
 		   label: "Postal code",
 		   data: "EndCx_Address_Postal",
-		   required: true,
+		   required: () => isStateOrPostalRequired(config.dataset, "EndCx_Address_Country", "EndCx_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form146",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4906,7 +4906,7 @@
 					 {
 					   label: "StateProvince",
 					   data: "EndCx_Address_State",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "EndCx_Address_Country", "EndCx_Address_Street", reference.countriesData, "RegionRequired"),
 					   type: "text",
 					   //placeholder: "Form145",
 					   validation: ["kpDefault", "minLen|2"],
@@ -4915,7 +4915,7 @@
 					 {
 					   label: "Postal code",
 					   data: "EndCx_Address_Postal",
-					   required: false,
+					   required: () => isStateOrPostalRequired(config.dataset, "EndCx_Address_Country", "EndCx_Address_Street", reference.countriesData, "PostalRequired"),
 					   type: "text",
 					   //placeholder: "Form146",
 					   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5200,7 +5200,7 @@
 		  {
 			label: "StateProvince",
 			data: "Reseller_Address_State",
-			required: false,
+			required: () => isStateOrPostalRequired(config.dataset, "Reseller_Address_Country", "Reseller_Address_Street", reference.countriesData, "RegionRequired"),
 			type: "text",
 			//placeholder: "Form133",
 			validation: ["kpDefault", "minLen|2"],
@@ -5209,7 +5209,7 @@
 		  {
 			label: "Postal code",
 			data: "Reseller_Address_Postal",
-			required: true,
+			required: () => isStateOrPostalRequired(config.dataset, "Reseller_Address_Country", "Reseller_Address_Street", reference.countriesData, "PostalRequired"),
 			type: "text",
 			//placeholder: "Form134",
 			validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5296,7 +5296,7 @@
 					  {
 						label: "StateProvince",
 						data: "Reseller_Address_State",
-						required: false,
+						required: () => isStateOrPostalRequired(config.dataset, "Reseller_Address_Country", "Reseller_Address_Street", reference.countriesData, "RegionRequired"),
 						type: "text",
 						//placeholder: "Form133",
 						validation: ["kpDefault", "minLen|2"],
@@ -5305,7 +5305,7 @@
 					  {
 						label: "Postal code",
 						data: "Reseller_Address_Postal",
-						required: false,
+						required: () => isStateOrPostalRequired(config.dataset, "Reseller_Address_Country", "Reseller_Address_Street", reference.countriesData, "PostalRequired"),
 						type: "text",
 						//placeholder: "Form134",
 						validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5496,7 +5496,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "CustomShipTo_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "CustomShipTo_Address_Country", "CustomShipTo_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form493",
 		   validation: ["kpDefault", "minLen|2"],
@@ -5505,7 +5505,7 @@
 		 {
 		   label: "Postal code",
 		   data: "CustomShipTo_Address_Postal",
-		   required: true,
+		   required: () => isStateOrPostalRequired(config.dataset, "CustomShipTo_Address_Country", "CustomShipTo_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form494",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5581,7 +5581,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "CustomShipTo_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "CustomShipTo_Address_Country", "CustomShipTo_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form493",
 		   validation: ["kpDefault", "minLen|2"],
@@ -5590,7 +5590,7 @@
 		 {
 		   label: "Postal code",
 		   data: "CustomShipTo_Address_Postal",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "CustomShipTo_Address_Country", "CustomShipTo_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form494",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5725,7 +5725,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "AgentProgram_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "AgentProgram_Address_Country", "AgentProgram_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form507",
 		   validation: ["kpDefault", "minLen|2"],
@@ -5734,7 +5734,7 @@
 		 {
 		   label: "Postal code",
 		   data: "AgentProgram_Address_Postal",
-		   required: true,
+		   required: () => isStateOrPostalRequired(config.dataset, "AgentProgram_Address_Country", "AgentProgram_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form508",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -5810,7 +5810,7 @@
 		 {
 		   label: "StateProvince",
 		   data: "AgentProgram_Address_State",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "AgentProgram_Address_Country", "AgentProgram_Address_Street", reference.countriesData, "RegionRequired"),
 		   type: "text",
 		   //placeholder: "Form507",
 		   validation: ["kpDefault", "minLen|2"],
@@ -5819,7 +5819,7 @@
 		 {
 		   label: "Postal code",
 		   data: "AgentProgram_Address_Postal",
-		   required: false,
+		   required: () => isStateOrPostalRequired(config.dataset, "AgentProgram_Address_Country", "AgentProgram_Address_Street", reference.countriesData, "PostalRequired"),
 		   type: "text",
 		   //placeholder: "Form508",
 		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -6242,7 +6242,7 @@
 		   {
 			 label: "StateProvince",
 			 data: "AssLoc_Address_State",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "AssLoc_Address_Country", "AssLoc_Address_Street", reference.countriesData, "RegionRequired"),
 			 type: "text",
 			 //placeholder: "Form173",
 			 validation: ["kpDefault", "minLen|2"],
@@ -6251,7 +6251,7 @@
 		   {
 			 label: "Postal code",
 			 data: "AssLoc_Address_Postal",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "AssLoc_Address_Country", "AssLoc_Address_Street", reference.countriesData, "PostalRequired"),
 			 type: "text",
 			 //placeholder: "Form174",
 			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -6340,7 +6340,7 @@
 		   {
 			 label: "StateProvince",
 			 data: "AssLoc_Address_State",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "AssLoc_Address_Country", "AssLoc_Address_Street", reference.countriesData, "RegionRequired"),
 			 type: "text",
 			 //placeholder: "Form173",
 			 validation: ["kpDefault", "minLen|2"],
@@ -6349,7 +6349,7 @@
 		   {
 			 label: "Postal code",
 			 data: "AssLoc_Address_Postal",
-			 required: false,
+			 required: () => isStateOrPostalRequired(config.dataset, "AssLoc_Address_Country", "AssLoc_Address_Street", reference.countriesData, "PostalRequired"),
 			 type: "text",
 			 //placeholder: "Form174",
 			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -8329,6 +8329,28 @@
 	});
 
 	multiValues.resetPredefinedProps(config.dataset);
+  }
+
+  function getRegionAndPostalByName(name, recordsArray) {
+    const record = recordsArray.find(record => record.Name === name);
+	if (record) {
+	  return {
+	    RegionRequired: record.RegionRequired === 'Y',
+	    PostalRequired: record.PostalRequired === 'Y'
+	  };
+	} else {
+	  return null;
+	}
+  }
+
+  function isStateOrPostalRequired(dataset, countryField, streetField, referenceData, requiredKey) {
+    const country = dataset[countryField];
+    const street = dataset[streetField];
+
+    if (!country || !street) return false;
+
+    const countryData = getRegionAndPostalByName(country, referenceData);
+    return countryData && countryData[requiredKey] || false;
   }
 
   function visitItems(cb) {
@@ -14210,6 +14232,19 @@
 			document.querySelector(".search input").addEventListener('input', oob.grid._events._search);
 			oob.grid.load();
 		  })
+		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
+		    const fieldName = e.target.getAttribute("data-name");
+			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Street$/)) {
+			  const fieldPrefix = fieldName.split("_")[0];
+			  config.dataset[`${fieldPrefix}_Address_Street`] = e.target.value;
+			  nbsf.init(config, config.page);
+			}
+			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Country$/)) {
+			  const fieldPrefix = fieldName.split("_")[0];
+			  config.dataset[`${fieldPrefix}_Address_Country`] = e.target.value;
+			  nbsf.init(config, config.page);
+			}
+		  });
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			if (e.target.getAttribute("data-name") == "PartyId") partyIdChanged();
 		  });
