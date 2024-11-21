@@ -83,6 +83,7 @@
 	  return {
 		Address_Country: rec.countryName,
 		PartyId: rec.currentPartyID || rec.submittedPartyID,
+		SubmittedPartyId: rec.submittedPartyID,
 		CompanyName: alternateName ? alternateName : rec.organizationName,
 		Address_State: addressMatched ? addressMatched.stateProvince : null,
 		Address_City: addressMatched ? addressMatched.cityName : null,
@@ -102,6 +103,7 @@
 	  return {
 		Address_Country: loc_country,
 		PartyId: rec.locationId,
+		SubmittedPartyId: rec.locationId,
 		CompanyName: rec.name || "",
 		Address_City: rec.city || "",
 		Address_Postal: rec.postalcode || "",
@@ -8444,6 +8446,9 @@
 		  partyAddresses.filter(reqResult => reqResult.status === "fulfilled").forEach(reqResult => {
 			const res = reqResult.value;
 			partyMap[res.PartyId] = res.PartyId + " – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			if (res.PartyId != res.SubmittedPartyId) {
+			  partyMap[res.SubmittedPartyId] = res.SubmittedPartyId + " – [" + res.PartyId + "] – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			}
 		  });
 
 		  for (let pId in global.data.userPreferences) {
@@ -10611,8 +10616,8 @@
 		const val = e.target.value;
 		const partyIdEl = $('input[data-name="ShipTo_PartyId"]');
 		config.dataset.ShipTo_PartyId_Predefined = val;
-		config.dataset.ShipTo_PartyId = val == " " ? null : val;
-		partyIdEl.val(val == " " ? "" : val);
+		config.dataset.ShipTo_PartyId = val == multiValues.OTHER ? null : val;
+		partyIdEl.val(val == multiValues.OTHER ? "" : val);
 		partyIdEl.keyup();
 	  });
 
@@ -11158,8 +11163,8 @@
 		const paramName = dataName.slice(0, -suffixLen);
 		const partyIdEl = $("input[data-name='" + paramName + "']");
 		config.dataset[dataName] = val;
-		config.dataset[paramName] = val == " " ? null : val;
-		partyIdEl.val(val == " " ? "" : val);
+		config.dataset[paramName] = val == multiValues.OTHER ? null : val;
+		partyIdEl.val(val == multiValues.OTHER ? "" : val);
 		partyIdEl.keyup();
 	  });
 
@@ -15718,6 +15723,7 @@
 
 <script>
   const multiValues = {
+	OTHER: "==",
 	data: {},
 	init: function() {
 	  nbsf.callbacks.push(multiValues.pageCallback);
@@ -15730,7 +15736,7 @@
 	},
 
 	getValues: function(field) {
-	  if (field in multiValues.data) return [...multiValues.data[field], " "];
+	  if (field in multiValues.data) return [...multiValues.data[field], multiValues.OTHER];
 	  return [];
 	},
 
@@ -15744,13 +15750,13 @@
 	  if (!predefined) return true;
 	  const fieldValue = dataset[field];
 	  const valueIsFromPredefined = predefined.indexOf(fieldValue) >= 0;
-	  return !predefined || (!!fieldValue && !valueIsFromPredefined) || dataset[field + "_Predefined"] === " ";
+	  return !predefined || (!!fieldValue && !valueIsFromPredefined) || dataset[field + "_Predefined"] === multiValues.OTHER;
 	},
 
 	resetPredefinedProps: function(rec) {
 	  Object.entries(multiValues.data).forEach(([field, values]) => {
 		const recVal = rec[field];
-		rec[field + "_Predefined"] = values.indexOf(recVal) >= 0 ? recVal : " ";
+		rec[field + "_Predefined"] = values.indexOf(recVal) >= 0 ? recVal : multiValues.OTHER;
 		if (!recVal) rec[field + "_Predefined"] = null;
 	  });
 	},
@@ -15763,11 +15769,18 @@
 	  const val = e.target.value;
 	  // the same hack to preserve values after init()
 	  let completedData = document.querySelectorAll('*[data-name]');
+	  let rdsExists = config.reviewDataset && Object.keys(config.reviewDataset).length;
 	  for (let i = 0; i < completedData.length; i++) {
-		config.dataset[completedData[i].getAttribute('data-name')] = completedData[i].value;
+		const dn = completedData[i].getAttribute('data-name');
+		config.dataset[dn] = completedData[i].value;
+		if (rdsExists) config.reviewDataset[dn] = completedData[i].value;
 	  }
-	  config.dataset[dataParam] = val === " " ? null : val;
+	  config.dataset[dataParam] = val === multiValues.OTHER ? null : val;
 	  config.dataset[dataName] = val;
+	  if (rdsExists) {
+		config.reviewDataset[dataParam] = config.dataset[dataParam];
+		config.reviewDataset[dataName] = config.dataset[val];
+	  }
 	  nbsf.init(config, config.page);
 	},
 
