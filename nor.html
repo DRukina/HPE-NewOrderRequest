@@ -436,8 +436,10 @@
 	  // SETTING THE CHANNEL IS IMPORTANT
 	  // IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
 	  for (let i = 0; i < global.data.brts.length; i++) {
-		if (global.data.brt.code.toLowerCase() == global.data.brts[i].code.toLowerCase())
+		if (global.data.brt.name.toLowerCase() == global.data.brts[i].name.toLowerCase()) {
 		  global.data.brt.channel = global.data.brts[i].channel;
+		  global.data.brt.code = global.data.brts[i].code;
+		}
 	  }
 	  global.data.brt.pas = [];
 
@@ -542,8 +544,10 @@
 	// SETTING THE CHANNEL IS IMPORTANT
 	// IT NEEDS TO BE AVAILABLE FOR THE iCERTIS CALL
 	for (let i = 0; i < global.data.brts.length; i++) {
-	  if (global.data.brt.code.toLowerCase() == global.data.brts[i].code.toLowerCase())
+	  if (global.data.brt.name.toLowerCase() == global.data.brts[i].name.toLowerCase()) {
 		global.data.brt.channel = global.data.brts[i].channel;
+		global.data.brt.code = global.data.brts[i].code;
+	  }
 	}
 	global.data.brt.pas = [];
 
