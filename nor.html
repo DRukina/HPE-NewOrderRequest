@@ -8332,11 +8332,11 @@
   }
 
   function getRegionAndPostalByName(name, recordsArray) {
-    const record = recordsArray.find(record => record.Name === name);
+	const record = recordsArray.find(record => record.Name === name);
 	if (record) {
 	  return {
-	    RegionRequired: record.RegionRequired === 'Y',
-	    PostalRequired: record.PostalRequired === 'Y'
+		RegionRequired: record.RegionRequired === 'Y',
+		PostalRequired: record.PostalRequired === 'Y'
 	  };
 	} else {
 	  return null;
@@ -8344,13 +8344,13 @@
   }
 
   function isStateOrPostalRequired(dataset, countryField, streetField, referenceData, requiredKey) {
-    const country = dataset[countryField];
-    const street = dataset[streetField];
+	const country = dataset[countryField];
+	const street = dataset[streetField];
 
-    if (!country || !street) return false;
+	if (!country || !street) return false;
 
-    const countryData = getRegionAndPostalByName(country, referenceData);
-    return countryData && countryData[requiredKey] || false;
+	const countryData = getRegionAndPostalByName(country, referenceData);
+	return countryData && countryData[requiredKey] || false;
   }
 
   function visitItems(cb) {
@@ -14233,7 +14233,7 @@
 			oob.grid.load();
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
-		    const fieldName = e.target.getAttribute("data-name");
+			const fieldName = e.target.getAttribute("data-name");
 			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Street$/)) {
 			  const fieldPrefix = fieldName.split("_")[0];
 			  config.dataset[`${fieldPrefix}_Address_Street`] = e.target.value;
