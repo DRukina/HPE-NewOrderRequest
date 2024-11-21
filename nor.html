@@ -334,6 +334,7 @@
   let global = {
 	ready: false,
 	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "MO"],
+	pdfCreateCountries: ["TH", "HK", "KR", "MO"],
 	data: {
 	  brt: {
 		code: null,
@@ -2700,7 +2701,7 @@
 		  }
 		});
 	  }
-	  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+	  if (global.pdfCreateCountries.indexOf(config.dataset.CountryCode) >= 0) {
 		let sbt = config.dom.querySelector(".header .subtitle");
 		if (sbt) sbt.innerHTML += "<br><br>" + hpe.fn.lang("ProvideThailandDesc", config.locale, config.localizations);
 	  }
@@ -8269,6 +8270,7 @@
 				  if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 					config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
 				  }
+				  if (config.dataset.SoldTo_Contact_Phone) config.dataset.SoldTo_Contact_Phone = config.dataset.SoldTo_Contact_Phone.replace(/\D/g, '').substring(0, 20); // NOR-10123 hofix
 				  crud.create(3158, config.dataset, function(data) {
 					if (typeof(data.EntryId) === "number") {
 					  // UPDATE REFERENCE APPLICATION WITH RESPONSE
@@ -8358,6 +8360,7 @@
 			  if (config.dataset.Config_Quote == 'Y' && quoteHelper.quote) {
 				config.dataset.QuoteResponse = JSON.stringify(quoteHelper.quote);
 			  }
+			  if (config.dataset.SoldTo_Contact_Phone) config.dataset.SoldTo_Contact_Phone = config.dataset.SoldTo_Contact_Phone.replace(/\D/g, '').substring(0, 20); // NOR-10123 hofix
 			  crud.create(3158, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
@@ -9455,7 +9458,7 @@
 		  });
 		}
 
-		PDF.createPdf();
+		PDF.createPdfByCountry();
 
 		// UPDATE RECORD
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
@@ -15366,6 +15369,12 @@
 		  config.dataset = {};
 		});
 	  })
+	},
+
+	createPdfByCountry: function() {
+	  config.dataset.PdfContent = null;
+	  if (!global.pdfCreateCountries.includes(config.dataset.CountryCode)) return;
+	  PDF.createPdf();
 	},
 
 	createPdf: function() {
