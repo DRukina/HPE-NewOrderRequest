@@ -4606,7 +4606,7 @@
 					 {
 					   label: "Surname",
 					   data: "ShipTo_Contact_LastName",
-					   required: false,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "Form125",
 					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
@@ -4615,7 +4615,7 @@
 					 {
 					   label: "Telephone",
 					   data: "ShipTo_Contact_Phone",
-					   required: false,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
 					   validation: ["typePhone", "minLen|8", "maxLen|18"],
@@ -4624,7 +4624,7 @@
 					 {
 					   label: "Email",
 					   data: "ShipTo_Contact_Email",
-					   required: false,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "Form218",
 					   validation: ["isEmail", "maxLen|96"],
@@ -4670,7 +4670,7 @@
 					 {
 					   label: "Surname",
 					   data: "ShipTo_Contact_LastName",
-					   required: true,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "Form125",
 					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
@@ -4679,7 +4679,7 @@
 					 {
 					   label: "Telephone",
 					   data: "ShipTo_Contact_Phone",
-					   required: true,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
 					   validation: ["typePhone", "minLen|8", "maxLen|18"],
@@ -4688,7 +4688,7 @@
 					 {
 					   label: "Email",
 					   data: "ShipTo_Contact_Email",
-					   required: true,
+					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
 					   type: "text",
 					   //placeholder: "Form218",
 					   validation: ["isEmail", "maxLen|96"],
@@ -8345,6 +8345,11 @@
 	}
   }
 
+  function getShipToContactMandatory(ISO2, recordsArray) {
+	const result = recordsArray.find(record => record.ISO2 === ISO2);
+	return result ? result.ShipToContactMandatory === 'Y' : null;
+  }
+
   function isStateOrPostalRequired(dataset, countryField, streetField, referenceData, requiredKey) {
 	const country = dataset[countryField];
 	const street = dataset[streetField];
@@ -8368,20 +8373,32 @@
   }
 
   const initializeContactFields = function (fieldPrefix){
-	const allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
-	  if (field === `${fieldPrefix}_Contact_Country`) return true;
-	  let value = global.data.userPreferences && global.data.userPreferences[config.dataset.PartyId] && global.data.userPreferences[config.dataset.PartyId][field];
-	  return !value || value === config.pages[config.page].selectone;
-	});
+	if (getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData) && fieldPrefix === 'ShipTo') {
+	  const requiredFields = ["ShipTo_Contact_LastName", "ShipTo_Contact_Phone", "ShipTo_Contact_Email"];
 
-	const required = !allFieldsEmpty;
+	  visitItems((item) => {
+		if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
+		  item.required = requiredFields.includes(item.data);
+		} 
+	  });
+	} else {
+	  const allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
+		if (field === `${fieldPrefix}_Contact_Country`) return true;
+		let value = global.data.userPreferences && global.data.userPreferences[config.dataset.PartyId] && global.data.userPreferences[config.dataset.PartyId][field];
+		return !value || value === config.pages[config.page].selectone;
+	  });
 
-	visitItems((item) => {
-	  if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
-	    item.required = required;
-	  } 
-	});
-  };
+	  const required = !allFieldsEmpty;
+
+	  visitItems((item) => {
+		if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
+		  item.required = required;
+		} 
+	  });
+	};
+  }
+
+
 
   const loadPreferences = function() {
       // Load preferences for all PA in global.data.brt.pas
@@ -14259,45 +14276,55 @@
 			const fieldName = e.target.getAttribute("data-name");
 			const contactFieldPattern = /^(Payer|BillTo|ShipTo|EndCx|AssLoc)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
 			if (!contactFieldPattern.test(fieldName)) return;
-			
-			const currVal = e.target.value;
-			let required = false;
 
 			const fieldPrefix = fieldName.split("_")[0];
-			const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
-			config.dataset[fieldName] = currVal;
-			let prevRequired = null;
+			if (getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData) && fieldPrefix === "ShipTo") {
+			  const requiredFields = ["ShipTo_Contact_LastName", "ShipTo_Contact_Phone", "ShipTo_Contact_Email"];
 
-			let allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
+			  visitItems((item) => {
+				if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
+				  item.required = requiredFields.includes(item.data);
+				} 
+			  });
+			} else {
+			  const currVal = e.target.value;
+			  let required = false;
+
+			  const prevCountry = config.dataset[fieldPrefix + "_Contact_Country"];
+			  config.dataset[fieldName] = currVal;
+			  let prevRequired = null;
+
+			  let allFieldsEmpty = config.sectionContactFields[fieldPrefix].every(field => {
 				if (field === `${fieldPrefix}_Contact_Country`) return true;
 				let value = config.dataset[field];
 				return value === '' || value === null || value === config.pages[config.page].selectone;
-			});
+			  });
 
-			required = !allFieldsEmpty;
+			  required = !allFieldsEmpty;
 
-			if (!required) {
+			  if (!required) {
 				config.dataset[fieldPrefix + "_Contact_Country"] = null;
 				if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = null;
-			}
-			visitItems((item) => {
-			  if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
-				if (prevRequired === null) prevRequired = item.required;
-				item.required = required;
 			  }
-			});
-
-			if (prevRequired !== required) {
-			  // Fill Contact Country from Address Country if it was empty and became mandatory
-			  if (required) {
-				const country = config.dataset[fieldPrefix + "_Address_Country"];
-				if (!prevCountry || prevCountry == config.pages[config.page].selectone) {
-				  config.dataset[fieldPrefix + "_Contact_Country"] = country;
-				  if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = country;
+			  visitItems((item) => {
+				if (config.sectionContactFields[fieldPrefix].includes(item.data)) {
+				  if (prevRequired === null) prevRequired = item.required;
+				  item.required = required;
 				}
+			  });
+
+			  if (prevRequired !== required) {
+				// Fill Contact Country from Address Country if it was empty and became mandatory
+				if (required) {
+				  const country = config.dataset[fieldPrefix + "_Address_Country"];
+				  if (!prevCountry || prevCountry == config.pages[config.page].selectone) {
+					config.dataset[fieldPrefix + "_Contact_Country"] = country;
+					if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset[fieldPrefix + "_Contact_Country"] = country;
+				  }
+				}
+				// for Review pages nbsf.init(config, config.page) is executed after this event
+				if (!config.pages[config.page].review) nbsf.init(config, config.page);
 			  }
-			  // for Review pages nbsf.init(config, config.page) is executed after this event
-			  if (!config.pages[config.page].review) nbsf.init(config, config.page);
 			}
 		  }, true);
 		});
