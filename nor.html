@@ -8398,8 +8398,6 @@
 	};
   }
 
-
-
   const loadPreferences = function() {
       // Load preferences for all PA in global.data.brt.pas
       return new Promise((resolve, reject) => {
@@ -8472,11 +8470,24 @@
 		const parties = [];
 		for (let pId in global.data.userPreferences) {
 		  const prefs = global.data.userPreferences[pId];
+		  const suffixLen = "_PartyId".length;
 		  Object.keys(prefs).filter(pref => pref.endsWith("_PartyId")).forEach(pref => {
 			if (Array.isArray(prefs[pref])) {
 			  prefs[pref].forEach(partyId => parties.push(locationApi.getAddressData(partyId)));
 			} else {
-			  parties.push(locationApi.getAddressData(prefs[pref]));
+			  // For single Party ID prepopulate related info
+			  const dataPromise = locationApi.getAddressData(prefs[pref]);
+			  parties.push(dataPromise);
+
+			  const sectionPrefix = pref.slice(0, -suffixLen);
+			  if (sectionPrefix in config.sectionAddressFields) {
+				dataPromise.then((data) => {
+				  config.addressField.forEach((field) => {
+					const val = data[field];
+					if (val!==undefined) prefs[sectionPrefix + "_" + field] = val;
+				  })
+				});
+			  }
 			}
 		  });
 		}
@@ -15829,6 +15840,7 @@
 	  if (!(dataName || "").endsWith("_Predefined")) return;
 	  const dataParam = dataName.slice(0, -suffixLen);
 	  const val = e.target.value;
+	  const valIsOther = val === multiValues.OTHER;
 	  // the same hack to preserve values after init()
 	  let completedData = document.querySelectorAll('*[data-name]');
 	  let rdsExists = config.reviewDataset && Object.keys(config.reviewDataset).length;
@@ -15837,11 +15849,19 @@
 		config.dataset[dn] = completedData[i].value;
 		if (rdsExists) config.reviewDataset[dn] = completedData[i].value;
 	  }
-	  config.dataset[dataParam] = val === multiValues.OTHER ? null : val;
+	  config.dataset[dataParam] = valIsOther ? null : val;
 	  config.dataset[dataName] = val;
 	  if (rdsExists) {
 		config.reviewDataset[dataParam] = config.dataset[dataParam];
 		config.reviewDataset[dataName] = config.dataset[val];
+	  }
+
+	  if (dataParam.endsWith("_PartyId") && valIsOther) {
+		const section = dataParam.slice(0, -"_PartyId".length);
+		config.addressField.forEach((field) => {
+		  config.dataset[section + "_" + field] = null;
+		  if (rdsExists) config.reviewDataset[section + "_" + field] = null;
+		})
 	  }
 	  nbsf.init(config, config.page);
 	},

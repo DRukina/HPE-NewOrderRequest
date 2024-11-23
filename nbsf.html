@@ -816,7 +816,11 @@
                                 vals = cItem.values;
 
                             var opts = cItem.options;
-                            if (typeof(opts) === "function") opts = opts();
+                            if (typeof(opts) === "function") {
+                              opts = opts();
+                            } else {
+                              if (Array.isArray(opts)) opts = opts.map((label) => nbsf.ui.translate(config, nbsf.fn.translate(label, config.locale)));
+                            }
 
                             for (vIndex = 0; vIndex < vals.length; vIndex++) {
                                 var label = vals[vIndex];
@@ -825,7 +829,7 @@
                                 var option = nbsf.fn.node("option", {
                                     'value': vals[vIndex]
                                 });
-                                option.innerText = nbsf.ui.translate(config, nbsf.fn.translate(label, config.locale));
+                                option.innerText = label;
                                 input.appendChild(option);
                             }
 
