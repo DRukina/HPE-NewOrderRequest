@@ -8318,6 +8318,7 @@
 <script>
   // MAIN CONFIG
   const partyIdChanged = function(newVal) {
+	multiValues.data = {};
 	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PartyId : newVal];
 	if (!prefs) return;
 	
@@ -10167,7 +10168,7 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
-			partyIdChanged();
+		  partyIdChanged();
 		} else {
 		  config.dataset.ProductServices_Attachment = null;
 		  config.dataset.ProductServicesRepeater = null;
@@ -10446,7 +10447,6 @@
 		if (paOpts.length > 1) {
 		  const paValue = paOpts[1].innerText;
 		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
-		  partyIdChanged(); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
 	  
