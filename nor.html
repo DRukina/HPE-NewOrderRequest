@@ -14259,11 +14259,13 @@
 			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Street$/)) {
 			  const fieldPrefix = fieldName.split("_")[0];
 			  config.dataset[`${fieldPrefix}_Address_Street`] = e.target.value;
+			  config.reviewDataset[`${fieldPrefix}_Address_Street`] = e.target.value;
 			  nbsf.init(config, config.page);
 			}
 			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Country$/)) {
 			  const fieldPrefix = fieldName.split("_")[0];
 			  config.dataset[`${fieldPrefix}_Address_Country`] = e.target.value;
+			  config.reviewDataset[`${fieldPrefix}_Address_Country`] = e.target.value;
 			  nbsf.init(config, config.page);
 			}
 		  });
