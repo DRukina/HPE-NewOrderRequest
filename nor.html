@@ -8111,8 +8111,7 @@
 			}
 		  }
 		}
-		var filter = true;
-		if (typeof(reviewSetup[key].filter) === "object") filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
+		var filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
 		if (reviewSetup[key].fieldset.length > 0 && filter) {
 		  console.log('reviewSetup[key]', reviewSetup[key]);
 		  if (app.querySelector(".row[review-id=" + key + "]") == null)
@@ -9367,8 +9366,7 @@
 		  for (i = 0; i < config.pages.length; i++) {
 			var cPage = config.pages[i];
 			var cStructure = cPage.structure;
-			var cFilter = true;
-			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
+			var cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
 			if (cPage.quotePreview || cPage.review) cFilter = false;
 
 			if (
@@ -9452,14 +9450,13 @@
 				} else pairs.push(hdr);
 
 				for (j = 0; j < cStructure.length; j++) {
-				  var cFilter = true;
-				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  var cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
 				  if (cFilter) {
 					for (k = 0; k < cStructure[j].group.length; k++) {
 					  var cGroup = cStructure[j].group[k];
 					  for (l = 0; l < cGroup.length; l++) {
 						var cInput = cGroup[l];
-						if (cInput.type != "hidden") {
+						if (cInput.type != "hidden" && !(cInput.data || "").endsWith("_Predefined")) {
 						  var obj = {
 							ttl: "N/A",
 							val: "N/A",
@@ -9587,8 +9584,7 @@
 		  for (i = 0; i < config.pages.length; i++) {
 			var cPage = config.pages[i];
 			var cStructure = cPage.structure;
-			var cFilter = true;
-			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
+			var cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
 			if (cPage.quotePreview) cFilter = false;
 
 			if (
@@ -9668,14 +9664,13 @@
 			  } else {
 				pairs.push(hdr);
 				for (j = 0; j < cStructure.length; j++) {
-				  var cFilter = true;
-				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  var cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
 				  if (cFilter) {
 					for (k = 0; k < cStructure[j].group.length; k++) {
 					  var cGroup = cStructure[j].group[k];
 					  for (l = 0; l < cGroup.length; l++) {
 						var cInput = cGroup[l];
-						if (cInput.type != "hidden") {
+						if (cInput.type != "hidden" && !(cInput.data || "").endsWith("_Predefined")) {
 						  var obj = {
 							ttl: "N/A",
 							val: "N/A",
@@ -10737,7 +10732,7 @@
 		  }
 		})
 	  }
-		
+
 	  helper.buildFastClearAddressButton('ShipTo');
 	},
 	page7: function() {
