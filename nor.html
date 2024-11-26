@@ -14256,16 +14256,17 @@
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
-			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Street$/)) {
-			  const fieldPrefix = fieldName.split("_")[0];
-			  config.dataset[`${fieldPrefix}_Address_Street`] = e.target.value;
-			  config.reviewDataset[`${fieldPrefix}_Address_Street`] = e.target.value;
+			const fieldPrefix = fieldName.split("_")[0];
+
+			const fieldSuffix = fieldName.split("_").pop();
+			if (fieldSuffix === "Street" || fieldSuffix === "Country") {
+			  config.dataset[`${fieldPrefix}_Address_${fieldSuffix}`] = e.target.value;
 			  nbsf.init(config, config.page);
 			}
-			if (fieldName.match(/^[a-zA-Z0-9]+_Address_Country$/)) {
-			  const fieldPrefix = fieldName.split("_")[0];
-			  config.dataset[`${fieldPrefix}_Address_Country`] = e.target.value;
-			  config.reviewDataset[`${fieldPrefix}_Address_Country`] = e.target.value;
+
+			if (e.target.value === '' && config.sectionName.includes(fieldPrefix) && config.reviewDataset[fieldName]){
+			  config.dataset[fieldName] = '';
+			  config.reviewDataset[fieldName] = '';
 			  nbsf.init(config, config.page);
 			}
 		  });
