@@ -10149,7 +10149,7 @@
 		}
 	  }
 
-	  ['Payer', 'BillTo', 'ShipTo', 'EndCx', 'AssLoc'].forEach(fieldPrefix => {
+	  ['Payer', 'BillTo', 'ShipTo'].forEach(fieldPrefix => {
 		initializeContactFields(fieldPrefix);
 	  });
 
@@ -14340,7 +14340,7 @@
 		  // Change "required" property on Email, First, Last Name, Phone and Country
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
 			const fieldName = e.target.getAttribute("data-name");
-			const contactFieldPattern = /^(Payer|BillTo|ShipTo|EndCx|AssLoc)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
+			const contactFieldPattern = /^(Payer|BillTo|ShipTo)_Contact_(Email|Country|FirstName|LastName|Phone)$/;
 			if (!contactFieldPattern.test(fieldName)) return;
 
 			const fieldPrefix = fieldName.split("_")[0];
