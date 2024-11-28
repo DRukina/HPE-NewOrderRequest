@@ -1,5 +1,6 @@
 <script>
     const nbsf = {
+        callbacks: [],
         init: function(config, page) {
             // POLYFILL FOR IE
             nbsf.fn.closest();
@@ -30,21 +31,13 @@
 
             if (config.page !== 0 && config.pages[page].hideIfOnReview) {
                 const reviewPage = config.pages.find(p => !!p.review);
-                if (reviewPage) {
-
-                    if (typeof(reviewPage.filter) === 'object') {
-                        const reviewPageFilter = nbsf.fn.filter(config.dataset, config.pages.find(p => !!p.review).filter);
-                        if (reviewPageFilter) {
-                            return nbsf.init(config, nextLogicalPage);
-                        }
-                    } else {
-                        return nbsf.init(config, nextLogicalPage);
-                    }
+                if (reviewPage && nbsf.fn.filter(config.dataset, reviewPage.filter)) {
+				  return nbsf.init(config, nextLogicalPage);
                 }
             }
 
             // CHECK IF ELIGIBLE TO VIEW PAGE IN GIVEN DIRECTION
-            if (typeof(config.pages[page].filter) === 'object') {
+            if (config.pages[page].filter) {
                 let pageFilter = nbsf.fn.filter(config.dataset, config.pages[page].filter);
                 console.info('Checked filter for current page as ', pageFilter);
                 if (!pageFilter) {
@@ -74,6 +67,8 @@
             if (!!config.pages[page].review && config.pages[page].review.editable && config.pages[page].review.collapsible && config.pages[page].review.collapsed) {
                 nbsf.fn.openCollapsedBlocks(config, page, validationResult);
             }
+            // EXECUTE COMMON PAGE CALLBACKS
+            nbsf.callbacks.forEach(f => f(config, page));
             // EXECUTE PAGE CALLBACK IF AVAILABLE
             if (typeof(config.pages[page].callback) === "function")
                 config.pages[page].callback(config);
@@ -145,10 +140,7 @@
                 const buildStructure = function(tabs = [], reviewConfig = []) {
                     for (let i = 0; i < config.pages[page].structure.length; i++) {
                         var structure = config.pages[page].structure[i];
-                        var filter = true;
-                        if (typeof(config.pages[page].structure[i].filter) === "object")
-                            filter = nbsf.fn.filter(config.dataset, config.pages[page].structure[i].filter);
-                        //filter = nbsf.fn.filter(config.pages[page].structure[i].filter);			
+                        var filter = nbsf.fn.filter(config.dataset, config.pages[page].structure[i].filter);
                         if (filter) {
                             if (typeof(config.pages[page].structure[i].group) === "object" && filter) {
                                 if (tabs.length && reviewConfig.length) {
@@ -191,13 +183,11 @@
                         if (Object.keys(nbsf.ev.openedTiles).length === 0) {
                             nbsf.ev.openedTiles[`page_${index}`] = index === 0 ? 'down' : 'up';
                         }
-                        let isFilter = true;
-                        if (typeof(page.filter) === "object") isFilter = nbsf.fn.filter(config.dataset, page.filter);
+                        let isFilter = nbsf.fn.filter(config.dataset, page.filter);
                         if (isFilter) {
                             const fields = [];
                             page.structure.forEach((st) => {
-                                let isStructureFilter = true;
-                                if (typeof(st.filter) === "object") isStructureFilter = nbsf.fn.filter(config.dataset, st.filter);
+                                let isStructureFilter = nbsf.fn.filter(config.dataset, st.filter);
 
                                 if (isStructureFilter) {
                                     if (st.group.length > 0) {
@@ -548,27 +538,6 @@
 
                             buildStructure(getTabsConfig(), reviewConfig);
                         });
-
-
-
-                        /*	  reviewConfig.forEach((item, index) => {
-                        		if (!item.review) {
-                        			$(`span[tab-id=${item.key}]`).click(function() {
-                        			$(".nbsf-review-page .row").remove();
-                        			console.log(item.key);
-                        			const str = [
-                        				{
-                        				header: '',
-                        				group: [item.fieldset],
-                        				}
-                        			];
-                        			config.pages[page].structure = str;
-                        			buildStructure();
-                        			});
-                        		}
-                        		});*/
-
-
                     }
 
                 } else {
@@ -687,12 +656,15 @@
                 let structure = config.pages[page].structure[structureIndex];
 
                 structure.group.forEach(function(group, groupIndex) {
-                    var fieldset = nbsf.fn.node("fieldset");
-                    group.forEach(function(input, inputIndex) {
+                    var inputList = group.filter((input) => nbsf.fn.filter(config.dataset, input.filter));
+                    if (inputList.length) {
+                      var fieldset = nbsf.fn.node("fieldset");
+                      group.forEach(function(input, inputIndex) {
                         var address = [page, structureIndex, groupIndex, inputIndex].join(",");
                         nbsf.builder.input(config, page, structure, group, input, fieldset, address);
-                    });
-                    row.appendChild(fieldset);
+                      });
+                      row.appendChild(fieldset);
+                    }
                 });
             },
             input: function(config, page, structure, group, item, selector, address) {
@@ -720,7 +692,7 @@
                     if (cItem.type === "hidden")
                         cLabel.setAttribute("style", "display:none");
 
-                    if (cItem.disabled)
+                    if (nbsf.fn.bool(cItem.disabled))
                         cLabel.classList.add("wrapper-disabled")
 
                     if (cItem.attributes && cItem.attributes.length > 0) {
@@ -738,7 +710,7 @@
                         name.setAttribute("class", "name");
                         name.innerHTML = nbsf.ui.translate(config, cItem.label);
                         // ADD REQUIRED FLAG
-                        if (typeof(cItem.required) !== "undefined" && cItem.required != null && cItem.required == true) {
+                        if (typeof(cItem.required) !== "undefined" && cItem.required != null && nbsf.fn.bool(cItem.required) == true) {
                             var req = document.createElement("span");
                             req.setAttribute("class", "required");
                             req.innerText = "*";
@@ -828,13 +800,14 @@
                             }, cItem.disabled);
                             var selectOne = nbsf.fn.node("option", {
                                 'disabled': true,
-                                'selected': true
+                                'selected': true,
+                                'value': ""
                             });
-                            if (!cItem.required)
-                                var selectOne = nbsf.fn.node("option", {
-                                    'selected': true
+                            if (!nbsf.fn.bool(cItem.required))
+                                selectOne = nbsf.fn.node("option", {
+                                    'selected': true,
+                                    'value': ""
                                 });
-                            //selectOne.innerText = nbsf.ui.translate(config, nbsf.fn.translate('SelectOne', config.locale));
                             selectOne.innerText = nbsf.ui.translate(config, config.pages[page].selectone);
                             input.appendChild(selectOne);
                             if (typeof(cItem.values) === "function")
@@ -842,14 +815,21 @@
                             else
                                 vals = cItem.values;
 
+                            var opts = cItem.options;
+                            if (typeof(opts) === "function") {
+                              opts = opts();
+                            } else {
+                              if (Array.isArray(opts)) opts = opts.map((label) => nbsf.ui.translate(config, nbsf.fn.translate(label, config.locale)));
+                            }
+
                             for (vIndex = 0; vIndex < vals.length; vIndex++) {
                                 var label = vals[vIndex];
-                                if (typeof(cItem.options) === "object" && vals.length == cItem.options.length)
-                                    label = cItem.options[vIndex];
+                                if (typeof(opts) === "object" && vals.length == opts.length)
+                                    label = opts[vIndex];
                                 var option = nbsf.fn.node("option", {
                                     'value': vals[vIndex]
                                 });
-                                option.innerText = nbsf.ui.translate(config, nbsf.fn.translate(label, config.locale));
+                                option.innerText = label;
                                 input.appendChild(option);
                             }
 
@@ -1954,9 +1934,8 @@
                 // ADD VALIDATION INTERACTION
                 for (let i = 0; i < config.pages[page].structure.length; i++) {
                     var cStructure = config.pages[page].structure[i];
-                    var structureFilter = true;
-                    if (typeof(cStructure.filter) === "object")
-                        structureFilter = nbsf.fn.filter(config.dataset, cStructure.filter);
+                    var structureFilter = structureFilter = nbsf.fn.filter(config.dataset, cStructure.filter);
+
                     if (structureFilter) {
                         for (let j = 0; j < cStructure.group.length; j++) {
                             /*var filter = true;
@@ -2040,9 +2019,7 @@
                     var cPage = config.pages[config.page];
                     for (i = 0; i < cPage.structure.length; i++) {
                         var cStructure = cPage.structure[i];
-                        var structureFilter = true;
-                        if (typeof(cStructure.filter) === 'object')
-                            structureFilter = nbsf.fn.filter(config.dataset, cStructure.filter);
+                        var structureFilter = nbsf.fn.filter(config.dataset, cStructure.filter);
                         if (structureFilter) {
                             if (typeof(cStructure.repeatable) === "string") {
                                 var repeatableColumn = cStructure.repeatable;
@@ -2070,7 +2047,10 @@
                                     var cGroup = cStructure.group[j];
                                     for (k = 0; k < cGroup.length; k++) {
                                         var cInput = cGroup[k];
-                                        var row = config.dom.querySelector("[data-name='" + cInput.data + "']").closest(".row");
+									    if (!nbsf.fn.filter(config.dataset, cInput.filter)) continue;
+                                        var cInputEl = config.dom.querySelector("[data-name='" + cInput.data + "']");
+									    if (!cInputEl) continue;
+									    var row = cInputEl.closest(".row");
                                         if (review) {
                                             config.reviewDataset[cInput.data] = nbsf.data.input(config, row, cInput);
                                         } else {
@@ -2377,10 +2357,7 @@
                     // IF SECTION IS CONDITIONAL
                     // CHECK IF CONDITION IS MET
                     // OTHERWISE SKIP VALIDATION
-                    var filter = true;
-                    if (typeof(cStructure.filter) === "object")
-                        //filter = nbsf.fn.filter(cStructure.filter); // is current structure available for usage; if not, filter returns false
-                        filter = nbsf.fn.filter(config.dataset, cStructure.filter);
+                    var filter = nbsf.fn.filter(config.dataset, cStructure.filter);
                     if (filter) {
                         for (j = 0; j < cStructure.group.length; j++) {
                             var cGroup = cStructure.group[j]; // current group
@@ -2482,9 +2459,9 @@
                             healthResult.count &&
                             // skip empty optional validation
                             (
-                                typeof(targetConfig.required) === 'boolean' &&
+                                (typeof(targetConfig.required) === 'boolean' || typeof(targetConfig.required) === 'function') &&
                                 (
-                                    targetConfig.required ||
+                                    nbsf.fn.bool(targetConfig.required) ||
                                     (targetConfig.type == 'select' && targetConfig.selectedIndex > 0) ||
                                     (targetConfig.type == 'confirm' && (targetNodes[0].value.length > 0 || targetNodes[1].value.length > 0)) ||
                                     (targetConfig.type != 'select' && targetNodes[0].value.length > 0)
@@ -2632,18 +2609,14 @@
                 // PUSH TO DETAILED OUTPUT
 
                 config.pages.forEach(cPage => {
-                    let isFilter = true;
-                    if (typeof(cPage.filter) === "object") isFilter = nbsf.fn.filter(config.dataset, cPage.filter);
+                    let isFilter = nbsf.fn.filter(config.dataset, cPage.filter);
                     if (isFilter && !cPage.review) {
                         for (i = 0; i < cPage.structure.length; i++) { // iterate through all structures on the current page
                             var cStructure = cPage.structure[i]; // current structure			
                             // IF SECTION IS CONDITIONAL
                             // CHECK IF CONDITION IS MET
                             // OTHERWISE SKIP VALIDATION
-                            var filter = true;
-                            if (typeof(cStructure.filter) === "object")
-                                //filter = nbsf.fn.filter(cStructure.filter); // is current structure available for usage; if not, filter returns false
-                                filter = nbsf.fn.filter(config.dataset, cStructure.filter);
+                            var filter = nbsf.fn.filter(config.dataset, cStructure.filter);
                             if (filter) {
                                 for (j = 0; j < cStructure.group.length; j++) {
                                     var cGroup = cStructure.group[j]; // current group
@@ -2801,16 +2774,14 @@
             },
             translateValidation: function(config, key, lang) {
                 try {
-                    if (typeof(lang) === "undefined") lang = config.lang;
-                    if (typeof(lang) === "undefined" || lang == null) lang = "en_US";
-                    if (typeof(config.reference.validationLanguages[key]) !== "undefined") {
-                        if (typeof(config.reference.validationLanguages[key][lang]) !== "undefined") return config.reference.validationLanguages[key][lang];
-                        else if (typeof(config.reference.validationLanguages[key]["en_US"]) !== "undefined") return config.reference.validationLanguages[key]["en_US"];
-                    } else if (typeof(key) === "string") {
-                        return key && nbsf.vldConfig[key] || key;
-                    } else {
-                        return "Error: MLK";
+                    lang = lang || config.locale || "en_US";
+                    if (config.reference && config.reference.validationLanguages && config.reference.validationLanguages[key]) {
+                        return config.reference.validationLanguages[key][lang] || config.reference.validationLanguages[key]["en_US"] || key;
                     }
+                    if (typeof key === "string") {
+                        return (key && nbsf.vldConfig[key]) || key;
+                    }
+                    return "Error: MLK";
                 } catch (err) {
                     return key && nbsf.vldConfig[key] || key;
                 }
@@ -3090,70 +3061,10 @@
                     }
                 };
 
-                if (filter.logic)
-                    return complex(data, filter);
+                if (filter === null || filter === undefined) return true;
+                if (typeof(filter) === "function") return filter(data);
+                if (filter.logic) return complex(data, filter);
                 return condition(data, filter);
-
-                /*console.log("Filter processing...");
-                function process(filter) {
-                	var global = 0;
-                	// BASIC FILTER PROCESSING
-                	function basic(filter) {
-                		var local = 0;
-                		if(typeof(filter.column) !== "string" || typeof(filter.value) === "undefined" || ["eq","in","neq","contains","notcontains"].indexOf(filter.operator) == -1) {
-                			local++;
-                			return local;
-                		}
-                		else {
-                			var data = filter.column;
-                			if(typeof(config.reference.app[data]) !== "undefined") data = config.reference.app[data];
-                			switch(filter.operator) {
-                				case "eq": if(data != filter.value) local++; break;
-                				case "in": if(filter.value.indexOf(data) == -1) local++; break;
-                				case "neq": if(data == filter.value) local++; break;
-                				case "contains": if(data.indexOf(filter.value) == -1) local++; break;
-                				case "notcontains": if(data.indexOf(filter.value) > -1) local++; break;
-                			}
-                			return local;
-                		}
-                	}
-                	// LOGIC FILTER PROCESSING
-                	function logic(filter) {
-                		function arrayClean(arr) {
-                			var newArr = [];
-                			for(i=0;i<arr.length;i++)
-                				if(newArr.indexOf(arr[i]) == -1)
-                					newArr.push(arr[i]);
-                			return newArr;
-                		}
-                		var local = [];
-                		if(filter.filters.length == 0) return 1;
-                		else {
-                			for(i=0;i<filter.filters.length;i++)
-                				local.push(basic(filter.filters[i]));
-                			local = arrayClean(local);
-                			switch(filter.logic) {
-                				case "and": if(local.length == 1 && local[0] == 0) return 0; break;
-                				case "or": if(local.indexOf(0) > -1) return 0; break;
-                			}
-                		}
-                	}
-
-                	if(typeof(filter.logic) !== "string") global = global + basic(filter);
-                	else global = global + logic(filter);
-                	return global;
-                }
-                try {
-                	if(typeof(filter) !== "object") return false;
-                	else {
-                		if(process(filter) != 0) return false;
-                		else return true;
-                	}
-                }
-                catch(err) {
-                	console.error("Filter error: "+err);
-                	return false;
-                }*/
             },
             escape: function() {
                 return "!A";
@@ -3162,6 +3073,10 @@
                 // CHECK IF JAVASCRIPT OBJECT IS DEFINED / TRUE
                 if (typeof(p) === "undefined" || p == null || !p) return false;
                 else return true;
+            },
+            bool: function(val) {
+                if (typeof(val) === "function") return val();
+                return val;
             },
             node: function(type, attr, disabled) {
                 if (["svg", "path"].indexOf(type) == -1)
@@ -3172,7 +3087,7 @@
                     for (obji = 0; obji < Object.keys(attr).length; obji++)
                         node.setAttribute(Object.keys(attr)[obji], attr[Object.keys(attr)[obji]]);
 
-                if (disabled)
+                if (nbsf.fn.bool(disabled))
                     node.setAttribute("disabled", "");
                 return node;
 
@@ -3366,7 +3281,7 @@
                 // AGREE IS VALID AS LONG AS
                 // THE CHECKBOX IS CHECKED AND VALUE IS Y
                 if (item.type == "agree") {
-                    if (item.required == true && (el.length != 1 || typeof(el[0].value) == "undefined" || el[0].value != item.values[0] || el[0].checked == false)) {
+                    if (nbsf.fn.bool(item.required) == true && (el.length != 1 || typeof(el[0].value) == "undefined" || el[0].value != item.values[0] || el[0].checked == false)) {
                         count++;
                         vldMessages.push(nbsf.vldMessage(config, 'accepted', item));
                     }
@@ -3400,7 +3315,10 @@
                 if (item.type == "select") {
                     try {
                         // IF VALUES KEY IS FUNCTION
-                        if (item.required || el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations)) {
+                        if (
+                          nbsf.fn.bool(item.required)
+                          || (el[0].value != hpe.fn.lang('SelectOne', config.locale, config.localizations) && el[0].value !== "")
+                        ) {
                             if (typeof(item.values) === "function" && item.values().indexOf(el[0].value) == -1) count++;
                             // IF VALUES KEY IS ARRAY
                             else if (typeof(item.values) === "object" && item.values.indexOf(el[0].value) == -1) count++;
@@ -3429,7 +3347,7 @@
                 // ONE ITEM IS SELECTED
                 // THEN CHECK IF SELECTED ITEMS
                 // AR PART OF PROVIDED ARRAY
-                if (item.type == "checkbox" && item.required == true) {
+                if (item.type == "checkbox" && nbsf.fn.bool(item.required) == true) {
                     for (index = 0; index < el.length; index++) {
                         if (el[index].checked) break;
                         if (index == el.length - 1) count++;
@@ -3446,7 +3364,7 @@
                 // SELECTED VALUE SHOULD BE IN PROVIDED VALUES ARRAY
                 if (item.type == "multiselect") {
                     var options = el[0].querySelectorAll("option:checked");
-                    if (item.required && options.length == 0) count++;
+                    if (nbsf.fn.bool(item.required) && options.length == 0) count++;
                     else {
                         options.forEach(function(option) {
                             if (typeof(item.values) === "function" && item.values().indexOf(option.value) == -1) count++;
@@ -3480,7 +3398,7 @@
                 if (item.type == "text" || item.type == "confirm" || item.type == "textarea") {
                     var cValue = el[0].value;
                     // BLANK INPUT NOT ALLOWED FOR REQUIRED FIELDS
-                    if (cValue.replace(/\s/g, '').length == 0 && item.required) count++;
+                    if (cValue.replace(/\s/g, '').length == 0 && nbsf.fn.bool(item.required)) count++;
                     else {
                         if (item.validation && cValue.replace(/\s/g, '').length != 0)
                             for (l = 0; l < item.validation.length; l++) {
@@ -3530,7 +3448,7 @@
 
                 // TYPE KENDO UPLOAD
                 if (item.type == "kUpload") {
-                    if (el[el.length - 1].getAttribute("uploaded") != "true" && item.required)
+                    if (el[el.length - 1].getAttribute("uploaded") != "true" && nbsf.fn.bool(item.required))
                         count++;
                 }
 
@@ -3730,10 +3648,10 @@
             checked: "You have to agree with statement.",
             deliverydate: "The :attribute is not a valid date format.",
             duplicate: "The :attribute must be a duplicate.",
-            eq: "Dom elements must be queal.",
-            flt: "The :attribute has invlaid format. It must be set of digits separated by dot or comma",
+            eq: "Dom elements must be equal.",
+            flt: "The :attribute has invalid format. It must be set of digits separated by dot or comma",
             frendlyURL: "You must assign :attribute a friendly URL name for the page.",
-            inArray: "The :attribute must be in arrya.",
+            inArray: "The :attribute must be in array.",
             isDomain: "The :attribute format is invalid domain format. It must be ip address or string in next format 'xxx.xx'",
             isEmail: "The :attribute format is invalid.",
             isEmailNA: "The :attribute format is invalid email format.",
@@ -4142,98 +4060,6 @@
                 return /^[a-zA-Z\d-]+$/.test(value);
             }
         },
-        /*filter: {
-check: function(filter,dataset) {
-	console.info('Running filter validation',filter,dataset);
-	if(typeof(filter) !== "object") {
-			console.error('Filter provided for validation is not an object',filter);
-			return false;
-	}
-
-		if(typeof(dataset) !== "object") {
-		console.error('Dataset provided for filter validation is not an object',dataset);
-			return false;
-	}
-		try {
-						let count = this.process(filter,dataset);
-
-			if(count != 0) {
-			console.info('Filter criteria was not met',filter,dataset,count);
-				return false;
-		}
-
-			console.info('Filter criteria was met');
-			return true;
-				} catch (err) {
-						console.error('Critical failure while processing filter validation',filter,dataset);
-						return false;
-				}
-},
-	process: function(filter,dataset) {
-	var global = 0;
-		if (typeof(filter.logic) !== "string") global = global + this._basic(filter,dataset);
-	else global = global + this._logic(filter,dataset);
-	return global;
-},
-_basic: function(filter,dataset) {
-	console.info('Checking basic filter', filter, dataset);
-	var local = 0;
-	if (typeof(filter.column) !== "string" || typeof(filter.value) === "undefined" || ["eq", "in", "neq", "contains", "notcontains"].indexOf(filter.operator) == -1) {
-		local++;
-		return local;
-	} 
-		else {
-		var data = filter.column;
-		if (typeof(dataset[data]) !== "undefined") 
-				data = dataset[data];
-		switch (filter.operator) {
-			case "eq":
-				if (data != filter.value) local++;
-				break;
-			case "in":
-				if (filter.value.indexOf(data) == -1) local++;
-				break;
-			case "neq":
-				if (data == filter.value) local++;
-				break;
-			case "contains":
-				if (data.indexOf(filter.value) == -1) local++;
-				break;
-			case "notcontains":
-				if (data.indexOf(filter.value) > -1) local++;
-				break;
-		}
-		return local;
-	}
-},
-	_logic: function(filter,dataset) {
-	function arrayClean(arr) {
-		var newArr = [];
-		for (let i=0;i < arr.length; i++)
-			if (newArr.indexOf(arr[i]) == -1)
-			newArr.push(arr[i]);
-		return newArr;
-	}
-	var local = [];
-	if(filter.filters.length == 0) 
-			return 1;
-	else {
-		for (let i=0; i < filter.filters.length; i++)
-			local.push(this._basic(filter.filters[i]));
-			local = arrayClean(local);
-			switch (filter.logic) {
-			case "and":
-					if (local.length == 1 && local[0] == 0) 
-						return 0;
-					break;
-			case "or":
-					if (local.indexOf(0) > -1) 
-						return 0;
-					break;
-			}
-	}
-}
-},*/
         localization: {
             en_US: {
                 selectOne: "Select one",

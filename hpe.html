@@ -550,7 +550,8 @@
 						}
 					  } catch (e) {
 						console.error(e);
-						return callback(false);
+						cacheLog.push('Cache: Cannot parse cached EMDM response. Ignore it.');
+						//return callback(false);
 					  }
 					}
 				  }
