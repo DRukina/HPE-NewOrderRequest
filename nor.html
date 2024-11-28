@@ -10295,6 +10295,18 @@
 		  for (let i = 0; i < dataset.length; i++)
 			config.localizations[dataset[i].StringKey] = dataset[i];
 
+		  config.reference = config.reference || {};
+		  config.reference.validationLanguages = config.reference.validationLanguages || {};
+
+		  for (const key in config.localizations) {
+			if (key.startsWith("Nbsf")) {
+			  const newKey = key.slice(4);
+			  if (newKey) {
+				config.reference.validationLanguages[newKey] = config.localizations[key];
+			  }
+			}
+		  }
+
 		  config.locale = global.data.user.locale;
 		  //if (global.data.user.email == 'demo_emea_distributor@pproap.com') config.locale = 'en_US';
 		  for (let i = 0; i < config.pages.length; i++) {
