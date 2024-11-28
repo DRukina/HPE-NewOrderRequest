@@ -8536,10 +8536,10 @@
   }
 
   function handleCopyShipToEndCxToggle(config) {
-	if (!nbsf.fn.filter(config.dataset, page7.filter)) {
+	if (!nbsf.fn.filter(config.dataset, page7.filter) || config.dataset.PO_Category === "Stock" || config.dataset.PO_Category == "Stage") {
 	  // toggleCopyShipto2Endx should be hidden because End Customer page is disabled
 	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').remove();
-	} else {
+	} else if (config.dataset.PO_Category === "Drop") {
 	  // Copy from ShipTo to EndCx toggle
 	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
 		$('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
@@ -10738,6 +10738,12 @@
 		}
 	  });
 
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label.toggle').css({
+		'marginTop': '35px',
+		'maxWidth': '410px',
+		'width': '410px'
+	  });
+
 	  handleCopyShipToEndCxToggle(config);
 
 	  helper.buildFastClearAddressButton('ShipTo');
@@ -11208,6 +11214,22 @@
 		  nbsf.init(config, config.page);
 		});
 	  });
+	  if (nbsf.fn.filter(config.dataset, page7.filter) && config.dataset.PO_Category === 'Drop') {
+		var allH4 = document.querySelectorAll('h4');
+		var shipToH4;
+		allH4.forEach(function(h4) {
+		  if (h4.textContent.includes(hpe.fn.lang("Form114", config.locale, config.localizations))) {
+			shipToH4 = h4;
+		  }
+		});
+		if (shipToH4) {
+		  shipToH4.style.display = 'flex';
+		  shipToH4.style.justifyContent = 'space-between';
+		  var toggle = $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper');
+		  $(shipToH4).append(toggle);
+		  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('marginBottom', '0');
+		}
+	  }
 
 	  handleCopyShipToEndCxToggle(config);
 	  
