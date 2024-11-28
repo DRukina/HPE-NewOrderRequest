@@ -8535,9 +8535,9 @@
   }
 
   function handleCopyShipToEndCxToggle(config) {
-	if (config.dataset.Config_EndCxDetails === 'Y' && config.dataset.Config_EndCxDetails_Contact === 'Y') {
+	if (!nbsf.fn.filter(config.dataset, page7.filter)) {
 	  // toggleCopyShipto2Endx should be hidden because End Customer page is disabled
-	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').hide();
+	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').remove();
 	} else {
 	  // Copy from ShipTo to EndCx toggle
 	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
