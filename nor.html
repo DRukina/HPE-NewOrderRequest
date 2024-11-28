@@ -8534,6 +8534,28 @@
 	  });
   }
 
+  function handleCopyShipToEndCxToggle(config) {
+	if (config.dataset.Config_EndCxDetails === 'Y' && config.dataset.Config_EndCxDetails_Contact === 'Y') {
+	  // toggleCopyShipto2Endx should be hidden because End Customer page is disabled
+	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').hide();
+	} else {
+	  // Copy from ShipTo to EndCx toggle
+	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
+		$('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
+	  });
+	  $('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
+		if (e.target.value === 'Y') {
+		  ['PartyId', ...config.addressField, ...config.contactField].forEach(fieldName => {
+			$(`[data-name="EndCx_${fieldName}"]`).val($(`[data-name="ShipTo_${fieldName}"]`).val());
+			config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
+		  });
+		  nbsf.ev.global(config, true);
+		}
+	  });
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('paddingRight', '0px');
+	}
+  }
+
   const config = {
 	dom: null,
 	onLoadCallbacks:[],
@@ -10715,23 +10737,7 @@
 		}
 	  });
 
-	  if (config.dataset.Config_EndCxDetails === 'Y' && config.dataset.Config_EndCxDetails_Contact === 'Y') {
-		// toggleCopyShipto2Endx should be hidden because End Customer page is disabled
-		$('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').hide();
-	  } else {
-		// Copy from ShipTo to EndCx toggle
-		$('label[for="toggleCopyShipto2Endx"]').click(function() {
-		  $('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
-		});
-		$('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
-		  if (e.target.value === 'Y') {
-			['PartyId', ...config.addressField, ...config.contactField].forEach(fieldName => {
-			  config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
-			})
-			nbsf.ev.global(config, true);
-		  }
-		})
-	  }
+	  handleCopyShipToEndCxToggle(config);
 
 	  helper.buildFastClearAddressButton('ShipTo');
 	},
@@ -11202,21 +11208,8 @@
 		});
 	  });
 
-	  // Copy from ShipTo to EndCx toggle
-	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
-		$('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
-	  });
-	  $('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
-		if (e.target.value === 'Y') {
-		  ['PartyId', ...config.addressField, ...config.contactField].forEach(fieldName => {
-			$(`[data-name="EndCx_${fieldName}"]`).val($(`[data-name="ShipTo_${fieldName}"]`).val());
-			config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
-		  })
-		  nbsf.ev.global(config, true);
-		}
-	  })
-	  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('paddingRight', '0px');
-
+	  handleCopyShipToEndCxToggle(config);
+	  
 	  // SoldTo
 	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
