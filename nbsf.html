@@ -3698,7 +3698,8 @@
             IsUCID: "The :attribute must contain only digits, dashes or semicolons.",
             IsUCIDQ: "The :attribute must contain 4 or more digits, semicolons.",
             nationalID: "The :attribute must be only characters, may include dash at the end.",
-            IsOpportunityID: "The :attribute must be OPE- or starts with OPE- and includes 10 digits."
+            IsOpportunityID: "The :attribute must be OPE- or starts with OPE- and includes 10 digits.",
+            alphanumericHyphen: "The :attribute must include only lowercase and uppercase letters, numbers, and dash.",
         },
         vld: {
             // KP PREFIX USED FOR KEY PREVENTION
@@ -4058,7 +4059,10 @@
             },
             nationalID: function(value) {
                 return /^[a-zA-Z\d-]+$/.test(value);
-            }
+            },
+            alphanumericHyphen: function(value) {
+                return /^[a-zA-Z0-9-]*$/.test(value);
+            },
         },
         localization: {
             en_US: {
