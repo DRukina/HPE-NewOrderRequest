@@ -8546,7 +8546,7 @@
 	  });
 	  $('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
 		if (e.target.value === 'Y') {
-		  ['PartyId', ...config.addressField, ...config.contactField].forEach(fieldName => {
+		  ['PartyId', ...config.addressField].forEach(fieldName => {
 			$(`[data-name="EndCx_${fieldName}"]`).val($(`[data-name="ShipTo_${fieldName}"]`).val());
 			config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
 		  });
