@@ -425,8 +425,8 @@
 							 ];
   let global = {
 	ready: false,
-	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "MO"],
-	pdfCreateCountries: ["TH", "HK", "KR", "MO"],
+	nonPoModelCountries: ["AF", "AU", "BD", "BN", "BT", "CN", "HK", "ID", "JP", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW", "VN"],
+	pdfCreateCountries: ["AU", "BD", "BN", "BT", "CN", "HK", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW"],
 	data: {
 	  brt: {
 		code: null,
@@ -9283,9 +9283,9 @@
 			  } else {
 				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+				  if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
 					let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-					caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+					caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				  }
 				}
 				else if (pairs[i].ttl == "page-3")
@@ -9488,9 +9488,9 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+				if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
 				  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-				  caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				}
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
