@@ -4580,17 +4580,8 @@
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "neq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: => {
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
 					[{
@@ -4606,7 +4597,7 @@
 					 {
 					   label: "Surname",
 					   data: "ShipTo_Contact_LastName",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: false,
 					   type: "text",
 					   //placeholder: "Form125",
 					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
@@ -4615,7 +4606,7 @@
 					 {
 					   label: "Telephone",
 					   data: "ShipTo_Contact_Phone",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: false,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
 					   validation: ["typePhone", "minLen|8", "maxLen|18"],
@@ -4624,7 +4615,7 @@
 					 {
 					   label: "Email",
 					   data: "ShipTo_Contact_Email",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: false,
 					   type: "text",
 					   //placeholder: "Form218",
 					   validation: ["isEmail", "maxLen|96"],
@@ -4653,17 +4644,8 @@
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "eq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: () => {
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && (config.dataset.SoldTo_Address_Country == "Korea (Rep.)" || config.dataset.CountryCode == "CN");
 				  },
 				  group: [
 					[{
@@ -4679,7 +4661,7 @@
 					 {
 					   label: "Surname",
 					   data: "ShipTo_Contact_LastName",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: true,
 					   type: "text",
 					   //placeholder: "Form125",
 					   validation: ["kpDefault", "minLen|1", "maxLen|60"],
@@ -4688,7 +4670,7 @@
 					 {
 					   label: "Telephone",
 					   data: "ShipTo_Contact_Phone",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: true,
 					   type: "text",
 					   //placeholder: "1-888-666-5555",
 					   validation: ["typePhone", "minLen|8", "maxLen|18"],
@@ -4697,7 +4679,7 @@
 					 {
 					   label: "Email",
 					   data: "ShipTo_Contact_Email",
-					   required: () => getShipToContactMandatory(config.dataset.CountryCode, reference.countriesData),
+					   required: true,
 					   type: "text",
 					   //placeholder: "Form218",
 					   validation: ["isEmail", "maxLen|96"],
@@ -10737,7 +10719,6 @@
 		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
 		}
 	  });
-
 	  $('[data-name="toggleCopyShipto2Endx"]').parents('label.toggle').css({
 		'marginTop': '35px',
 		'maxWidth': '410px',
@@ -11232,7 +11213,7 @@
 	  }
 
 	  handleCopyShipToEndCxToggle(config);
-	  
+
 	  // SoldTo
 	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
