@@ -10151,7 +10151,7 @@
 	  quoteHelper.initCountry(config, false, false);
 
 	  // ADDRESS MAPPIMG FOR SOLD_TO, PAYER, BILL_TO FROM PO - ONLY FOR NEW REQUESTS
-	  if (config.dataset.Config_Quote !== "Y") {
+	  if (config.dataset.Config_Quote !== "Y" || !config.dataset.ParnterName) {
 		quoteHelper.initDefaultPOData(config);
 	  }
 
