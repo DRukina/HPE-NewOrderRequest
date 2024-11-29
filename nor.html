@@ -50,7 +50,127 @@
   }
 </script>
 
+<script>
+  const locationApi = {
+	partyCache: {},
 
+	//
+	getXpeDataXref: function(partyId) {
+	  if (partyId in locationApi.partyCache) return locationApi.partyCache[partyId];
+	  const party = new Promise((resolve, reject) => {
+		hpe.data.xref(partyId, (d) => {
+		  if (d && d.status == 'SUCCESS' && d.party && d.party.length) {
+			resolve(d.party[0]);
+		  } else {
+			reject(d);
+		  }
+		});
+	  });
+	  locationApi.partyCache[partyId] = party;
+	  return party;
+	},
+
+	getLocationAddress: function(locationId) {
+	  if (locationId in locationApi.partyCache) return locationApi.partyCache[locationId];
+	  
+	  const loc = fetch(`https://hpe-rfb.itcs.hpe.com/resources/rs/custom/php/nor/location/location-prod.php?id=${locationId}`, {
+		headers: {
+		  "Content-Type": "application/json"
+		}
+	  }).then(r => r.json()).then(locationResp => {
+		if (locationResp && locationResp.status === 'SUCCESS' && locationResp.searchList && locationResp.searchList.length) {
+		  return locationResp.searchList[0];
+		} else {
+		  return Promise.reject(locationResp);
+		}
+	  });
+	  
+	  locationApi.partyCache[partyId] = loc;
+	  return loc;
+	},
+	
+	extractAddressDataFromPartyRequest: function(rec) {
+	  const externalidentifier = rec.externalIdentifier;
+	  const nationalId = externalidentifier.find(ei => ei.status == "ACTIVE" && ["Tax Number 1"].indexOf(ei.externalIdentifierName) > -1);
+	  let alternateName = '';
+	  if (rec.organizationAlternateName && rec.organizationAlternateName.length) {
+		rec.organizationAlternateName.forEach(item => {
+		  if (
+			item.internalOverWriteFlag === 'Y' &&
+			item.status === 'ACTIVE' &&
+			item.characterScript === 'LATN' &&
+			item.type === 'TRADESTYLE'
+		  ) {
+			alternateName = item.organizationAlternateName;
+		  }
+		});
+	  }
+
+	  let addressMatched = null;
+	  let address1 = null;
+	  let address2 = null;
+	  if (rec.address && rec.address.length) {
+		addressMatched = rec.address.find(item => item.internalOverWriteFlag == "Y" && item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN'));
+
+		if (!addressMatched) {
+		  addressMatched = rec.address.find(item => item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN'));
+		}
+
+		if (!addressMatched) {
+		  addressMatched = rec.address.find(item => item.status == "ACTIVE" && item.addressType == "PHY");
+		}
+
+		if (addressMatched) {
+		  address1 = addressMatched.addressLine1;
+		  address2 = addressMatched.addressLine2;
+		  if (!addressMatched.addressLine2 && addressMatched.addressLine1.length > 55) {
+			const separator = addressMatched.addressLine1.substr(0, 55).lastIndexOf(' ');
+			address1 = addressMatched.addressLine1.substr(0, separator);
+			address2 = addressMatched.addressLine1.substr(separator + 1);
+		  }
+		}
+	  }
+
+	  return {
+		Address_Country: rec.countryName,
+		PartyId: rec.currentPartyID || rec.submittedPartyID,
+		SubmittedPartyId: rec.submittedPartyID,
+		CompanyName: alternateName ? alternateName : rec.organizationName,
+		Address_State: addressMatched ? addressMatched.stateProvince : null,
+		Address_City: addressMatched ? addressMatched.cityName : null,
+		Address_Postal: addressMatched ? addressMatched.postalCode: null,
+		Address_Street:  address1 || null,
+		Address_Street2: address2 || null,
+	    NationalID: nationalId ? nationalId.identifierValue : null
+	  }
+	},
+
+	extractAddressDataFromLocationRequest: function(rec) {
+	  let loc_country;
+	  if (rec.countryCode && reference.countriesData && reference.countriesData.length) {
+		const locCounty = reference.countriesData.find(el => el.ISO2 == rec.countryCode);
+		loc_country = locCounty.Name || '';
+	  }
+	  return {
+		Address_Country: loc_country,
+		PartyId: rec.locationId,
+		SubmittedPartyId: rec.locationId,
+		CompanyName: rec.name || "",
+		Address_City: rec.city || "",
+		Address_Postal: rec.postalcode || "",
+		Address_Street: rec.addressLine1 || "",
+		Address_Street2: rec.addressLine2 || "",
+		Address_State: rec.stateName || "",
+		NationalID: ""
+	  }
+	},
+	
+	getAddressData: function(partyId) {
+	  if (partyId.startsWith("2")) return locationApi.getLocationAddress(partyId).then(locationApi.extractAddressDataFromLocationRequest);
+	  return locationApi.getXpeDataXref(partyId).then(locationApi.extractAddressDataFromPartyRequest);
+	}
+  }
+</script>
 
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
@@ -204,14 +324,14 @@
 	xhr.send(null);
   }
 
-  function EMDMAddress(currentVal, type, hasNationalID) {
+  function EMDMAddress(currentVal, type, hasNationalID, resolve, reject) {
+	mo.fn.overlay.show({
+	  progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
+	  progressPercent: 40,
+	  close: false
+	});
 	hpe.data.xref(currentVal, function(d) {
 	  console.log('EMDMAddress', d)
-	  mo.fn.overlay.show({
-		progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
-		progressPercent: 40,
-		close: false
-	  })
 
 	  if (d.status == 'SUCCESS') {
 		config.dataset.xrefFail = 'No';
@@ -290,7 +410,8 @@
 		}
 		nbsf.init(config, config.page);
 		setTimeout(function() {
-		  mo.fn.overlay.hide()
+		  mo.fn.overlay.hide();
+		  if (resolve) resolve();
 		}, 1000);
 	  } else if (d.status == 'FAIL' && d.code == "EMS005") {
 		config.dataset.xrefFail = 'No';
@@ -313,6 +434,7 @@
 			content: d.message + ".",
 			ctaCallback: function() {
 			  mo.fn.events.closeAll();
+			  if (reject) reject();
 			},
 			contentCallback: function() {}
 		  });
@@ -332,11 +454,22 @@
 		  content: hpe.fn.lang("FormCFI014", config.locale, config.localizations),
 		  ctaCallback: function() {
 			mo.fn.events.closeAll();
+			if (reject) reject();
 		  },
 		  contentCallback: function() {}
 		});
 	  }
+	  // Reflect dataset's data in reviewDataset
+	  if (config.reviewDataset && Object.keys(config.reviewDataset).length) {
+		[`${type}_Address_Country`, `${type}_CompanyName`, `${type}_Address_State`, `${type}_Address_City`,
+		 `${type}_Address_Postal`, `${type}_Address_Street`, `${type}_Address_Street2`, `${type}_NationalID`
+		].forEach(key => config.reviewDataset[key] = config.dataset[key]);
+	  };
 	});
+  }
+
+  function EMDMAddressPromise(currentVal, type, hasNationalID) {
+	return new Promise((resolve, reject) => EMDMAddress(currentVal, type, hasNationalID, resolve, reject));
   }
 
   const assigntoteamValues = [{
@@ -417,6 +550,7 @@
 							 ];
   let global = {
 	ready: false,
+	nonPoModelCountries: ["AF", "AU", "BD", "BN", "BT", "CN", "HK", "ID", "JP", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW", "VN"],
 	data: {
 	  brt: {
 		code: null,
@@ -424,7 +558,7 @@
 		channel: null,
 		pas: null
 	  },
-	  userPreferences:{}, // Map PANumber:UserPreferences
+	  userPreferences:{}, // Map PartyId:UserPreferences
 	  company: {
 		party: null,
 		country: null,
@@ -536,6 +670,7 @@
 		}
 	  }
 	  global.data.brt.pas = [];
+	  global.data.brt.partyId = [];
 
 	  global.data.company.party = "[SSOData.PartyId]";
 	  global.data.company.country = "[SSOData.CountryEntityId]";
@@ -644,6 +779,7 @@
 	  }
 	}
 	global.data.brt.pas = [];
+	global.data.brt.partyId = [];
 
 	global.data.company.party = "[SSOData.PartyId]";
 	global.data.company.country = "[SSOData.CountryEntityId]";
@@ -1784,7 +1920,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -1928,7 +2064,7 @@
 		  filters: [{
 			field: "CountryCode",
 			operator: "in",
-			value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+			value: global.nonPoModelCountries
 		  },
 					{
 					  logic: "and",
@@ -2066,38 +2202,8 @@
 		]
 	  },
 	  {
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "aggrVal",
-			operator: "eq",
-			value: "1"
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Region",
-						operator: "eq",
-						value: "AMS"
-					  },
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "Central Europe"
-								},
-								{
-								  field: "SubRegion",
-								  operator: "eq",
-								  value: "MESA"
-								},
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "CERTA"
-								}
-							   ]
-					}
-				   ]
+		filter: (ds) => {
+		  return ds.aggrVal == "1" && (ds.Region == "AMS" || ds.Geo == "Central Europe" || ds.SubRegion == "MESA" || ds.Geo == "CERTA");
 		},
 		header: "Form023",
 		group: [
@@ -2114,59 +2220,36 @@
 		]
 	  },
 	  {
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "aggrVal",
-			operator: "eq",
-			value: "1"
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Region",
-						operator: "eq",
-						value: "AMS"
-					  },
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "Central Europe"
-								},
-								{
-								  field: "SubRegion",
-								  operator: "eq",
-								  value: "MESA"
-								},
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "CERTA"
-								},
-								{
-								  field: "CountryCode",
-								  operator: "in",
-								  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
-								},
-							   ]
-					}
-				   ]
+		filter: (ds) => {
+		  return ds.aggrVal == "1" && (ds.Region == "AMS" || ds.Geo == "Central Europe" || ds.SubRegion == "MESA" || ds.Geo == "CERTA" || global.nonPoModelCountries.indexOf(ds.CountryCode) >= 0);
 		},
 		header: "",
 		group: [
-		  [{
-			data: "Payment_TermsPlaceholder",
-			type: "hidden"
-		  },
-		   {
-			 label: "Form026",
-			 data: "Payment_Terms",
-			 required: true,
-			 type: "text",
-			 placeholder: "Form478",
-			 validation: ["ascii", "minLen|1", "maxLen|60"],
-			 typing: "ascii"
-		   }
+		  [
+			{
+			  data: "Payment_TermsPlaceholder",
+			  type: "hidden"
+			},
+			{
+			  filter: () => multiValues.hasValues("Payment_Terms"),
+			  label: "Form026",
+			  data: "Payment_Terms_Predefined",
+			  required: true,
+			  type: "select",
+			  placeholder: "Form478",
+			  values: () => multiValues.getValues("Payment_Terms"),
+			  options: () => multiValues.getOptions("Payment_Terms")
+			},
+			{
+			  filter: () => multiValues.fieldIsVisible(config.dataset, "Payment_Terms"),
+			  label: "Form026",
+			  data: "Payment_Terms",
+			  required: true,
+			  type: "text",
+			  placeholder: "Form478",
+			  validation: ["ascii", "minLen|1", "maxLen|60"],
+			  typing: "ascii"
+			}
 		  ]
 		]
 	  },
@@ -2831,7 +2914,7 @@
 							{
 							  field: "CountryCode",
 							  operator: "in",
-							  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+							  value: global.nonPoModelCountries
 							},
 						   ]
 				}
@@ -3089,6 +3172,12 @@
 		  $(collapseEl).click();
 		}
 	  }
+
+	  document.querySelectorAll(".review-contact-firstname").forEach((el) => {
+		let separatorEl = document.createElement("div");
+		separatorEl.classList.add("review-separator");
+		el.parentNode.insertBefore(separatorEl, el)
+	  });
 	}
   };
 
@@ -3127,7 +3216,7 @@
 				{
 				  field: "CountryCode",
 				  operator: "nin",
-				  value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				  value: global.nonPoModelCountries
 				},
 			   ]
 	},
@@ -3551,79 +3640,93 @@
 				   ]
 		},
 		group: [
-		  [{
-			label: "Form086",
-			data: "SoldTo_PartyId",
-			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
-		  [{
-			label: "Form058",
-			data: "SoldTo_CompanyName",
-			required: true,
-			type: "text",
-			//placeholder: "Form059",
-			validation: ["kpDefault", "minLen|2", "maxLen|140"],
-			typing: "kpDefault"
-		  },
-		   {
-			 label: "Address",
-			 data: "SoldTo_Address_Street",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form216",
-			 validation: ["kpDefault", "minLen|2", "maxLen|55"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "AddressLineOptional",
-			 data: "SoldTo_Address_Street2",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form061",
-			 validation: ["kpDefault", "minLen|2", "maxLen|50"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "City",
-			 data: "SoldTo_Address_City",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form062",
-			 validation: ["kpDefault", "minLen|2", "maxLen|35"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "StateProvince",
-			 data: "SoldTo_Address_State",
-			 required: false,
-			 type: "text",
-			 //placeholder: "Form063",
-			 validation: ["kpDefault", "minLen|2"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Postal code",
-			 data: "SoldTo_Address_Postal",
-			 required: true,
-			 type: "text",
-			 //placeholder: "Form087",
-			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
-			 typing: "kpDefault"
-		   },
-		   {
-			 label: "Country",
-			 data: "SoldTo_Address_Country",
-			 disabled: true,
-			 required: true,
-			 type: "select",
-			 values: function() {
-			   return reference.countriesArray
-			 }
-		   }
+		  [
+			{
+			  filter: () => multiValues.hasValues("SoldTo_PartyId"),
+			  label: "Form086",
+			  data: "SoldTo_PartyId_Predefined",
+			  required: false,
+			  type: "select",
+			  values: () => multiValues.getValues("SoldTo_PartyId"),
+			  options: () => multiValues.getOptions("SoldTo_PartyId")
+			},
+			{
+			  filter: () => multiValues.fieldIsVisible(config.dataset, "SoldTo_PartyId"),
+			  label: "Form086",
+			  data: "SoldTo_PartyId",
+			  required: false,
+			  type: "text",
+			  //placeholder: "Form057",
+			  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			  typing: "kpDefault"
+			}
+		  ],
+		  [
+			{
+			  label: "Form058",
+			  data: "SoldTo_CompanyName",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form059",
+			  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Address",
+			  data: "SoldTo_Address_Street",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form216",
+			  validation: ["kpDefault", "minLen|2", "maxLen|65"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "AddressLineOptional",
+			  data: "SoldTo_Address_Street2",
+			  required: false,
+			  type: "text",
+			  //placeholder: "Form061",
+			  validation: ["kpDefault", "minLen|2", "maxLen|40"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "City",
+			  data: "SoldTo_Address_City",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form062",
+			  validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "StateProvince",
+			  data: "SoldTo_Address_State",
+			  required: () => false,
+			  type: "text",
+			  //placeholder: "Form063",
+			  validation: ["kpDefault", "minLen|2"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Postal code",
+			  data: "SoldTo_Address_Postal",
+			  required: () => true,
+			  type: "text",
+			  //placeholder: "Form087",
+			  validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Country",
+			  data: "SoldTo_Address_Country",
+			  disabled: true,
+			  required: true,
+			  type: "select",
+			  class: "review-address-country",
+			  values: function() {
+				return reference.countriesArray
+			  }
+			}
 		  ]
 		]
 	  },
@@ -3676,14 +3779,24 @@
 		},
 		group: [
 		  [{
+			filter: () => multiValues.hasValues("SoldTo_PartyId"),
 			label: "Form086",
-			data: "SoldTo_PartyId",
+			data: "SoldTo_PartyId_Predefined",
 			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
+			type: "select",
+			values: () => multiValues.getValues("SoldTo_PartyId"),
+			options: () => multiValues.getOptions("SoldTo_PartyId")
+		  },
+		   {
+			 filter: () => multiValues.fieldIsVisible(config.dataset, "SoldTo_PartyId"),
+			 label: "Form086",
+			 data: "SoldTo_PartyId",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form057",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			 typing: "kpDefault"
+		   }],
 		  [{
 			label: "Form058",
 			data: "SoldTo_CompanyName",
@@ -4395,15 +4508,27 @@
 				 ]
 	  },
 	  group: [
-		[{
-		  label: "Form086",
-		  data: "ShipTo_PartyId",
-		  required: false,
-		  type: "text",
-		  //placeholder: "Form057",
-		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-		  typing: "kpDefault",
-		}],
+		[
+		  {
+			filter: () => multiValues.hasValues("ShipTo_PartyId"),
+			label: "Form086",
+			data: "ShipTo_PartyId_Predefined",
+			required: true,
+			type: "select",
+			values: () => multiValues.getValues("ShipTo_PartyId"),
+			options: () => multiValues.getOptions("ShipTo_PartyIdName")
+		  },
+		  {
+			filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+			label: "Form086",
+			data: "ShipTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault",
+		  }
+		],
 		[{
 		  label: "Form058",
 		  data: "ShipTo_CompanyName",
@@ -4488,14 +4613,24 @@
 				  },
 				  group: [
 					[{
+					  filter: () => multiValues.hasValues("ShipTo_PartyId"),
 					  label: "Form086",
-					  data: "ShipTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault",
-					}],
+					  data: "ShipTo_PartyId_Predefined",
+					  required: true,
+					  type: "select",
+					  values: () => multiValues.getValues("ShipTo_PartyId"),
+					  options: () => multiValues.getOptions("ShipTo_PartyIdName")
+					},
+					 {
+					   filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+					   label: "Form086",
+					   data: "ShipTo_PartyId",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form057",
+					   validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					   typing: "kpDefault",
+					 }],
 					[{
 					  label: "Form058",
 					  data: "ShipTo_CompanyName",
@@ -4595,15 +4730,27 @@
 							 ]
 				  },
 				  group: [
-					[{
-					  label: "Form086",
-					  data: "ShipTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault",
-					}],
+					[
+					  {
+						filter: () => multiValues.hasValues("ShipTo_PartyId"),
+						label: "Form086",
+						data: "ShipTo_PartyId_Predefined",
+						required: true,
+						type: "select",
+						values: () => multiValues.getValues("ShipTo_PartyId"),
+						options: () => multiValues.getOptions("ShipTo_PartyIdName")
+					  },
+					  {
+						filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+						label: "Form086",
+						data: "ShipTo_PartyId",
+						required: false,
+						type: "text",
+						//placeholder: "Form057",
+						validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+						typing: "kpDefault",
+					  }
+					],
 					[{
 					  label: "Form058",
 					  data: "ShipTo_CompanyName",
@@ -8094,14 +8241,21 @@
 </script>
 <script>
   // MAIN CONFIG
-  const paNumberChanged = function(newVal) {
-	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PA_Number : newVal];
+  const partyIdChanged = function(newVal) {
+	multiValues.data = {};
+	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PartyId : newVal];
 	if (!prefs) return;
-	
+
 	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
-	  config.dataset[fieldName] = fieldValue;
-	  $(`[data-name='${fieldName}']`).val(fieldValue);
+	  if (Array.isArray(fieldValue)) {
+		multiValues.data[fieldName] = fieldValue;
+	  } else {
+		config.dataset[fieldName] = fieldValue;
+		$(`[data-name='${fieldName}']`).val(fieldValue);
+	  }
 	});
+
+	multiValues.resetPredefinedProps(config.dataset);
   }
 
   const loadPreferences = function() {
@@ -8125,7 +8279,7 @@
 			serverFiltering: true,
 			filter: {
 			  logic: "or",
-			  filters: global.data.brt.pas.map((pa) => ({field: "PANumber", operator: "eq", value: pa}))
+			  filters: global.data.brt.partyId.map((partyId) => ({field: "PartyId", operator: "eq", value: partyId}))
 			},
 			serverSorting: true,
 			sort: {
@@ -8140,15 +8294,30 @@
 			const prefs = {}
 			data.forEach((row) => {
 				try {
-				  if (row.Preferences) prefs[row.PANumber] = JSON.parse(row.Preferences);
+				  if (row.Preferences) prefs[row.PartyId] = JSON.parse(row.Preferences);
 				} catch(e) {
 				  // The string with wrong preferences is not the reason to fall
 				  console.log("Error parsing preferences", row);
 				}
 			});
-			global.data.brt.pas.forEach((pa) => {
-			  if (!prefs[pa]) prefs[pa] = {};
-			  if (!prefs[pa].Payment_Terms) prefs[pa].Payment_Terms = "NT30 - Within 30 days due net";
+			global.data.brt.partyId.forEach((pid) => {
+			  if (!prefs[pid]) prefs[pid] = {};
+			  if (!prefs[pid].Payment_Terms) prefs[pid].Payment_Terms = "NT30 - Within 30 days due net";
+			});
+			const multiKeyRe = /^.+-\d+$/
+			Object.keys(prefs).forEach((prefPartyId) => {
+			  const partyPrefs = prefs[prefPartyId];
+			  Object.keys(partyPrefs).filter(key => multiKeyRe.test(key)).forEach((key) => {
+				const ndx = key.indexOf("-");
+				const newKey = key.substring(0, ndx);
+				if (!partyPrefs[newKey]) {
+				  partyPrefs[newKey] = partyPrefs[key];
+				} else {
+				  if (!Array.isArray(partyPrefs[newKey])) partyPrefs[newKey] = [partyPrefs[newKey]];
+				  partyPrefs[newKey].push(partyPrefs[key]);
+				}
+				delete partyPrefs[key];
+			  });
 			});
 			global.data.userPreferences = prefs;
 			resolve();
@@ -8156,11 +8325,60 @@
 			console.log("User Preferences loading error", errArg);
 			reject(errArg);
 		  });
+	  }).then(() => {
+		// For every NNN_PartyId property create appropriate NNN_PartyIdName
+		const parties = [];
+		for (let pId in global.data.userPreferences) {
+		  const prefs = global.data.userPreferences[pId];
+		  const suffixLen = "_PartyId".length;
+		  Object.keys(prefs).filter(pref => pref.endsWith("_PartyId")).forEach(pref => {
+			if (Array.isArray(prefs[pref])) {
+			  prefs[pref].forEach(partyId => parties.push(locationApi.getAddressData(partyId)));
+			} else {
+			  // For single Party ID prepopulate related info
+			  const dataPromise = locationApi.getAddressData(prefs[pref]);
+			  parties.push(dataPromise);
+
+			  const sectionPrefix = pref.slice(0, -suffixLen);
+			  if (sectionPrefix in config.sectionAddressFields) {
+				dataPromise.then((data) => {
+				  config.addressField.forEach((field) => {
+					const val = data[field];
+					if (val!==undefined) prefs[sectionPrefix + "_" + field] = val;
+				  })
+				});
+			  }
+			}
+		  });
+		}
+		return Promise.allSettled(parties).then(partyAddresses => {
+		  const partyMap = {};
+		  partyAddresses.filter(reqResult => reqResult.status === "fulfilled").forEach(reqResult => {
+			const res = reqResult.value;
+			partyMap[res.PartyId] = res.PartyId + " – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			if (res.PartyId != res.SubmittedPartyId) {
+			  partyMap[res.SubmittedPartyId] = res.SubmittedPartyId + " – [" + res.PartyId + "] – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			}
+		  });
+
+		  for (let pId in global.data.userPreferences) {
+			const prefs = global.data.userPreferences[pId];
+			Object.keys(prefs).filter(pref => pref.endsWith("_PartyId")).forEach(pref => {
+			  const prefValue = prefs[pref];
+			  if (Array.isArray(prefValue)) {
+				prefs[pref + "Name"] = prefValue.map(prtId => partyMap[prtId] || prtId);
+			  } else {
+				prefs[pref + "Name"] = partyMap[prefValue] || prefValue
+			  }
+			});
+		  }
+		});
 	  });
   }
 
   const config = {
 	dom: null,
+	onLoadCallbacks:[],
 	locale: global.data.user.locale,
 	localizations: {},
 	dataset: {
@@ -8232,7 +8450,7 @@
 				content: template,
 				contentCallback: function() {
 				  document.querySelector("#viewExisting").addEventListener("click", function(e) {
-					config.dataset = data.Rows[0];
+					config.dataset = config.processOnLoad(data.Rows[0]);
 					mo.fn.modal.hide();
 					mo.fn.overlay.show({
 					  loading: true,
@@ -8253,7 +8471,7 @@
 				  crud.create(3158, config.dataset, function(data) {
 					if (typeof(data.EntryId) === "number") {
 					  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-					  config.dataset = data;
+					  config.dataset = config.processOnLoad(data);
 					  config.dataset.internalUser = global.data.user.internal;
 					  nbsf.init(config, config.page + 1);
 					  mo.fn.events.closeAll();
@@ -8294,7 +8512,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8321,7 +8539,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8342,7 +8560,7 @@
 			  crud.create(3158, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8665,8 +8883,10 @@
 					})
 				  }
 				  global.data.brt.pas = [];
+				  global.data.brt.partyId = [];
 				  reference.agreements.forEach(function(agreement) {
 					global.data.brt.pas.push(agreement.iCMPANumber);
+					global.data.brt.partyId.push(agreement.iCMPartyID);
 				  });
 				  let chnls = global.data.brts.filter(function(item) {
 					return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -8685,6 +8905,7 @@
 					  hpe.data.xref(global.data.company.party, function(d) {
 						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 						reference.xref = d;
+						partyIdChanged();
 						config.locale = global.data.user.locale;
 						config.dom = document.querySelector('div[tab-id="oob"]');
 						nbsf.init(config, config.page + 1);
@@ -8827,8 +9048,10 @@
 				  })
 				}
 				global.data.brt.pas = [];
+				global.data.brt.partyId = [];
 				reference.agreements.forEach(function(agreement) {
 				  global.data.brt.pas.push(agreement.iCMPANumber);
+				  global.data.brt.partyId.push(agreement.iCMPartyID);
 				});
 				let chnls = global.data.brts.filter(function(item) {
 				  return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -8847,6 +9070,7 @@
 					hpe.data.xref(global.data.company.party, function(d) {
 					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  reference.xref = d;
+					  partyIdChanged();
 					  config.locale = global.data.user.locale;
 					  config.dom = document.querySelector('div[tab-id="oob"]');
 					  nbsf.init(config, config.page + 1);
@@ -8953,7 +9177,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -9104,7 +9328,7 @@
 			  (
 				["CERTA", "CETA", "Latin America", "North America"].includes(config.dataset.Geo) ||
 				config.dataset.SubRegion === "MESA" ||
-				config.dataset.internalUser || ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"].includes(config.dataset.CountryCode)
+				config.dataset.internalUser || global.nonPoModelCountries.includes(config.dataset.CountryCode)
 			  )
 			) {
 			  console.log('config.summary', config.summary);
@@ -9258,7 +9482,7 @@
 		crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 		  if (typeof(data.EntryId) === "number") {
 			// UPDATE REFERENCE APPLICATION WITH RESPONSE
-			config.dataset = data;
+			config.dataset = config.processOnLoad(data);
 			nbsf.init(config, config.page);
 			mo.fn.overlay.hide();
 
@@ -9325,6 +9549,16 @@
 		  if (el) $(el).val = "";
 		}
 	  });
+	},
+	processOnLoad: function(rec) {
+	  config.onLoadCallbacks.forEach(cb => cb(rec));
+	  return rec;
+	},
+	loadRecord: function(entryId, callback) {
+	  crud.read("3180", "eid=" + entryId, function(d) {
+		const rec = config.processOnLoad(d.Rows.length > 0 ? d.Rows[0] : {});
+		callback(rec);
+	  })
 	},
 	init: function() {
 	  config.sectionName.forEach((sect) => {
@@ -9520,6 +9754,7 @@
 		  config.dataset[input.name] = global.data[input.group][input.value];
 		  document.querySelector("input[type=hidden][data-name=" + input.name + "]").value = global.data[input.group][input.value];
 		});
+		if (!config.dataset.EntryId) partyIdChanged();
 	  }
 	  config.dataset.internalUser = global.data.user.internal;
 	  config.dataset.Email = '[SSOData.Email]';
@@ -9573,7 +9808,7 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
-			paNumberChanged();
+		  partyIdChanged();
 		}
 		nbsf.init(config, config.page);
 	  });
@@ -9610,7 +9845,7 @@
 			  }
 			  config.dataset.SIM_Country = $('select[data-name="SIM_Country"]').val();
 			  quoteHelper.initCountry(config);
-			  paNumberChanged();
+			  partyIdChanged();
 			  nbsf.init(config, config.page);
 
 			  mo.fn.overlay.hide();
@@ -9633,7 +9868,7 @@
 		  if (!invalid) {
 			quoteHelper.initHeaderQuoteData(config);
 			await quoteHelper.initAddressQuoteData(config);
-			paNumberChanged();
+			partyIdChanged();
 			nbsf.init(config, config.page);
 		  }
 
@@ -9739,7 +9974,7 @@
 			//nbsf.init(config, config.page);
 		} else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
-			paNumberChanged();
+			partyIdChanged();
 		  }
 
 
@@ -9833,7 +10068,6 @@
 		if (paOpts.length > 1) {
 		  const paValue = paOpts[1].innerText;
 		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
-		  paNumberChanged(paValue); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
 
@@ -10051,6 +10285,15 @@
 		nbsf.init(config, config.page);
 	  });
 
+	  $('[data-name="ShipTo_PartyId_Predefined"]').change(function(e) {
+		const val = e.target.value;
+		const partyIdEl = $('input[data-name="ShipTo_PartyId"]');
+		config.dataset.ShipTo_PartyId_Predefined = val;
+		config.dataset.ShipTo_PartyId = val == multiValues.OTHER ? null : val;
+		partyIdEl.val(val == multiValues.OTHER ? "" : val);
+		partyIdEl.keyup();
+	  });
+
 	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10 && currentVal[0] == "1") {
@@ -10068,12 +10311,18 @@
 	  });
 
 	  $('*[data-name*="ShipTo_"]').change(function() {
-		if ($(this)[0].getAttribute("data-name") != 'ShipTo_PartyId' && $(this)[0].getAttribute("data-name").indexOf('ShipTo_Contact') == -1)
+		const dataName = $(this)[0].getAttribute("data-name");
+		if (dataName != 'ShipTo_PartyId' && dataName != 'ShipTo_PartyId_Predefined' && dataName.indexOf('ShipTo_Contact') == -1) {
 		  $('*[data-name="ShipTo_PartyId"]').val('');
+		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
+		}
 	  });
 	  $('*[data-name*="ShipTo_"]').keyup(function() {
-		if ($(this)[0].getAttribute("data-name") != 'ShipTo_PartyId' && $(this)[0].getAttribute("data-name").indexOf('ShipTo_Contact') == -1)
+		const dataName = $(this)[0].getAttribute("data-name");
+		if (dataName != 'ShipTo_PartyId' && dataName != 'ShipTo_PartyId_Predefined' && dataName.indexOf('ShipTo_Contact') == -1) {
 		  $('*[data-name="ShipTo_PartyId"]').val('');
+		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
+		}
 	  });
 	  helper.buildFastClearAddressButton('ShipTo');
 	},
@@ -10660,7 +10909,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -10707,7 +10956,7 @@
 			  filters: [{
 				field: "CountryCode",
 				operator: "in",
-				value: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM"]
+				value: global.nonPoModelCountries
 			  },
 						{
 						  logic: "and",
@@ -11207,24 +11456,12 @@
 		  Country: 'Contact_Country',
 		};
 
-		function hpeDataXrefAddressPromise(partyId) {
-		  return new Promise((resolve, reject) => {
-			hpe.data.xref(partyId, (d) => {
-			  if (d && d.status == 'SUCCESS') {
-				resolve(d);
-			  } else {
-				reject(new Error("Failed to fetch data."));
-			  }
-			});
-		  });
-		}
-
 		async function processAddressAssociations(partyId, section, quoteSection) {
 		  let existingEntry = quoteHelper.addressArr.find(entry => entry.PartyId === partyId);
 		  console.log('existingEntry', existingEntry);
 		  if (!existingEntry) {
 			try {
-			  let d = await hpeDataXrefAddressPromise(partyId);
+			  let d = await locationApi.getXpeDataXref(partyId);
 
 			  if (d) {
 				let addressObj = {
@@ -12079,7 +12316,7 @@
   const helper = {
 	buildFastClearAddressButton: function(section = 'SoldTo') {
 	  const fastClearAddress = function() {
-		const fields = ['CompanyName', 'PartyId', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
+		const fields = ['CompanyName', 'PartyId', 'PartyId_Predefined', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
 		fields.forEach((field) => {
 		  const node = document.querySelector('*[data-name="' + section + '_' + field + '"]');
 		  if (node) {
@@ -12182,8 +12419,10 @@
 				})
 			  }
 			  global.data.brt.pas = [];
+			  global.data.brt.partyId = [];
 			  reference.agreements.forEach(function(agreement) {
 				global.data.brt.pas.push(agreement.iCMPANumber);
+				global.data.brt.partyId.push(agreement.iCMPartyID);
 			  });
 			  let chnls = global.data.brts.filter(function(item) {
 				return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -12296,13 +12535,13 @@
                               $('span[tab-id="oob"]').hide();
                           }*/
 		  $('span[tab-id="otherIcons"] > svg.add').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('.tabs span[tab-id="oob"]').click();
 		  });
 		  $('span[tab-id="otherIcons"] > svg.refresh').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('[tab-id=requests] .grid').data('kendoGrid').dataSource.read();
@@ -12320,7 +12559,7 @@
 			oob.grid.load();
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
-			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
+			if (e.target.getAttribute("data-name") == "PartyId") partyIdChanged();
 		  });
 		});
 	  });
@@ -12736,9 +12975,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._view(d.Rows[0]);
+			  oob.grid._events._view(rec);
 			})
 		  });
 		  $(g).delegate(".edit", "click", function(e) {
@@ -12748,9 +12987,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._edit(d.Rows[0]);
+			  oob.grid._events._edit(rec);
 			})
 		  });
 		  $(g).delegate(".deactivate", "click", function(e) {
@@ -12765,9 +13004,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._clone(d.Rows[0]);
+			  oob.grid._events._clone(rec);
 			})
 		  });
 		  $(g).delegate(".mailto", "click", function(e) {
@@ -12777,14 +13016,14 @@
 		  });
 		},
 		_edit: function(data) {
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
 		},
 		_view: function(data) {
 		  console.log('_view', data);
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, config.pages.length - 1);
 		  nbsf.init(config, config.pages.length - 1);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -12797,7 +13036,7 @@
 			ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 			ctaCallback: function() {
 			  var refapplication;
-			  crud.read("3180", "eid=" + eid, function(data) {
+			  crud.read("3180", "eid=" + eid, function(data) { // TODO: Subject to rewrite using config.loadRecord()
 				if (data.Rows.length > 0) {
 				  if (data.Rows[0].Status == "0" || data.Rows[0].Status == null) {
 					refapplication = data.Rows[0];
@@ -12855,7 +13094,7 @@
 
 		  data.Status = 0;
 		  data.Clone = true;
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -13274,6 +13513,94 @@
 	}
   }
   config.init();
+</script>
+
+<script>
+  const multiValues = {
+	OTHER: "==",
+	data: {},
+	init: function() {
+	  nbsf.callbacks.push(multiValues.pageCallback);
+	  config.onLoadCallbacks.push(multiValues.resetPredefinedProps);
+	  document.addEventListener("change", multiValues.handleChange);
+	},
+
+	hasValues: function(field) {
+	  return field in multiValues.data;
+	},
+
+	getValues: function(field) {
+	  if (field in multiValues.data) return [...multiValues.data[field], multiValues.OTHER];
+	  return [];
+	},
+
+	getOptions: function(field) {
+	  if (field in multiValues.data) return [...multiValues.data[field], "Other..."];
+	  return [];
+	},
+	
+	fieldIsVisible: function(dataset, field) {
+	  const predefined = multiValues.data[field];
+	  if (!predefined) return true;
+	  const fieldValue = dataset[field];
+	  const valueIsFromPredefined = predefined.indexOf(fieldValue) >= 0;
+	  return !predefined || (!!fieldValue && !valueIsFromPredefined) || dataset[field + "_Predefined"] === multiValues.OTHER;
+	},
+
+	resetPredefinedProps: function(rec) {
+	  Object.entries(multiValues.data).forEach(([field, values]) => {
+		const recVal = rec[field];
+		rec[field + "_Predefined"] = values.indexOf(recVal) >= 0 ? recVal : multiValues.OTHER;
+		if (!recVal) rec[field + "_Predefined"] = null;
+	  });
+	},
+
+	handleChange: function(e) {
+	  const suffixLen = "_Predefined".length;
+	  const dataName = e.target.getAttribute("data-name");
+	  if (!(dataName || "").endsWith("_Predefined")) return;
+	  const dataParam = dataName.slice(0, -suffixLen);
+	  const val = e.target.value;
+	  const valIsOther = val === multiValues.OTHER;
+	  // the same hack to preserve values after init()
+	  let completedData = document.querySelectorAll('*[data-name]');
+	  let rdsExists = config.reviewDataset && Object.keys(config.reviewDataset).length;
+	  for (let i = 0; i < completedData.length; i++) {
+		const dn = completedData[i].getAttribute('data-name');
+		config.dataset[dn] = completedData[i].value;
+		if (rdsExists) config.reviewDataset[dn] = completedData[i].value;
+	  }
+	  config.dataset[dataParam] = valIsOther ? null : val;
+	  config.dataset[dataName] = val;
+	  if (rdsExists) {
+		config.reviewDataset[dataParam] = config.dataset[dataParam];
+		config.reviewDataset[dataName] = config.dataset[val];
+	  }
+
+	  if (dataParam.endsWith("_PartyId") && valIsOther) {
+		const section = dataParam.slice(0, -"_PartyId".length);
+		config.addressField.forEach((field) => {
+		  config.dataset[section + "_" + field] = null;
+		  if (rdsExists) config.reviewDataset[section + "_" + field] = null;
+		})
+	  }
+	  nbsf.init(config, config.page);
+	},
+
+	pageCallback: function() {
+	  const suffixLen = "_Predefined".length;
+	  document.querySelectorAll("[data-name$=_Predefined]").forEach((el) => {
+		const dataParam = el.getAttribute("data-name").slice(0, -suffixLen);
+		const dependentParam = document.querySelector("[data-name=" + dataParam + "]");
+		if (dependentParam) {
+		  const lbl = dependentParam.closest(".wrapper").querySelector(".name");
+		  //if (lbl) lbl.remove();
+		}
+	  });
+	}
+  }
+
+  multiValues.init();
 </script>
 
 <!-- VERSIONING -->
