@@ -8287,6 +8287,10 @@
 				  console.log("Error parsing preferences", row);
 				}
 			});
+			global.data.brt.pas.forEach((pa) => {
+			  if (!prefs[pa]) prefs[pa] = {};
+			  if (!prefs[pa].Payment_Terms) prefs[pa].Payment_Terms = "NT30 - Within 30 days due net";
+			});
 			global.data.userPreferences = prefs;
 			resolve();
 		  }, (errArg) => {
