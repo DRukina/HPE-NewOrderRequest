@@ -11215,8 +11215,8 @@
 		});
 	  });
 	  if (nbsf.fn.filter(config.dataset, page7.filter) && config.dataset.PO_Category === 'Drop') {
-		var allH4 = document.querySelectorAll('h4');
-		var shipToH4;
+		const allH4 = document.querySelectorAll('h4');
+		let shipToH4;
 		allH4.forEach(function(h4) {
 		  if (h4.textContent.includes(hpe.fn.lang("Form114", config.locale, config.localizations))) {
 			shipToH4 = h4;
@@ -11225,7 +11225,7 @@
 		if (shipToH4) {
 		  shipToH4.style.display = 'flex';
 		  shipToH4.style.justifyContent = 'space-between';
-		  var toggle = $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper');
+		  const toggle = $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper');
 		  $(shipToH4).append(toggle);
 		  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('marginBottom', '0');
 		}
