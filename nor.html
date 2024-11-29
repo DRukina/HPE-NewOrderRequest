@@ -4500,7 +4500,7 @@
 				{
 				  header: "Contact",
 				  filter: => {
-					return Config_ShipToDetails_Contact != "Y" && SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
 					[{
@@ -4556,7 +4556,7 @@
 				  header: "Contact",
 				  filter: () => {
 					return config.dataset.Config_ShipToDetails_Contact != "Y" && (config.dataset.SoldTo_Address_Country == "Korea (Rep.)" || config.dataset.CountryCode == "CN");
-				},
+				  },
 				  group: [
 					[{
 					  label: "FirstName",
