@@ -4724,17 +4724,8 @@
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "neq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: filter: => {
+					return Config_ShipToDetails_Contact != "Y" && SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
 					[{
@@ -4787,17 +4778,8 @@
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "eq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: () => {
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && (config.dataset.SoldTo_Address_Country == "Korea (Rep.)" || config.dataset.CountryCode == "CN");
 				  },
 				  group: [
 					[{
