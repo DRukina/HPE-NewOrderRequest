@@ -4638,7 +4638,7 @@
 				},
 				{
 				  header: "Contact",
-				  filter: => {
+				  filter: () => {
 					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
@@ -7456,7 +7456,7 @@
 		const heading = $(row).find('.heading');
 		if (heading) {
 		  const msg = hpe.fn.lang("DownloadTheTemplate", config.locale, config.localizations);
-		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>${msg}</a>`);
+		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V5.xlsx'>${msg}</a>`);
 		  $(".k-dropzone").css({width: "100%", display: "flex", justifyContent: "space-between",});
 
 		  $(".k-dropzone").append(`<div class="k-button kUpload-reset" aria-label="Reset file" style="margin: 8px 0 15px 8px;"><span>${hpe.fn.lang("ResetSelectedFile", config.locale, config.localizations)}</span></div>`);
@@ -12077,12 +12077,12 @@
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
-				  Address_Country: d.party[0].countryName
+				  PartyId: d.currentPartyID || d.submittedPartyID || partyId,
+				  Address_Country: d.countryName
 				};
 				let alternateName = '';
-				if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
-				  d.party[0].organizationAlternateName.forEach(function(item) {
+				if (d.organizationAlternateName && d.organizationAlternateName.length > 0) {
+				  d.organizationAlternateName.forEach(function(item) {
 					if (
 					  item.internalOverWriteFlag === 'Y' &&
 					  item.status === 'ACTIVE' &&
@@ -12093,28 +12093,28 @@
 					}
 				  });
 				}
-				addressObj['CompanyName'] = alternateName ? alternateName : d.party[0].organizationName;
+				addressObj['CompanyName'] = alternateName ? alternateName : d.organizationName;
 
 				let addressMatched = null;
-				if (d.party[0].address && d.party[0].address.length > 0) {
-				  addressMatched = d.party[0].address.find(item => {
+				if (d.address && d.address.length > 0) {
+				  addressMatched = d.address.find(item => {
 					return item.internalOverWriteFlag == "Y" && item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 				  });
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 					});
 				  }
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY";
 					});
 				  }
 
 				  if (addressMatched) {
-					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
+					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1)
 					  config.dataset[`${section}_Address_State`] = addressMatched.stateProvince;
 
 					let address1 = addressMatched.addressLine1;
@@ -12134,8 +12134,8 @@
 				}
 
 				if (section == 'ShipTo' || section == 'EndCx') {
-				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
-					var externalidentifier = d.party[0].externalIdentifier;
+				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1) {
+					var externalidentifier = d.externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 						addressObj['NationalID'] = externalidentifier[i].identifierValue;
@@ -12147,7 +12147,7 @@
 				}
 				// SoldTo NationalID for all countries
 				if (section == 'SoldTo') {
-				  var externalidentifier = d.party[0].externalIdentifier;
+				  var externalidentifier = d.externalIdentifier;
 				  for (i = 0; i < externalidentifier.length; i++) {
 					if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 					  addressObj['NationalID'] = externalidentifier[i].identifierValue;
@@ -13204,7 +13204,7 @@
 				value: ucid.Carepack || "N",
 				values: ["N", "Y"],
 				options: ["Carepack", "Carepack"],
-				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId ? " carepack-hidden":"") //(ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
 			  });
 			}
 			group.push(item);
@@ -14258,7 +14258,7 @@
 			oob.grid.load();
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
-			if (e.target.getAttribute("data-name") == "PA_Number") partyIdChanged(e.target.value);
+			if (e.target.getAttribute("data-name") == "PA_Number") partyIdChanged();
 		  });
 
 		  function visitItems(cb) {
