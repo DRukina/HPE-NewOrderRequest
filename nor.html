@@ -19,7 +19,9 @@
 	  // MTP 28/09/2024 NOR-895
 	  "BD", "KH", "MN", "LK", "LA", "NP", "PK", "BN", "BT", "MV", "AF", "MM", "TL", "ID", "VN",
 	  // MTP 05/10/2024 NOR-967
-	  "JP", "MO"
+	  "JP", "MO",
+	  // MTP 11/2024 NOR-1053
+	  "MY", "PH", "SG", "CN", "AU", "NZ", "TW"
 	]
 	const redirectTo = (isPilot && !usePilot) ? "/form/989/nor-prod-ww" 
 								: "/form/989/nor-prod-ww-v2";
@@ -48,7 +50,127 @@
   }
 </script>
 
+<script>
+  const locationApi = {
+	partyCache: {},
 
+	//
+	getXpeDataXref: function(partyId) {
+	  if (partyId in locationApi.partyCache) return locationApi.partyCache[partyId];
+	  const party = new Promise((resolve, reject) => {
+		hpe.data.xref(partyId, (d) => {
+		  if (d && d.status == 'SUCCESS' && d.party && d.party.length) {
+			resolve(d.party[0]);
+		  } else {
+			reject(d);
+		  }
+		});
+	  });
+	  locationApi.partyCache[partyId] = party;
+	  return party;
+	},
+
+	getLocationAddress: function(locationId) {
+	  if (locationId in locationApi.partyCache) return locationApi.partyCache[locationId];
+	  
+	  const loc = fetch(`https://hpe-rfb.itcs.hpe.com/resources/rs/custom/php/nor/location/location-prod.php?id=${locationId}`, {
+		headers: {
+		  "Content-Type": "application/json"
+		}
+	  }).then(r => r.json()).then(locationResp => {
+		if (locationResp && locationResp.status === 'SUCCESS' && locationResp.searchList && locationResp.searchList.length) {
+		  return locationResp.searchList[0];
+		} else {
+		  return Promise.reject(locationResp);
+		}
+	  });
+	  
+	  locationApi.partyCache[partyId] = loc;
+	  return loc;
+	},
+	
+	extractAddressDataFromPartyRequest: function(rec) {
+	  const externalidentifier = rec.externalIdentifier;
+	  const nationalId = externalidentifier.find(ei => ei.status == "ACTIVE" && ["Tax Number 1"].indexOf(ei.externalIdentifierName) > -1);
+	  let alternateName = '';
+	  if (rec.organizationAlternateName && rec.organizationAlternateName.length) {
+		rec.organizationAlternateName.forEach(item => {
+		  if (
+			item.internalOverWriteFlag === 'Y' &&
+			item.status === 'ACTIVE' &&
+			item.characterScript === 'LATN' &&
+			item.type === 'TRADESTYLE'
+		  ) {
+			alternateName = item.organizationAlternateName;
+		  }
+		});
+	  }
+
+	  let addressMatched = null;
+	  let address1 = null;
+	  let address2 = null;
+	  if (rec.address && rec.address.length) {
+		addressMatched = rec.address.find(item => item.internalOverWriteFlag == "Y" && item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN'));
+
+		if (!addressMatched) {
+		  addressMatched = rec.address.find(item => item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN'));
+		}
+
+		if (!addressMatched) {
+		  addressMatched = rec.address.find(item => item.status == "ACTIVE" && item.addressType == "PHY");
+		}
+
+		if (addressMatched) {
+		  address1 = addressMatched.addressLine1;
+		  address2 = addressMatched.addressLine2;
+		  if (!addressMatched.addressLine2 && addressMatched.addressLine1.length > 55) {
+			const separator = addressMatched.addressLine1.substr(0, 55).lastIndexOf(' ');
+			address1 = addressMatched.addressLine1.substr(0, separator);
+			address2 = addressMatched.addressLine1.substr(separator + 1);
+		  }
+		}
+	  }
+
+	  return {
+		Address_Country: rec.countryName,
+		PartyId: rec.currentPartyID || rec.submittedPartyID,
+		SubmittedPartyId: rec.submittedPartyID,
+		CompanyName: alternateName ? alternateName : rec.organizationName,
+		Address_State: addressMatched ? addressMatched.stateProvince : null,
+		Address_City: addressMatched ? addressMatched.cityName : null,
+		Address_Postal: addressMatched ? addressMatched.postalCode: null,
+		Address_Street:  address1 || null,
+		Address_Street2: address2 || null,
+	    NationalID: nationalId ? nationalId.identifierValue : null
+	  }
+	},
+
+	extractAddressDataFromLocationRequest: function(rec) {
+	  let loc_country;
+	  if (rec.countryCode && reference.countriesData && reference.countriesData.length) {
+		const locCounty = reference.countriesData.find(el => el.ISO2 == rec.countryCode);
+		loc_country = locCounty.Name || '';
+	  }
+	  return {
+		Address_Country: loc_country,
+		PartyId: rec.locationId,
+		SubmittedPartyId: rec.locationId,
+		CompanyName: rec.name || "",
+		Address_City: rec.city || "",
+		Address_Postal: rec.postalcode || "",
+		Address_Street: rec.addressLine1 || "",
+		Address_Street2: rec.addressLine2 || "",
+		Address_State: rec.stateName || "",
+		NationalID: ""
+	  }
+	},
+	
+	getAddressData: function(partyId) {
+	  if (partyId.startsWith("2")) return locationApi.getLocationAddress(partyId).then(locationApi.extractAddressDataFromLocationRequest);
+	  return locationApi.getXpeDataXref(partyId).then(locationApi.extractAddressDataFromPartyRequest);
+	}
+  }
+</script>
 
 <!-- Load and read SSO data '[SSOData.Locale]' -->
 <script>
@@ -70,15 +192,146 @@
 	})
   } // create error log
 
+  function locationAddress(currentVal, type, hasNationalID) {
+	mo.fn.overlay.show({
+	  progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
+	  progressPercent: 40,
+	  close: false
+	});
+	const xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+	  if (xhr.readyState == 4) {
+		if (xhr.status == 200) {
+		  const response = JSON.parse(xhr.responseText);
+		  console.log('[locationAddress] response:', response);
+		  if (response && response.status === 'SUCCESS' && response.searchList && response.searchList.length) {
+			mo.fn.overlay.show({
+			  progressText: hpe.fn.lang("FormCFI012", config.locale, config.localizations),
+			  progressPercent: 80,
+			  close: false
+			});
+			const locationRes = response.searchList[0];
+			let loc_country;
+			if (locationRes.countryCode && reference.countriesData && reference.countriesData.length) {
+			  const locCounty = reference.countriesData.find(el => el.ISO2 == locationRes.countryCode);
+			  loc_country = locCounty.Name || '';
+			}
+			config.dataset[`${type}_Address_Country`] = loc_country;
 
-  function EMDMAddress(currentVal, type, hasNationalID) {
+			config.dataset[`${type}_PartyId`] = locationRes.locationId || currentVal;
+			$(`input[data-name="${type}_PartyId"]`).val(config.dataset[`${type}_PartyId`]);
+
+			config.dataset[`${type}_CompanyName`] = locationRes.name || "";
+			config.dataset[`${type}_Address_City`] = locationRes.city || "";
+			config.dataset[`${type}_Address_Postal`] = locationRes.postalcode || "";
+			config.dataset[`${type}_Address_Street`] = locationRes.addressLine1 || ""
+			config.dataset[`${type}_Address_Street2`] = locationRes.addressLine2 || "";
+			config.dataset[`${type}_Address_State`] = locationRes.stateName || "";
+			config.dataset[`${type}_NationalID`] = '';
+
+			if (hasNationalID) {
+			  // add 
+			}
+			nbsf.init(config, config.page);
+			if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
+			  $(`*[data-name="${type}_Address_Country"]`).val(loc_country || '');
+			if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
+			  $(`*[data-name="${type}_CompanyName"]`).val(locationRes.name || "");
+			if (document.querySelector(`*[data-name="${type}_Address_State"]`))
+			  $(`*[data-name="${type}_Address_State"]`).val(locationRes.stateName || "");
+			if (document.querySelector(`*[data-name="${type}_Address_City"]`))
+			  $(`*[data-name="${type}_Address_City"]`).val(locationRes.city || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
+			  $(`*[data-name="${type}_Address_Postal"]`).val(locationRes.postalcode || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
+			  $(`*[data-name="${type}_Address_Street"]`).val(locationRes.addressLine1 || "");
+			if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
+			  $(`*[data-name="${type}_Address_Street2"]`).val(locationRes.addressLine2 || "");
+			if (document.querySelector(`*[data-name="${type}_NationalID"]`))
+			  $(`*[data-name="${type}_NationalID"]`).val('');
+			
+			setTimeout(function() {
+			  mo.fn.overlay.hide();
+			  mo.fn.events.closeAll();
+			}, 1000);
+		  } 
+		  else {
+			setTimeout(function() {
+			  mo.fn.overlay.show({
+				progressText: hpe.fn.lang("FormCFI013", config.locale, config.localizations),
+				progressPercent: 100,
+				close: false
+			  });
+
+			  config.clearData({
+				fields: config.sectionAddressFields[type],
+				clearInput: true
+			  });
+
+			  nbsf.init(config, config.page);
+			  mo.fn.modal.show({
+				ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+				title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+				content: d.message + ".",
+				ctaCallback: function() {
+				  mo.fn.events.closeAll();
+				},
+				contentCallback: function() {}
+			  });
+			}, 1000);
+
+		  }
+		} else {
+		  console.log('error of locationId');
+		  mo.fn.overlay.hide();
+		  mo.fn.events.closeAll();
+		}
+	  }
+	}
+	xhr.open(
+	  'GET',
+	  `https://hpe-rfb.itcs.hpe.com/resources/rs/custom/php/nor/location/location-prod.php?id=${currentVal}`
+	);
+	xhr.timeout = 80000;
+	const errorHandler = function() {
+	  setTimeout(function() {
+		mo.fn.overlay.show({
+		  progressText: hpe.fn.lang("FormCFI013", config.locale, config.localizations),
+		  progressPercent: 100,
+		  close: false
+		});
+
+		config.clearData({
+		  fields: config.sectionAddressFields[type],
+		  clearInput: true
+		});
+
+		nbsf.init(config, config.page);
+		mo.fn.modal.show({
+		  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
+		  title: hpe.fn.lang('ErrorGeneric2', config.locale, config.localizations),
+		  content: d.message + ".",
+		  ctaCallback: function() {
+			mo.fn.events.closeAll();
+		  },
+		  contentCallback: function() {}
+		});
+	  }, 1000);
+	}
+	xhr.onerror = errorHandler;
+	xhr.onabort = errorHandler;
+	xhr.ontimeout = errorHandler;
+	xhr.send(null);
+  }
+
+  function EMDMAddress(currentVal, type, hasNationalID, resolve, reject) {
+	mo.fn.overlay.show({
+	  progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
+	  progressPercent: 40,
+	  close: false
+	});
 	hpe.data.xref(currentVal, function(d) {
 	  console.log('EMDMAddress', d)
-	  mo.fn.overlay.show({
-		progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
-		progressPercent: 40,
-		close: false
-	  })
 
 	  if (d.status == 'SUCCESS') {
 		config.dataset.xrefFail = 'No';
@@ -160,7 +413,8 @@
 		}
 		nbsf.init(config, config.page);
 		setTimeout(function() {
-		  mo.fn.overlay.hide()
+		  mo.fn.overlay.hide();
+		  if (resolve) resolve();
 		}, 1000);
 	  } else if (d.status == 'FAIL' && d.code == "EMS005") {
 		config.dataset.xrefFail = 'No';
@@ -170,31 +424,11 @@
 			progressPercent: 100,
 			close: false
 		  });
-		  config.dataset[`${type}_Address_Country`] = null;
-		  config.dataset[`${type}_CompanyName`] = null;
-		  config.dataset[`${type}_Address_State`] = null;
-		  config.dataset[`${type}_Address_City`] = null;
-		  config.dataset[`${type}_Address_Postal`] = null;
-		  config.dataset[`${type}_Address_Street`] = null;
-		  config.dataset[`${type}_Address_Street2`] = null;
-		  config.dataset[`${type}_NationalID`] = null;
 
-		  if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-			$(`*[data-name="${type}_Address_Country"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-			$(`*[data-name="${type}_CompanyName"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-			$(`*[data-name="${type}_Address_State"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-			$(`*[data-name="${type}_Address_City"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-			$(`*[data-name="${type}_Address_Postal"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-			$(`*[data-name="${type}_Address_Street"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-			$(`*[data-name="${type}_Address_Street2"]`).val('');
-		  if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-			$(`*[data-name="${type}_NationalID"]`).val('');
+		  config.clearData({
+			fields: config.sectionAddressFields[type],
+			clearInput: true
+		  });
 
 		  nbsf.init(config, config.page);
 		  mo.fn.modal.show({
@@ -203,37 +437,19 @@
 			content: d.message + ".",
 			ctaCallback: function() {
 			  mo.fn.events.closeAll();
+			  if (reject) reject();
 			},
 			contentCallback: function() {}
 		  });
 		}, 1000);
 	  } else {
 		config.dataset.xrefFail = 'Yes';
-		config.dataset[`${type}_Address_Country`] = null;
-		config.dataset[`${type}_CompanyName`] = null;
-		config.dataset[`${type}_Address_State`] = null;
-		config.dataset[`${type}_Address_City`] = null;
-		config.dataset[`${type}_Address_Postal`] = null;
-		config.dataset[`${type}_Address_Street`] = null;
-		config.dataset[`${type}_Address_Street2`] = null;
-		config.dataset[`${type}_NationalID`] = null;
 
-		if (document.querySelector(`*[data-name="${type}_Address_Country"]`))
-		  $(`*[data-name="${type}_Address_Country"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_CompanyName"]`))
-		  $(`*[data-name="${type}_CompanyName"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_State"]`))
-		  $(`*[data-name="${type}_Address_State"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_City"]`))
-		  $(`*[data-name="${type}_Address_City"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Postal"]`))
-		  $(`*[data-name="${type}_Address_Postal"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street"]`))
-		  $(`*[data-name="${type}_Address_Street"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_Address_Street2"]`))
-		  $(`*[data-name="${type}_Address_Street2"]`).val('');
-		if (document.querySelector(`*[data-name="${type}_NationalID"]`))
-		  $(`*[data-name="${type}_NationalID"]`).val('');
+		config.clearData({
+		  fields: config.sectionAddressFields[type],
+		  clearInput: true
+		});
+
 		nbsf.init(config, config.page);
 		mo.fn.modal.show({
 		  ctaLabel: hpe.fn.lang('OK', config.locale, config.localizations),
@@ -241,18 +457,23 @@
 		  content: hpe.fn.lang("FormCFI014", config.locale, config.localizations),
 		  ctaCallback: function() {
 			mo.fn.events.closeAll();
+			if (reject) reject();
 		  },
 		  contentCallback: function() {}
 		});
 	  }
 	  // Reflect dataset's data in reviewDataset
-	  if (Object.keys(config.reviewDataset)) {
+	  if (config.reviewDataset && Object.keys(config.reviewDataset).length) {
 		[`${type}_Address_Country`, `${type}_CompanyName`, `${type}_Address_State`, `${type}_Address_City`,
 		 `${type}_Address_Postal`, `${type}_Address_Street`, `${type}_Address_Street2`, `${type}_NationalID`
 		].forEach(key => config.reviewDataset[key] = config.dataset[key]);
 	  };
 	  
 	});
+  }
+
+  function EMDMAddressPromise(currentVal, type, hasNationalID) {
+	return new Promise((resolve, reject) => EMDMAddress(currentVal, type, hasNationalID, resolve, reject));
   }
 
   const assigntoteamValues = [{
@@ -333,8 +554,8 @@
 							 ];
   let global = {
 	ready: false,
-	nonPoModelCountries: ["JP", "KR", "CN", "TH", "VN", "BD", "KH", "MN", "LK", "LA", "NP", "PK", "ID", "VN", "BN", "BT", "MV", "AF", "MM", "HK", "MO"],
-	pdfCreateCountries: ["TH", "HK", "KR", "MO"],
+	nonPoModelCountries: ["AF", "AU", "BD", "BN", "BT", "CN", "HK", "ID", "JP", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW", "VN"],
+	pdfCreateCountries: ["AU", "BD", "BN", "BT", "CN", "HK", "KH", "KR", "LA", "LK", "MM", "MN", "MO", "MV", "MY", "NP", "NZ", "PH", "PK", "SG", "TH", "TL", "TW"],
 	data: {
 	  brt: {
 		code: null,
@@ -342,7 +563,7 @@
 		channel: null,
 		pas: null
 	  },
-	  userPreferences:{}, // Map PANumber:UserPreferences
+	  userPreferences:{}, // Map PartyId:UserPreferences
 	  company: {
 		party: null,
 		country: null,
@@ -452,6 +673,7 @@
 		  global.data.brt.channel = global.data.brts[i].channel;
 	  }
 	  global.data.brt.pas = [];
+	  global.data.brt.partyId = [];
 
 	  global.data.company.party = "[SSOData.PartyId]";
 	  global.data.company.country = "[SSOData.CountryEntityId]";
@@ -558,6 +780,7 @@
 		global.data.brt.channel = global.data.brts[i].channel;
 	}
 	global.data.brt.pas = [];
+	global.data.brt.partyId = [];
 
 	global.data.company.party = "[SSOData.PartyId]";
 	global.data.company.country = "[SSOData.CountryEntityId]";
@@ -2014,38 +2237,8 @@
 		]
 	  },
 	  {
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "aggrVal",
-			operator: "eq",
-			value: "1"
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Region",
-						operator: "eq",
-						value: "AMS"
-					  },
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "Central Europe"
-								},
-								{
-								  field: "SubRegion",
-								  operator: "eq",
-								  value: "MESA"
-								},
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "CERTA"
-								}
-							   ]
-					}
-				   ]
+		filter: (ds) => {
+		  return ds.aggrVal == "1" && (ds.Region == "AMS" || ds.Geo == "Central Europe" || ds.SubRegion == "MESA" || ds.Geo == "CERTA");
 		},
 		header: "Form023",
 		group: [
@@ -2062,59 +2255,36 @@
 		]
 	  },
 	  {
-		filter: {
-		  logic: "and",
-		  filters: [{
-			field: "aggrVal",
-			operator: "eq",
-			value: "1"
-		  },
-					{
-					  logic: "or",
-					  filters: [{
-						field: "Region",
-						operator: "eq",
-						value: "AMS"
-					  },
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "Central Europe"
-								},
-								{
-								  field: "SubRegion",
-								  operator: "eq",
-								  value: "MESA"
-								},
-								{
-								  field: "Geo",
-								  operator: "eq",
-								  value: "CERTA"
-								},
-								{
-								  field: "CountryCode",
-								  operator: "in",
-								  value: global.nonPoModelCountries
-								},
-							   ]
-					}
-				   ]
+		filter: (ds) => {
+		  return ds.aggrVal == "1" && (ds.Region == "AMS" || ds.Geo == "Central Europe" || ds.SubRegion == "MESA" || ds.Geo == "CERTA" || global.nonPoModelCountries.indexOf(ds.CountryCode) >= 0);
 		},
 		header: "",
 		group: [
-		  [{
-			data: "Payment_TermsPlaceholder",
-			type: "hidden"
-		  },
-		   {
-			 label: "Form026",
-			 data: "Payment_Terms",
-			 required: true,
-			 type: "text",
-			 placeholder: "Form478",
-			 validation: ["ascii", "minLen|1", "maxLen|60"],
-			 typing: "ascii"
-		   }
+		  [
+			{
+			  data: "Payment_TermsPlaceholder",
+			  type: "hidden"
+			},
+			{
+			  filter: () => multiValues.hasValues("Payment_Terms"),
+			  label: "Form026",
+			  data: "Payment_Terms_Predefined",
+			  required: true,
+			  type: "select",
+			  placeholder: "Form478",
+			  values: () => multiValues.getValues("Payment_Terms"),
+			  options: () => multiValues.getOptions("Payment_Terms")
+			},
+			{
+			  filter: () => multiValues.fieldIsVisible(config.dataset, "Payment_Terms"),
+			  label: "Form026",
+			  data: "Payment_Terms",
+			  required: true,
+			  type: "text",
+			  placeholder: "Form478",
+			  validation: ["ascii", "minLen|1", "maxLen|60"],
+			  typing: "ascii"
+			}
 		  ]
 		]
 	  },
@@ -2802,6 +2972,12 @@
 		  $(collapseEl).click();
 		}
 	  }
+
+	  document.querySelectorAll(".review-contact-firstname").forEach((el) => {
+		let separatorEl = document.createElement("div");
+		separatorEl.classList.add("review-separator");
+		el.parentNode.insertBefore(separatorEl, el)
+	  });
 	}
   };
 
@@ -3241,83 +3417,96 @@
 				  },
 				 ]
 	  },
-	  group: [
-		[{
-		  label: "Form086",
-		  data: "SoldTo_PartyId",
-		  required: false,
-		  type: "text",
-		  //placeholder: "Form057",
-		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-		  typing: "kpDefault"
-		}],
-		[{
-		  label: "Form058",
-		  data: "SoldTo_CompanyName",
-		  required: true,
-		  type: "text",
-		  //placeholder: "Form059",
-		  validation: ["kpDefault", "minLen|2", "maxLen|140"],
-		  typing: "kpDefault"
-		},
-		 {
-		   label: "Address",
-		   data: "SoldTo_Address_Street",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form216",
-		   validation: ["kpDefault", "minLen|2", "maxLen|65"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "AddressLineOptional",
-		   data: "SoldTo_Address_Street2",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form061",
-		   validation: ["kpDefault", "minLen|2", "maxLen|40"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "City",
-		   data: "SoldTo_Address_City",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form062",
-		   validation: ["kpDefault", "minLen|2", "maxLen|35"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "StateProvince",
-		   data: "SoldTo_Address_State",
-		   required: false,
-		   type: "text",
-		   //placeholder: "Form063",
-		   validation: ["kpDefault", "minLen|2"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Postal code",
-		   data: "SoldTo_Address_Postal",
-		   required: true,
-		   type: "text",
-		   //placeholder: "Form087",
-		   validation: ["kpDefault", "minLen|2", "maxLen|10"],
-		   typing: "kpDefault"
-		 },
-		 {
-		   label: "Country",
-		   data: "SoldTo_Address_Country",
-		   disabled: true,
-		   required: true,
-		   type: "select",
-		   class: "review-address-country",
-		   values: function() {
-			 return reference.countriesArray
-		   }
-		 }
+		group: [
+		  [
+			{
+			  filter: () => multiValues.hasValues("SoldTo_PartyId"),
+			  label: "Form086",
+			  data: "SoldTo_PartyId_Predefined",
+			  required: false,
+			  type: "select",
+			  values: () => multiValues.getValues("SoldTo_PartyId"),
+			  options: () => multiValues.getOptions("SoldTo_PartyId")
+			},
+			{
+			  filter: () => multiValues.fieldIsVisible(config.dataset, "SoldTo_PartyId"),
+			  label: "Form086",
+			  data: "SoldTo_PartyId",
+			  required: false,
+			  type: "text",
+			  //placeholder: "Form057",
+			  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			  typing: "kpDefault"
+			}
+		  ],
+		  [
+			{
+			  label: "Form058",
+			  data: "SoldTo_CompanyName",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form059",
+			  validation: ["kpDefault", "minLen|2", "maxLen|140"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Address",
+			  data: "SoldTo_Address_Street",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form216",
+			  validation: ["kpDefault", "minLen|2", "maxLen|65"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "AddressLineOptional",
+			  data: "SoldTo_Address_Street2",
+			  required: false,
+			  type: "text",
+			  //placeholder: "Form061",
+			  validation: ["kpDefault", "minLen|2", "maxLen|40"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "City",
+			  data: "SoldTo_Address_City",
+			  required: true,
+			  type: "text",
+			  //placeholder: "Form062",
+			  validation: ["kpDefault", "minLen|2", "maxLen|35"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "StateProvince",
+			  data: "SoldTo_Address_State",
+			  required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
+			  type: "text",
+			  //placeholder: "Form063",
+			  validation: ["kpDefault", "minLen|2"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Postal code",
+			  data: "SoldTo_Address_Postal",
+			  required: true, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
+			  type: "text",
+			  //placeholder: "Form087",
+			  validation: ["kpDefault", "minLen|2", "maxLen|10"],
+			  typing: "kpDefault"
+			},
+			{
+			  label: "Country",
+			  data: "SoldTo_Address_Country",
+			  disabled: true,
+			  required: true,
+			  type: "select",
+			  class: "review-address-country",
+			  values: function() {
+				return reference.countriesArray
+			  }
+			}
+		  ]
 		]
-	  ]
 	},
 	  {
 		//header: "Form056",
@@ -3343,14 +3532,24 @@
 		},
 		group: [
 		  [{
+			filter: () => multiValues.hasValues("SoldTo_PartyId"),
 			label: "Form086",
-			data: "SoldTo_PartyId",
+			data: "SoldTo_PartyId_Predefined",
 			required: false,
-			type: "text",
-			//placeholder: "Form057",
-			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-			typing: "kpDefault"
-		  }],
+			type: "select",
+			values: () => multiValues.getValues("SoldTo_PartyId"),
+			options: () => multiValues.getOptions("SoldTo_PartyId")
+		  },
+		   {
+			 filter: () => multiValues.fieldIsVisible(config.dataset, "SoldTo_PartyId"),
+			 label: "Form086",
+			 data: "SoldTo_PartyId",
+			 required: false,
+			 type: "text",
+			 //placeholder: "Form057",
+			 validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			 typing: "kpDefault"
+		   }],
 		  [{
 			label: "Form058",
 			data: "SoldTo_CompanyName",
@@ -3390,7 +3589,7 @@
 		   {
 			 label: "StateProvince",
 			 data: "SoldTo_Address_State",
-			 required: false,
+			 required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
 			 type: "text",
 			 //placeholder: "Form063",
 			 validation: ["kpDefault", "minLen|2"],
@@ -3399,7 +3598,7 @@
 		   {
 			 label: "Postal code",
 			 data: "SoldTo_Address_Postal",
-			 required: false,
+			 required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
 			 type: "text",
 			 //placeholder: "Form087",
 			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4071,15 +4270,27 @@
 				 ]
 	  },
 	  group: [
-		[{
-		  label: "Form086",
-		  data: "ShipTo_PartyId",
-		  required: false,
-		  type: "text",
-		  //placeholder: "Form057",
-		  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-		  typing: "kpDefault",
-		}],
+		[
+		  {
+			filter: () => multiValues.hasValues("ShipTo_PartyId"),
+			label: "Form086",
+			data: "ShipTo_PartyId_Predefined",
+			required: true,
+			type: "select",
+			values: () => multiValues.getValues("ShipTo_PartyId"),
+			options: () => multiValues.getOptions("ShipTo_PartyIdName")
+		  },
+		  {
+			filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+			label: "Form086",
+			data: "ShipTo_PartyId",
+			required: false,
+			type: "text",
+			//placeholder: "Form057",
+			validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+			typing: "kpDefault",
+		  }
+		],
 		[{
 		  label: "Form058",
 		  data: "ShipTo_CompanyName",
@@ -4165,14 +4376,24 @@
 				  },
 				  group: [
 					[{
+					  filter: () => multiValues.hasValues("ShipTo_PartyId"),
 					  label: "Form086",
-					  data: "ShipTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault",
-					}],
+					  data: "ShipTo_PartyId_Predefined",
+					  required: true,
+					  type: "select",
+					  values: () => multiValues.getValues("ShipTo_PartyId"),
+					  options: () => multiValues.getOptions("ShipTo_PartyIdName")
+					},
+					 {
+					   filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+					   label: "Form086",
+					   data: "ShipTo_PartyId",
+					   required: false,
+					   type: "text",
+					   //placeholder: "Form057",
+					   validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+					   typing: "kpDefault",
+					 }],
 					[{
 					  label: "Form058",
 					  data: "ShipTo_CompanyName",
@@ -4273,15 +4494,27 @@
 							 ]
 				  },
 				  group: [
-					[{
-					  label: "Form086",
-					  data: "ShipTo_PartyId",
-					  required: false,
-					  type: "text",
-					  //placeholder: "Form057",
-					  validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
-					  typing: "kpDefault",
-					}],
+					[
+					  {
+						filter: () => multiValues.hasValues("ShipTo_PartyId"),
+						label: "Form086",
+						data: "ShipTo_PartyId_Predefined",
+						required: true,
+						type: "select",
+						values: () => multiValues.getValues("ShipTo_PartyId"),
+						options: () => multiValues.getOptions("ShipTo_PartyIdName")
+					  },
+					  {
+						filter: () => multiValues.fieldIsVisible(config.dataset, "ShipTo_PartyId"),
+						label: "Form086",
+						data: "ShipTo_PartyId",
+						required: false,
+						type: "text",
+						//placeholder: "Form057",
+						validation: ["kpDefault", "minLen|2", "maxLen|10", "noBlanksv2"],
+						typing: "kpDefault",
+					  }
+					],
 					[{
 					  label: "Form058",
 					  data: "ShipTo_CompanyName",
@@ -4405,17 +4638,8 @@
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "neq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: () => {
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
 					[{
@@ -4463,23 +4687,23 @@
 					   values: function() {
 						 return reference.countriesArray
 					   }
+					 },
+					 {
+					   label: "CopyShipTo2EndCx",
+					   data: "toggleCopyShipto2Endx",
+					   required: false,
+					   type: "toggle",
+					   value: "N",
+					   values: ["N", "Y"],
+					   options: ["No", "Yes"],
 					 }
 					]
 				  ]
 				},
 				{
 				  header: "Contact",
-				  filter: {
-					logic: "and",
-					filters: [{
-					  field: "Config_ShipToDetails_Contact",
-					  operator: "neq",
-					  value: "Y"
-					}, {
-					  field: "SoldTo_Address_Country",
-					  operator: "eq",
-					  value: "Korea (Rep.)"
-					}]
+				  filter: () => {
+					return config.dataset.Config_ShipToDetails_Contact != "Y" && (config.dataset.SoldTo_Address_Country == "Korea (Rep.)" || config.dataset.CountryCode == "CN");
 				  },
 				  group: [
 					[{
@@ -4527,6 +4751,15 @@
 					   values: function() {
 						 return reference.countriesArray
 					   }
+					 },
+					 {
+					   label: "CopyShipTo2EndCx",
+					   data: "toggleCopyShipto2Endx",
+					   required: false,
+					   type: "toggle",
+					   value: "N",
+					   values: ["N", "Y"],
+					   options: ["No", "Yes"]
 					 }
 					]
 				  ]
@@ -5680,7 +5913,7 @@
 	back: "Back",
 	no: "No",
 	poformat: "POFormat",
-  poformatjp: "POFormatJP",
+	poformatjp: "POFormatJP",
 	savedraft: "Form208",
 	ready: false,
 	nav: true,
@@ -5885,8 +6118,8 @@
 			 required: false,
 			 type: "text",
 			 placeholder: "Form166",
-			 validation: ["alphanumeric", "minLen|1", "maxLen|30", "noBlanksv2"],
-			 typing: "alphanumeric"
+			 validation: ["alphanumericHyphen", "minLen|1", "maxLen|30", "noBlanksv2"],
+			 typing: "kpDefault"
 		   }
 		  ]
 		]
@@ -7049,10 +7282,10 @@
 	no: "No",    
 	nav: true,
 	showOnReview: false,
-	poformat: "The documents need to be sent in  .xls, .xlsx, .xlsm, .csv format of a maximum of 4 MB.",
+	poformat: "POFormat",
 	structure: [
 	  {
-		header: "Product and services attachment",  
+		header: "ProductAndServicesAttachment",
 		filter: {
 		  logic: "and",
 		  filters: [{
@@ -7199,33 +7432,61 @@
 	],      
 	callback: function() {  
 	  const PS_Att = document.querySelector('[data-name="ProductServices_Attachment"]');
+	  const clearPSAttachment = function () {
+		config.dataset.ProductServicesRepeater = null;
+		config.dataset.Config_Quote_PartialOrder = null;
+		config.dataset.ProductServices_Attachment = null;
+		quoteHelper.ucids = [];
+		quoteHelper.maxQuantity = null;
+		quoteHelper.buildProductAndServices(config, config.pages[config.page]);
+		nbsf.init(config, config.page);
+	  };
 	  if (PS_Att) {
 		const kendoOptAtt = $(PS_Att).data('kendoUpload');
 		kendoOptAtt.bind("upload", function(e) {            
 		  if (e.files && e.files.length) {
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
-			helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => { 
-			  if (data.success && data.data && data.data.length) {
-				config.dataset.ProductServicesRepeater = null;
-				config.dataset.Config_Quote_PartialOrder = null;
-				config.dataset.ProductServices_Attachment =
-				  new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
-				// build product and services page
-				quoteHelper.buildProductAndServices(config, config.pages[config.page]);
-				nbsf.init(config, config.page);
+			try {
+			  helper.parseUcidsDataFromExcel(config, e.files[0].rawFile, (data) => {
+				if (data.success && data.data && data.data.length) {
+				  config.dataset.ProductServicesRepeater = null;
+				  config.dataset.Config_Quote_PartialOrder = null;
+				  config.dataset.ProductServices_Attachment =
+					new DOMParser().parseFromString(e.files[0].name, "text/html").documentElement.textContent;
+				  // build product and services page
+				  quoteHelper.buildProductAndServices(config,	config.pages[config.page]);
+				  nbsf.init(config, config.page);
+				} else {
+				  clearPSAttachment();
+				}
 			  }
-			});
+			);
+			} catch (e) {
+			  console.error(e);
+			  // clear data
+			  clearPSAttachment();
+			}
 		  }
 		});
-		
+
 		const row = PS_Att.closest('.row');
 		const heading = $(row).find('.heading');
 		if (heading) {
-		  $(heading).append(`<a href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>Download the template</a>`);
+		  const msg = hpe.fn.lang("DownloadTheTemplate", config.locale, config.localizations);
+		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V5.xlsx'>${msg}</a>`);
+		  $(".k-dropzone").css({width: "100%", display: "flex", justifyContent: "space-between",});
+
+		  $(".k-dropzone").append(`<div class="k-button kUpload-reset" aria-label="Reset file" style="margin: 8px 0 15px 8px;"><span>${hpe.fn.lang("ResetSelectedFile", config.locale, config.localizations)}</span></div>`);
+
+		  $(".kUpload-reset").click(function (event) {
+			if (config.dataset.ProductServices_Attachment) clearPSAttachment();
+			event.preventDefault();
+			event.stopPropagation();
+		  });
 		}
 	  }
-	  
+
 	  if (config.dataset.Config_Quote === "Y") {
 		quoteHelper.onInitQuoteCarepackProductAndServices(config);
 	  }
@@ -7743,7 +8004,7 @@
 		  ]
 		},
 		PS: {
-		  title: "Products and Services",
+		  title: hpe.fn.lang("ProductsAndServices", config.locale, config.localizations),
 		  fieldset: [],
 		  filter: {
 			logic: "and",
@@ -7891,8 +8152,7 @@
 			}
 		  }
 		}
-		var filter = true;
-		if (typeof(reviewSetup[key].filter) === "object") filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
+		var filter = nbsf.fn.filter(config.dataset, reviewSetup[key].filter);
 		if (reviewSetup[key].fieldset.length > 0 && filter) {
 		  console.log('reviewSetup[key]', reviewSetup[key]);
 		  if (app.querySelector(".row[review-id=" + key + "]") == null)
@@ -8115,14 +8375,21 @@
 </script>
 <script>
   // MAIN CONFIG
-  const paNumberChanged = function(newVal) {
-	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PA_Number : newVal];
+  const partyIdChanged = function(newVal) {
+	multiValues.data = {};
+	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PartyId : newVal];
 	if (!prefs) return;
-	
+
 	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
-	  config.dataset[fieldName] = fieldValue;
-	  $(`[data-name='${fieldName}']`).val(fieldValue);
+	  if (Array.isArray(fieldValue)) {
+		multiValues.data[fieldName] = fieldValue;
+	  } else {
+		config.dataset[fieldName] = fieldValue;
+		$(`[data-name='${fieldName}']`).val(fieldValue);
+	  }
 	});
+
+	multiValues.resetPredefinedProps(config.dataset);
   }
 
   const loadPreferences = function() {
@@ -8146,7 +8413,7 @@
 			serverFiltering: true,
 			filter: {
 			  logic: "or",
-			  filters: global.data.brt.pas.map((pa) => ({field: "PANumber", operator: "eq", value: pa}))
+			  filters: global.data.brt.partyId.map((partyId) => ({field: "PartyId", operator: "eq", value: partyId}))
 			},
 			serverSorting: true,
 			sort: {
@@ -8161,11 +8428,30 @@
 			const prefs = {}
 			data.forEach((row) => {
 				try {
-				  if (row.Preferences) prefs[row.PANumber] = JSON.parse(row.Preferences);
+				  if (row.Preferences) prefs[row.PartyId] = JSON.parse(row.Preferences);
 				} catch(e) {
 				  // The string with wrong preferences is not the reason to fall
 				  console.log("Error parsing preferences", row);
 				}
+			});
+			global.data.brt.partyId.forEach((pid) => {
+			  if (!prefs[pid]) prefs[pid] = {};
+			  if (!prefs[pid].Payment_Terms) prefs[pid].Payment_Terms = "NT30 - Within 30 days due net";
+			});
+			const multiKeyRe = /^.+-\d+$/
+			Object.keys(prefs).forEach((prefPartyId) => {
+			  const partyPrefs = prefs[prefPartyId];
+			  Object.keys(partyPrefs).filter(key => multiKeyRe.test(key)).forEach((key) => {
+				const ndx = key.indexOf("-");
+				const newKey = key.substring(0, ndx);
+				if (!partyPrefs[newKey]) {
+				  partyPrefs[newKey] = partyPrefs[key];
+				} else {
+				  if (!Array.isArray(partyPrefs[newKey])) partyPrefs[newKey] = [partyPrefs[newKey]];
+				  partyPrefs[newKey].push(partyPrefs[key]);
+				}
+				delete partyPrefs[key];
+			  });
 			});
 			global.data.userPreferences = prefs;
 			resolve();
@@ -8173,17 +8459,94 @@
 			console.log("User Preferences loading error", errArg);
 			reject(errArg);
 		  });
+	  }).then(() => {
+		// For every NNN_PartyId property create appropriate NNN_PartyIdName
+		const parties = [];
+		for (let pId in global.data.userPreferences) {
+		  const prefs = global.data.userPreferences[pId];
+		  const suffixLen = "_PartyId".length;
+		  Object.keys(prefs).filter(pref => pref.endsWith("_PartyId")).forEach(pref => {
+			if (Array.isArray(prefs[pref])) {
+			  prefs[pref].forEach(partyId => parties.push(locationApi.getAddressData(partyId)));
+			} else {
+			  // For single Party ID prepopulate related info
+			  const dataPromise = locationApi.getAddressData(prefs[pref]);
+			  parties.push(dataPromise);
+
+			  const sectionPrefix = pref.slice(0, -suffixLen);
+			  if (sectionPrefix in config.sectionAddressFields) {
+				dataPromise.then((data) => {
+				  config.addressField.forEach((field) => {
+					const val = data[field];
+					if (val!==undefined) prefs[sectionPrefix + "_" + field] = val;
+				  })
+				});
+			  }
+			}
+		  });
+		}
+		return Promise.allSettled(parties).then(partyAddresses => {
+		  const partyMap = {};
+		  partyAddresses.filter(reqResult => reqResult.status === "fulfilled").forEach(reqResult => {
+			const res = reqResult.value;
+			partyMap[res.PartyId] = res.PartyId + " – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			if (res.PartyId != res.SubmittedPartyId) {
+			  partyMap[res.SubmittedPartyId] = res.SubmittedPartyId + " – [" + res.PartyId + "] – " + res.CompanyName + " – " + res.Address_Postal + " – " + res.Address_Country;
+			}
+		  });
+
+		  for (let pId in global.data.userPreferences) {
+			const prefs = global.data.userPreferences[pId];
+			Object.keys(prefs).filter(pref => pref.endsWith("_PartyId")).forEach(pref => {
+			  const prefValue = prefs[pref];
+			  if (Array.isArray(prefValue)) {
+				prefs[pref + "Name"] = prefValue.map(prtId => partyMap[prtId] || prtId);
+			  } else {
+				prefs[pref + "Name"] = partyMap[prefValue] || prefValue
+			  }
+			});
+		  }
+		});
 	  });
+  }
+
+  function handleCopyShipToEndCxToggle(config) {
+	if (!nbsf.fn.filter(config.dataset, page7.filter) || config.dataset.PO_Category === "Stock" || config.dataset.PO_Category == "Stage") {
+	  // toggleCopyShipto2Endx should be hidden because End Customer page is disabled
+	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').remove();
+	} else if (config.dataset.PO_Category === "Drop") {
+	  // Copy from ShipTo to EndCx toggle
+	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
+		$('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
+	  });
+	  $('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
+		if (e.target.value === 'Y') {
+		  ['PartyId', ...config.addressField].forEach(fieldName => {
+			$(`[data-name="EndCx_${fieldName}"]`).val($(`[data-name="ShipTo_${fieldName}"]`).val());
+			config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
+		  });
+		  nbsf.ev.global(config, true);
+		}
+	  });
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('paddingRight', '0px');
+	}
   }
 
   const config = {
 	dom: null,
+	onLoadCallbacks:[],
 	locale: global.data.user.locale,
 	localizations: {},
 	dataset: {
 	  currentEmail: '[SSOData.Email]',
 	  xrefFail: 'No'
 	},
+	addressField: ["Address_Country", "CompanyName", "Address_State", "Address_City", "Address_Postal", "Address_Street", "Address_Street2", "NationalID", "Address"],
+	contactField: ["Contact_FirstName", "Contact_LastName", "Contact_Phone", "Contact_Email", "Contact_Country"],
+	sectionName: ["SoldTo", "Payer", "BillTo", "ShipTo", "Reseller", "EndCustomer", "CustomShipTo", "AgentProgram", "EndCx", "AssLoc"],
+	sectionAddressFields: {}, // Mapping sectionName:fieldname[] with address fields. Filled in init().
+	sectionContactFields: {}, // Mapping sectionName:fieldname[] with contact fields. Filled in init().
+	sectionFields: {}, // Mapping sectionName:fieldname[] with address and contact fields. Filled in init().
 	helper: true,
 	summary: {},
 	pages: [page1, page13, page2, pageQuotePreview, page3, page4, page5, page6, page7, page8, page9, page10, page11, page12, overviewPage],
@@ -8252,7 +8615,7 @@
 				content: template,
 				contentCallback: function() {
 				  document.querySelector("#viewExisting").addEventListener("click", function(e) {
-					config.dataset = data.Rows[0];
+					config.dataset = config.processOnLoad(data.Rows[0]);
 					mo.fn.modal.hide();
 					mo.fn.overlay.show({
 					  loading: true,
@@ -8274,7 +8637,7 @@
 				  crud.create(3158, config.dataset, function(data) {
 					if (typeof(data.EntryId) === "number") {
 					  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-					  config.dataset = data;
+					  config.dataset = config.processOnLoad(data);
 					  config.dataset.internalUser = global.data.user.internal;
 					  nbsf.init(config, config.page + 1);
 					  mo.fn.events.closeAll();
@@ -8315,7 +8678,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8342,7 +8705,7 @@
 			  crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8364,7 +8727,7 @@
 			  crud.create(3158, config.dataset, function(data) {
 				if (typeof(data.EntryId) === "number") {
 				  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-				  config.dataset = data;
+				  config.dataset = config.processOnLoad(data);
 				  config.dataset.internalUser = global.data.user.internal;
 				  nbsf.init(config, config.page + 1);
 				  mo.fn.overlay.hide();
@@ -8687,8 +9050,10 @@
 					})
 				  }
 				  global.data.brt.pas = [];
+				  global.data.brt.partyId = [];
 				  reference.agreements.forEach(function(agreement) {
 					global.data.brt.pas.push(agreement.iCMPANumber);
+					global.data.brt.partyId.push(agreement.iCMPartyID);
 				  });
 				  let chnls = global.data.brts.filter(function(item) {
 					return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -8707,6 +9072,7 @@
 					  hpe.data.xref(global.data.company.party, function(d) {
 						global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 						reference.xref = d;
+						partyIdChanged();
 						config.locale = global.data.user.locale;
 						config.dom = document.querySelector('div[tab-id="oob"]');
 						nbsf.init(config, config.page + 1);
@@ -8849,8 +9215,10 @@
 				  })
 				}
 				global.data.brt.pas = [];
+				global.data.brt.partyId = [];
 				reference.agreements.forEach(function(agreement) {
 				  global.data.brt.pas.push(agreement.iCMPANumber);
+				  global.data.brt.partyId.push(agreement.iCMPartyID);
 				});
 				let chnls = global.data.brts.filter(function(item) {
 				  return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -8869,6 +9237,7 @@
 					hpe.data.xref(global.data.company.party, function(d) {
 					  global.data.company.party = d.party[0].currentPartyID || d.party[0].submittedPartyID;
 					  reference.xref = d;
+					  partyIdChanged();
 					  config.locale = global.data.user.locale;
 					  config.dom = document.querySelector('div[tab-id="oob"]');
 					  nbsf.init(config, config.page + 1);
@@ -8999,8 +9368,7 @@
 		  for (i = 0; i < config.pages.length; i++) {
 			var cPage = config.pages[i];
 			var cStructure = cPage.structure;
-			var cFilter = true;
-			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
+			var cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
 			if (cPage.quotePreview || cPage.review) cFilter = false;
 
 			if (
@@ -9084,14 +9452,13 @@
 				} else pairs.push(hdr);
 
 				for (j = 0; j < cStructure.length; j++) {
-				  var cFilter = true;
-				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  var cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
 				  if (cFilter) {
 					for (k = 0; k < cStructure[j].group.length; k++) {
 					  var cGroup = cStructure[j].group[k];
 					  for (l = 0; l < cGroup.length; l++) {
 						var cInput = cGroup[l];
-						if (cInput.type != "hidden") {
+						if (cInput.type != "hidden" && !(cInput.data || "").endsWith("_Predefined")) {
 						  var obj = {
 							ttl: "N/A",
 							val: "N/A",
@@ -9153,9 +9520,9 @@
 			  } else {
 				if (pairs[i].ttl == "page-2") {
 				  caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				  if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+				  if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
 					let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-					caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+					caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				  }
 				}
 				else if (pairs[i].ttl == "page-3")
@@ -9219,8 +9586,7 @@
 		  for (i = 0; i < config.pages.length; i++) {
 			var cPage = config.pages[i];
 			var cStructure = cPage.structure;
-			var cFilter = true;
-			if (typeof(cPage.filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
+			var cFilter = nbsf.fn.filter(config.dataset, cPage.filter);
 			if (cPage.quotePreview) cFilter = false;
 
 			if (
@@ -9300,14 +9666,13 @@
 			  } else {
 				pairs.push(hdr);
 				for (j = 0; j < cStructure.length; j++) {
-				  var cFilter = true;
-				  if (typeof(cStructure[j].filter) === "object") cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
+				  var cFilter = nbsf.fn.filter(config.dataset, cStructure[j].filter);
 				  if (cFilter) {
 					for (k = 0; k < cStructure[j].group.length; k++) {
 					  var cGroup = cStructure[j].group[k];
 					  for (l = 0; l < cGroup.length; l++) {
 						var cInput = cGroup[l];
-						if (cInput.type != "hidden") {
+						if (cInput.type != "hidden" && !(cInput.data || "").endsWith("_Predefined")) {
 						  var obj = {
 							ttl: "N/A",
 							val: "N/A",
@@ -9358,9 +9723,9 @@
 			  caseDescription = caseDescription + "<br><br>";
 			  if (i == 0) {
 				caseDescription = caseDescription + "<strong>" + hpe.fn.lang("Form518", config.locale, config.localizations) + "</strong><br>";
-				if (["TH", "HK", "KR", "MO"].indexOf(config.dataset.CountryCode) >= 0) {
+				if (global.pdfCreateCountries.includes(config.dataset.CountryCode)) {
 				  let pdfUrl = `https://hpe-rfb.it.hpe.com/form/989/attachments/${config.dataset.EntryId}/PDF?downloadFileName=${encodeURIComponent(config.dataset.PO_Number)}.pdf`;
-				  caseDescription = caseDescription +  `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
+				  caseDescription = caseDescription + `<a href="${pdfUrl}" target="_blank">` + hpe.fn.lang("POPDFLink", config.locale, config.localizations) + '</a><br>';
 				}
 			  } else
 				caseDescription = caseDescription + "<strong>" + pairVal + "</strong><br>";
@@ -9508,7 +9873,7 @@
 			
 			if (isDraft) {
 			  // UPDATE REFERENCE APPLICATION WITH RESPONSE
-			  config.dataset = data;
+			  config.dataset = config.processOnLoad(data);
 			  nbsf.init(config, config.page);
 			  mo.fn.overlay.hide();
 			  draftHandler();
@@ -9522,7 +9887,7 @@
 				crud.update("3163", config.dataset.EntryId, config.dataset, function(data) {
 				  if (typeof(data.EntryId) === "number") {
 					// UPDATE REFERENCE APPLICATION WITH RESPONSE
-					config.dataset = data;
+					config.dataset = config.processOnLoad(data);
 					nbsf.init(config, config.page);
 					mo.fn.overlay.hide();
 					notDraftHandler();
@@ -9543,6 +9908,41 @@
 	},
 	onDeClone: function(donor, clone) {
 	  quoteHelper.onDeCloneProductAndServices(config, clone);
+	},
+	clearData: function(cfg) {
+	  cfg.fields.forEach((fld) => {
+		config.dataset[fld] = null;
+		if (cfg.clearInput) {
+		  let el = document.querySelector(`*[data-name="${fld}"]`);
+		  if (el) $(el).val = "";
+		}
+	  });
+	},
+	processOnLoad: function(rec) {
+	  config.onLoadCallbacks.forEach(cb => cb(rec));
+	  return rec;
+	},
+	loadRecord: function(entryId, callback) {
+	  crud.read("3180", "eid=" + entryId, function(d) {
+		const rec = config.processOnLoad(d.Rows.length > 0 ? d.Rows[0] : {});
+		callback(rec);
+	  })
+	},
+	init: function() {
+	  config.sectionName.forEach((sect) => {
+		let sectFields = []
+		config.sectionFields[sect] = sectFields;
+		config.sectionAddressFields[sect] = [];
+		config.sectionContactFields[sect] = [];
+		config.addressField.forEach((fld) => {
+		  sectFields.push(sect + "_" + fld);
+		  config.sectionAddressFields[sect].push(sect + "_" + fld);
+		});
+		config.contactField.forEach((fld) => {
+		  sectFields.push(sect + "_" + fld);
+		  config.sectionContactFields[sect].push(sect + "_" + fld);
+		});
+	  });
 	},
   };
 
@@ -9722,6 +10122,7 @@
 		  config.dataset[input.name] = global.data[input.group][input.value];
 		  document.querySelector("input[type=hidden][data-name=" + input.name + "]").value = global.data[input.group][input.value];
 		});
+		if (!config.dataset.EntryId) partyIdChanged();
 	  }
 	  config.dataset.internalUser = global.data.user.internal;
 	  config.dataset.Email = '[SSOData.Email]';
@@ -9730,7 +10131,7 @@
 	  quoteHelper.initCountry(config, false, false);
 
 	  // ADDRESS MAPPIMG FOR SOLD_TO, PAYER, BILL_TO FROM PO - ONLY FOR NEW REQUESTS
-	  if (config.dataset.Config_Quote !== "Y") {
+	  if (config.dataset.Config_Quote !== "Y" || !config.dataset.EntryId) {
 		quoteHelper.initDefaultPOData(config);
 	  }
 
@@ -9778,7 +10179,7 @@
 		  // Clear quote data
 		  quoteHelper.initDefaultPOData(config, true);
 		  quoteHelper.clearHeaderQuoteData(config);
-			paNumberChanged();
+		  partyIdChanged();
 		} else {
 		  config.dataset.ProductServices_Attachment = null;
 		  config.dataset.ProductServicesRepeater = null;
@@ -9828,7 +10229,7 @@
 			  }
 			  config.dataset.SIM_Country = $('select[data-name="SIM_Country"]').val();
 			  quoteHelper.initCountry(config);
-			  paNumberChanged();
+			  partyIdChanged();
 			  nbsf.init(config, config.page);
 
 			  mo.fn.overlay.hide();
@@ -9854,7 +10255,7 @@
 			quoteHelper.ucids = [];
 			quoteHelper.maxQuantity = null;
 			config.dataset.Config_Quote_PartialOrder = null;
-			paNumberChanged();
+			partyIdChanged();
 			nbsf.init(config, config.page);
 		  }
 
@@ -9965,7 +10366,7 @@
 			//nbsf.init(config, config.page);
 		  } else if ((config.dataset.PO_Category == 'Stock' || config.dataset.PO_Category == 'Drop') && config.dataset.Requestor_PO_Quote_ID) {
 			await quoteHelper.initAddressQuoteData(config);
-			paNumberChanged();
+			partyIdChanged();
 		  }
 
 
@@ -10059,7 +10460,6 @@
 		if (paOpts.length > 1) {
 		  const paValue = paOpts[1].innerText;
 		  $('select[data-name="PA_Number"]').val(paValue).trigger('change');
-		  paNumberChanged(paValue); // For some reason events triggered by jQuery do not bubble up to vanilla JS' handlers
 		}
 	  }
 	  
@@ -10244,6 +10644,8 @@
 			close: false
 		  })
 		  EMDMAddress(currentVal, 'BillTo', false);
+		} else if (currentVal.length == 10 && currentVal[0] == "2") {
+		  locationAddress(currentVal, 'BillTo', false);
 		}
 	  });
 
@@ -10273,6 +10675,15 @@
 		nbsf.init(config, config.page);
 	  });
 
+	  $('[data-name="ShipTo_PartyId_Predefined"]').change(function(e) {
+		const val = e.target.value;
+		const partyIdEl = $('input[data-name="ShipTo_PartyId"]');
+		config.dataset.ShipTo_PartyId_Predefined = val;
+		config.dataset.ShipTo_PartyId = val == multiValues.OTHER ? null : val;
+		partyIdEl.val(val == multiValues.OTHER ? "" : val);
+		partyIdEl.keyup();
+	  });
+
 	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10 && currentVal[0] == "1") {
@@ -10285,19 +10696,32 @@
 		  })
 		  EMDMAddress(currentVal, 'ShipTo', true);
 		} else if (currentVal.length == 10 && currentVal[0] == "2") {
-		  config.dataset.ShipTo_PartyId = currentVal;
-		  nbsf.init(config, config.page);
+		  locationAddress(currentVal, 'ShipTo', false);
 		}
 	  });
 
 	  $('*[data-name*="ShipTo_"]').change(function() {
-		if ($(this)[0].getAttribute("data-name") != 'ShipTo_PartyId' && $(this)[0].getAttribute("data-name").indexOf('ShipTo_Contact') == -1)
+		const dataName = $(this)[0].getAttribute("data-name");
+		if (dataName != 'ShipTo_PartyId' && dataName != 'ShipTo_PartyId_Predefined' && dataName.indexOf('ShipTo_Contact') == -1) {
 		  $('*[data-name="ShipTo_PartyId"]').val('');
+		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
+		}
 	  });
 	  $('*[data-name*="ShipTo_"]').keyup(function() {
-		if ($(this)[0].getAttribute("data-name") != 'ShipTo_PartyId' && $(this)[0].getAttribute("data-name").indexOf('ShipTo_Contact') == -1)
+		const dataName = $(this)[0].getAttribute("data-name");
+		if (dataName != 'ShipTo_PartyId' && dataName != 'ShipTo_PartyId_Predefined' && dataName.indexOf('ShipTo_Contact') == -1) {
 		  $('*[data-name="ShipTo_PartyId"]').val('');
+		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
+		}
 	  });
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label.toggle').css({
+		'marginTop': '35px',
+		'maxWidth': '410px',
+		'width': '410px'
+	  });
+
+	  handleCopyShipToEndCxToggle(config);
+
 	  helper.buildFastClearAddressButton('ShipTo');
 	},
 	page7: function() {
@@ -10693,7 +11117,11 @@
 		$(this).keyup(function() {
 		  let currentVal = $(this).val();
 
-		  if ( 
+		  const isLocation = (partyIdNamePrefix == 'ShipTo' || partyIdNamePrefix == 'BillTo') && currentVal.length == 10 && currentVal[0] == "2";
+
+		  if (isLocation) {
+			locationAddress(currentVal, partyIdNamePrefix, false);
+		  } else if ( 
 			(currentVal.length === 10 && !currentValLengthOnPages.includes(partyIdNamePrefix))
 			|| (currentVal.length === 10 && currentValLengthOnPages.includes(partyIdNamePrefix) && currentVal[0] == "1")
 		  ) {
@@ -10762,7 +11190,25 @@
 		  nbsf.init(config, config.page);
 		});
 	  });
-	  
+	  if (nbsf.fn.filter(config.dataset, page7.filter) && config.dataset.PO_Category === 'Drop') {
+		const allH4 = document.querySelectorAll('h4');
+		let shipToH4;
+		allH4.forEach(function(h4) {
+		  if (h4.textContent.includes(hpe.fn.lang("Form114", config.locale, config.localizations))) {
+			shipToH4 = h4;
+		  }
+		});
+		if (shipToH4) {
+		  shipToH4.style.display = 'flex';
+		  shipToH4.style.justifyContent = 'space-between';
+		  const toggle = $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper');
+		  $(shipToH4).append(toggle);
+		  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('marginBottom', '0');
+		}
+	  }
+
+	  handleCopyShipToEndCxToggle(config);
+
 	  // SoldTo
 	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
@@ -10832,6 +11278,18 @@
 	  
 	  // ** -- -- -- --
 
+	  $('[data-name="ShipTo_PartyId_Predefined"]').change(function(e) {
+		const val = e.target.value;
+		const suffixLen = "_Predefined".length;
+		const dataName = e.target.getAttribute("data-name");
+		const paramName = dataName.slice(0, -suffixLen);
+		const partyIdEl = $("input[data-name='" + paramName + "']");
+		config.dataset[dataName] = val;
+		config.dataset[paramName] = val == multiValues.OTHER ? null : val;
+		partyIdEl.val(val == multiValues.OTHER ? "" : val);
+		partyIdEl.keyup();
+	  });
+
 	  $('input[data-name="ShipTo_PartyId"]').keyup(function() {
 		let currentVal = $(this).val();
 		if (currentVal.length == 10 && currentVal[0] == "1") {
@@ -10845,7 +11303,7 @@
 		  EMDMAddress(currentVal, 'ShipTo', true);
 		} else if (currentVal.length == 10 && currentVal[0] == "2") {
 		  config.dataset.ShipTo_PartyId = currentVal;
-		  nbsf.init(config, config.page);
+		  locationAddress(currentVal, 'ShipTo', false);
 		}
 	  });
 	  // NOR-989 hotfix. Reflect values of non-required fields in dataset immediately
@@ -10871,6 +11329,18 @@
 			config.localizations[dataset[i].StringKey] = dataset[i];
 
 		  config.locale = global.data.user.locale;
+
+		  config.reference = config.reference || {};
+		  config.reference.validationLanguages = config.reference.validationLanguages || {};
+
+		  for (const key in config.localizations) {
+			if (key.startsWith("Nbsf")) {
+			  const newKey = key.slice(4);
+			  if (newKey) {
+				config.reference.validationLanguages[newKey] = config.localizations[key];
+			  }
+			}
+		  }
 		  //if (global.data.user.email == 'demo_emea_distributor@pproap.com') config.locale = 'en_US';
 		  for (let i = 0; i < config.pages.length; i++) {
 			if (config.pages[i].title) config.pages[i].title = hpe.fn.lang(config.pages[i].title, config.locale, config.localizations);
@@ -11664,33 +12134,21 @@
 		  Country: 'Contact_Country',
 		};
 
-		function hpeDataXrefAddressPromise(partyId) {
-		  return new Promise((resolve, reject) => {
-			hpe.data.xref(partyId, (d) => {
-			  if (d && d.status == 'SUCCESS') {
-				resolve(d);
-			  } else {
-				reject(new Error("Failed to fetch data."));
-			  }
-			});
-		  });
-		}
-
 		async function processAddressAssociations(partyId, section, quoteSection) {
 		  let existingEntry = quoteHelper.addressArr.find(entry => entry.PartyId === partyId);
 		  console.log('existingEntry', existingEntry);
 		  if (!existingEntry) {
 			try {
-			  let d = await hpeDataXrefAddressPromise(partyId);
+			  let d = await locationApi.getXpeDataXref(partyId);
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
-				  Address_Country: d.party[0].countryName
+				  PartyId: d.currentPartyID || d.submittedPartyID || partyId,
+				  Address_Country: d.countryName
 				};
 				let alternateName = '';
-				if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
-				  d.party[0].organizationAlternateName.forEach(function(item) {
+				if (d.organizationAlternateName && d.organizationAlternateName.length > 0) {
+				  d.organizationAlternateName.forEach(function(item) {
 					if (
 					  item.internalOverWriteFlag === 'Y' &&
 					  item.status === 'ACTIVE' &&
@@ -11701,28 +12159,28 @@
 					}
 				  });
 				}
-				addressObj['CompanyName'] = alternateName ? alternateName : d.party[0].organizationName;
+				addressObj['CompanyName'] = alternateName ? alternateName : d.organizationName;
 
 				let addressMatched = null;
-				if (d.party[0].address && d.party[0].address.length > 0) {
-				  addressMatched = d.party[0].address.find(item => {
+				if (d.address && d.address.length > 0) {
+				  addressMatched = d.address.find(item => {
 					return item.internalOverWriteFlag == "Y" && item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 				  });
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 					});
 				  }
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY";
 					});
 				  }
 
 				  if (addressMatched) {
-					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
+					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1)
 					  config.dataset[`${section}_Address_State`] = addressMatched.stateProvince;
 
 					let address1 = addressMatched.addressLine1;
@@ -11742,8 +12200,8 @@
 				}
 
 				if (section == 'ShipTo' || section == 'EndCx') {
-				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
-					var externalidentifier = d.party[0].externalIdentifier;
+				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1) {
+					var externalidentifier = d.externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 						addressObj['NationalID'] = externalidentifier[i].identifierValue;
@@ -11755,7 +12213,7 @@
 				}
 				// SoldTo NationalID for all countries
 				if (section == 'SoldTo') {
-				  var externalidentifier = d.party[0].externalIdentifier;
+				  var externalidentifier = d.externalIdentifier;
 				  for (i = 0; i < externalidentifier.length; i++) {
 					if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 					  addressObj['NationalID'] = externalidentifier[i].identifierValue;
@@ -12042,37 +12500,12 @@
 	  if (document.querySelector('*[data-name="Config_PPC_EndCx"]'))
 		$('*[data-name="Config_PPC_EndCx"]').val(config.dataset.Config_PPC_EndCx);
 	},
-	clearAddressData: function(config, section = 'all') {
-	  // typeof section: all, SoldTo, Payer, BillTo, ShipTo, Reseller, EndCustomer, CustomShipTo, AgentProgram
-
-	  const fields = ['CompanyName', 'PartyId', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country', 'NationalID',
-					  'Contact_FirstName', 'Contact_LastName', 'Contact_Phone', 'Contact_Email', 'Contact_Country', 'Address'
-					 ];
-	  fields.forEach((field) => {
-		if (section === 'all' || section === 'SoldTo') {
-		  config.dataset[`SoldTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'Payer') {
-		  config.dataset[`Payer_${field}`] = null;
-		}
-		if (section === 'all' || section === 'BillTo') {
-		  config.dataset[`BillTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'ShipTo') {
-		  config.dataset[`ShipTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'Reseller') {
-		  config.dataset[`Reseller_${field}`] = null;
-		}
-		if (section === 'all' || section === 'EndCustomer') {
-		  config.dataset[`EndCx_${field}`] = null;
-		}
-		if (section === 'all' || section === 'CustomShipTo') {
-		  config.dataset[`CustomShipTo_${field}`] = null;
-		}
-		if (section === 'all' || section === 'AgentProgram') {
-		  config.dataset[`AgentProgram_${field}`] = null;
-		}
+	clearAddressData: function(cfg, section = 'all') {
+	  // section: "all" or one of config.sectionName
+	  config.sectionName.filter(sect => section === "all" || sect == section).forEach((sect) => {
+		config.clearData({
+		  fields: config.sectionFields[sect]
+		});
 	  });
 	},
 	buildQuotePreviewPage: function(config) {
@@ -12837,7 +13270,7 @@
 				value: ucid.Carepack || "N",
 				values: ["N", "Y"],
 				options: ["Carepack", "Carepack"],
-				class: `ps-toggle carepack_toggle ID_${ucid.ID}`,
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId ? " carepack-hidden":"") //(ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
 			  });
 			}
 			group.push(item);
@@ -13538,7 +13971,7 @@
   const helper = {
 	buildFastClearAddressButton: function(section = 'SoldTo', isReviewPage = false) {
 	  const fastClearAddress = function() {
-		const fields = ['CompanyName', 'PartyId', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
+		const fields = ['CompanyName', 'PartyId', 'PartyId_Predefined', 'Address', 'Address_Street', 'Address_Street2', 'Address_City', 'Address_State', 'Address_Postal', 'Address_Country'];
 		fields.forEach((field) => {
 		  const node = document.querySelector('*[data-name="' + section + '_' + field + '"]');
 		  if (node) {
@@ -13620,9 +14053,9 @@
 
 		  for (let i = 6; i < page.length; i++) {
 			const rowInfo = page[i];
-			const productID = (headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")]) ?? "";
-			const count = (headerMap.get("Count") && rowInfo[headerMap.get("Count")]) ?? "";
-			const unitNetAmount = (headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")]) ?? "";
+			const productID = ((headerMap.get("ProductID") && rowInfo[headerMap.get("ProductID")]) ?? "").toString().replace(/\s+/g, '');
+			const count = ((headerMap.get("Count") && rowInfo[headerMap.get("Count")]) ?? "").toString().replace(/\s+/g, '');
+			const unitNetAmount = ((headerMap.get("UnitNetAmount") && rowInfo[headerMap.get("UnitNetAmount")]) ?? "").toString().replace(/\s+/g, '');
 			// if ProductID or Quantity or UnitNetAmount doesn't exist
 			if (productID === "" || count === "" || unitNetAmount === "") {
 			  break;
@@ -13642,9 +14075,9 @@
 			  Requestor_PO_Quote_ID: config.dataset.Requestor_PO_Quote_ID,
 			  UCID: "",
 			  BundleID: headerMap.get("BundleID") && rowInfo[headerMap.get("BundleID")] || "", //Config ID
-			  DealId: headerMap.get("DealId") && rowInfo[headerMap.get("DealId")] || "",
+			  DealId: (headerMap.get("DealId") && rowInfo[headerMap.get("DealId")] || "").toString().replace(/\s+/g, ''),
 			  UnitNetAmount: unitNetAmount,
-			  ExtendedNetAmount: headerMap.get("ExtendedNetAmount") && rowInfo[headerMap.get("ExtendedNetAmount")] || "",
+			  ExtendedNetAmount: (headerMap.get("ExtendedNetAmount") && rowInfo[headerMap.get("ExtendedNetAmount")] || "").toString().replace(/\s+/g, ''),
 			  Quantity: "",
 			  CfgSystemId: "",
 			  CfgSystemName: "",
@@ -13653,11 +14086,11 @@
 			  ProductID: productID,
 			  ProductClassificationCode: "",
 			  LineType: "Config",
-			  ID: (productID + "").replace(/[\s\-]/g, '_'),
-			  PreviouslyPurchasedProductDetails: headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "",
-			  SerialNumberOfProducts: headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "",
-			  ProductPurchasedDate: productPurchasedDate || "",
-			  HPEPartDescription: headerMap.get("HPEPartDescription") && rowInfo[headerMap.get("HPEPartDescription")] || "",
+			  ID: (productID + "").replace(/[\-]/g, '_'),
+			  PreviouslyPurchasedProductDetails: (headerMap.get("PreviouslyPurchasedProductDetails") && rowInfo[headerMap.get("PreviouslyPurchasedProductDetails")] || "").toString().replace(/\s+/g, ''),
+			  SerialNumberOfProducts: (headerMap.get("SerialNumberOfProducts") && rowInfo[headerMap.get("SerialNumberOfProducts")] || "").toString().replace(/\s+/g, ''),
+			  ProductPurchasedDate: (productPurchasedDate || "").toString().replace(/\s+/g, ''),
+			  HPEPartDescription: (headerMap.get("HPEPartDescription") && rowInfo[headerMap.get("HPEPartDescription")] || "").toString().replace(/\s+/g, ''),
 			};
 			rowsData.push(row);
 		  }
@@ -13751,8 +14184,10 @@
 				})
 			  }
 			  global.data.brt.pas = [];
+			  global.data.brt.partyId = [];
 			  reference.agreements.forEach(function(agreement) {
 				global.data.brt.pas.push(agreement.iCMPANumber);
+				global.data.brt.partyId.push(agreement.iCMPartyID);
 			  });
 			  let chnls = global.data.brts.filter(function(item) {
 				return (item.code == global.data.brt.code && item.name == global.data.brt.name)
@@ -13865,13 +14300,13 @@
                               $('span[tab-id="oob"]').hide();
                           }*/
 		  $('span[tab-id="otherIcons"] > svg.add').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('.tabs span[tab-id="oob"]').click();
 		  });
 		  $('span[tab-id="otherIcons"] > svg.refresh').click(function() {
-			config.dataset = {};
+			config.dataset = config.processOnLoad({});
 			nbsf.init(config, 0);
 			nbsf.init(config, 0);
 			$('[tab-id=requests] .grid').data('kendoGrid').dataSource.read();
@@ -13889,7 +14324,7 @@
 			oob.grid.load();
 		  })
 		  document.querySelector('div[tab-id="oob"]').addEventListener("change", (e) => {
-			if (e.target.getAttribute("data-name") == "PA_Number") paNumberChanged(e.target.value);
+			if (e.target.getAttribute("data-name") == "PA_Number") partyIdChanged();
 		  });
 
 		  function visitItems(cb) {
@@ -14366,9 +14801,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._view(d.Rows[0]);
+			  oob.grid._events._view(rec);
 			})
 		  });
 		  $(g).delegate(".edit", "click", function(e) {
@@ -14378,9 +14813,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._edit(d.Rows[0]);
+			  oob.grid._events._edit(rec);
 			})
 		  });
 		  $(g).delegate(".deactivate", "click", function(e) {
@@ -14395,9 +14830,9 @@
 			  loading: true,
 			  close: false
 			});
-			crud.read("3180", "eid=" + row.EntryId, function(d) {
+			config.loadRecord(row.EntryId, function(rec) {
 			  mo.fn.overlay.hide();
-			  oob.grid._events._clone(d.Rows[0]);
+			  oob.grid._events._clone(rec);
 			})
 		  });
 		  $(g).delegate(".mailto", "click", function(e) {
@@ -14407,14 +14842,14 @@
 		  });
 		},
 		_edit: function(data) {
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
 		},
 		_view: function(data) {
 		  console.log('_view', data);
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, config.pages.length - 1);
 		  nbsf.init(config, config.pages.length - 1);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -14427,7 +14862,7 @@
 			ctaLabel: hpe.fn.lang("OK", config.locale, config.localizations),
 			ctaCallback: function() {
 			  var refapplication;
-			  crud.read("3180", "eid=" + eid, function(data) {
+			  crud.read("3180", "eid=" + eid, function(data) { // TODO: Subject to rewrite using config.loadRecord()
 				if (data.Rows.length > 0) {
 				  if (data.Rows[0].Status == "0" || data.Rows[0].Status == null) {
 					refapplication = data.Rows[0];
@@ -14485,7 +14920,7 @@
 
 		  data.Status = 0;
 		  data.Clone = true;
-		  config.dataset = data;
+		  config.dataset = config.processOnLoad(data);
 		  nbsf.init(config, 0);
 		  nbsf.init(config, 0);
 		  $('.tabs span[tab-id="oob"]').click();
@@ -14951,15 +15386,15 @@
   }
 
   const pdfYesNoRenderer = function(val) {
-	if (val == "Y") return "Yes";
-	if (val == "N") return "No";
+	if (val == "Y") return PDF.l10n("YesLabel");
+	if (val == "N") return PDF.l10n("No");
 	return val || "";
   }
 
   const PDF = {
 	l10nDebug: false, // set to TRUE to get template with localization keys. Development only.
 	l10n: function(l10nKey) {
-	  if (PDF.l10nDebug) return "[" + l10nKey + "]";
+	  if (PDF.l10nDebug) return "[key:" + l10nKey + "]";
 	  return hpe.fn.lang(l10nKey, config.locale, config.localizations) || l10nKey;
 	},
 
@@ -14981,7 +15416,7 @@
 	  }).map((itemDescr) => {
 		let val = config.dataset[itemDescr.key];
 		if (itemDescr.renderer) val = itemDescr.renderer(val);
-		return "<tr><td" + labelWidth + " style='font-weight:bold;padding:4px;'>" + PDF.l10n(itemDescr.label) + "</td>" +
+		return "<tr><td" + labelWidth + " style='font-weight:bold;padding:4px;'>" + PDF.l10n(itemDescr.label) + ":</td>" +
 		  "<td" + valueWidth + " style='padding:4px;'>" + val + "</td></tr>"
 	  });
 
@@ -14998,172 +15433,172 @@
 
 	structure: [
 	  {
-		header: "Purchase Order Information",
+		header: "PurchaseOrderInfo", // Purchase Order Information
 		items: [
-		  {label: "Purchase order number:", key: "PO_Number"},
-		  {label: "Submission Date:", key: "SubmittedTimestamp", renderer: pdfDateRenderer},
-		  {label: "Purchase order category:", key: "PO_Category"},
-		  {label: "Purchase order amount:", key: "PO_Value"},
-		  {label: "Purchase order currency:", key: "PO_Currency"},
-		  {label: "Reseller purchase order number:", key: "Rs_PO_Number"},
-		  {label: "End customer purchase order number:", key: "Cx_PO_Number"},
-		]
+		  { label: "Form005", key: "PO_Number" }, // Purchase order number
+		  { label: "Form444", key: "SubmittedTimestamp", renderer: pdfDateRenderer }, // Submission Date
+		  { label: "Form010", key: "PO_Category" }, // Purchase order category
+		  { label: "Form008", key: "PO_Value" }, // Purchase order amount
+		  { label: "Form007", key: "PO_Currency" }, // Purchase order currency
+		  { label: "Form014", key: "Rs_PO_Number" }, // Reseller purchase order number
+		  { label: "Form016", key: "Cx_PO_Number" }, // End customer purchase order number
+		],
 	  },
 	  {
-		header: "Submitter Information", // Submitter
+		header: "SubmitterInfo", // Submitter Information
 		items: [
-		  {label: "Company:", key: "PartnerName"},
-		  {label: "First Name:", key: "FirstName"},
-		  {label: "Last Name:", key: "LastName"},
-		  {label: "Email:", key: "Email"},
-		  {label: "Country:", key: "Country"},
-		]
+		  { label: "Form533_Option2", key: "PartnerName" }, // Company
+		  { label: "FirstName", key: "FirstName" }, // First Name
+		  { label: "LastName", key: "LastName" }, // Last Name
+		  { label: "Email", key: "Email" }, // Email
+		  { label: "Country", key: "Country" }, // Country
+		],
 	  },
 	  {
-		header: "Quote details", // Form075
+		header: "Form075", // Quote details
 		items: [
-		  {label: "Quote number:", key: "Requestor_PO_Quote_ID"},
-		  {label: "Deal number:", key: "Requestor_PO_Deal_ID"},
-		  {label: "Opportunity ID:", key: "Requestor_PO_Opp_ID"},
-		  {label: "Purchase agreement number:", key: "PA_Number"},
-		  {label: "HPE approved payment terms:", key: "Payment_Terms"},
-		]
+		  { label: "Form019", key: "Requestor_PO_Quote_ID" }, // Quote number
+		  { label: "Form021", key: "Requestor_PO_Deal_ID" }, // Deal number
+		  { label: "Form479", key: "Requestor_PO_Opp_ID" }, // Opportunity ID
+		  { label: "Form024", key: "PA_Number" }, // Purchase agreement number
+		  { label: "Form026", key: "Payment_Terms" }, // HPE approved payment terms
+		],
 	  },
 	  {
-		header: "Delivery Information", // Form472
+		header: "Form472", // Delivery Information
 		items: [
-		  {label: "Requested Delivery date:", key: "PO_DeliveryDate"},
-		  {label: "Delivery Incoterms:", key: "PO_DeliveryIncoterms"},
-		  {label: "Complete Delivery:", key: "PO_CompleteDelivery", renderer: pdfYesNoRenderer},
-		  {label: "Business Model:", key: "PO_BusinessModel"},
-		]
+		  { label: "Form039", key: "PO_DeliveryDate" }, // Requested Delivery date
+		  { label: "Form476", key: "PO_DeliveryIncoterms" }, // Delivery Incoterms
+		  { label: "Form477", key: "PO_CompleteDelivery", renderer: pdfYesNoRenderer }, // Complete Delivery
+		  { label: "Form465", key: "PO_BusinessModel" }, // Business Model
+		],
 	  },
 	  {
-		header: "Sold to Information", // Form054
+		header: "Form054", // Sold to Information
 		items: [
-		  {label: "Party ID:", key: "SoldTo_PartyId"},
-		  {label: "Company name:", key: "SoldTo_CompanyName"},
-		  {label: "Address 1:", key: "SoldTo_Address_Street"},
-		  {label: "Address 2:", key: "SoldTo_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "SoldTo_Address_Postal"},
-		  {label: "City:", key: "SoldTo_Address_City"},
-		  {label: "State / Province:", key: "SoldTo_Address_State"},
-		  {label: "Country:", key: "SoldTo_Address_Country"},
-		  {label: "Tax ID:", key: "SoldTo_NationalId"},
-		  {label: "First Name:", key: "SoldTo_Contact_FirstName"},
-		  {label: "Last Name:", key: "SoldTo_Contact_LastName"},
-		  {label: "Phone:", key: "SoldTo_Contact_Phone"},
-		  {label: "Email:", key: "SoldTo_Contact_Email"},
-		  {label: "Country of residence:", key: "SoldTo_Contact_Country"},
-		]
+		  { label: "Form086", key: "SoldTo_PartyId" }, // Party ID
+		  { label: "Form058", key: "SoldTo_CompanyName" }, // Company name
+		  { label: "Address", key: "SoldTo_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "SoldTo_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "SoldTo_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "SoldTo_Address_City" }, // City
+		  { label: "StateProvince", key: "SoldTo_Address_State" }, // State / Province
+		  { label: "Country", key: "SoldTo_Address_Country" }, // Country
+		  { label: "Form495", key: "SoldTo_NationalId" }, // Tax ID
+		  { label: "FirstName", key: "SoldTo_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "SoldTo_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "SoldTo_Contact_Phone" }, // Phone
+		  { label: "Email", key: "SoldTo_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "SoldTo_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "Payer Information", // Form068
+		header: "Form068", // Payer Information
 		items: [
-		  {label: "Party ID:", key: "Payer_PartyId"},
-		  {label: "Company name:", key: "Payer_CompanyName"},
-		  {label: "Address 1:", key: "Payer_Address_Street"},
-		  {label: "Address 2:", key: "Payer_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "Payer_Address_Postal"},
-		  {label: "City:", key: "Payer_Address_City"},
-		  {label: "State / Province:", key: "Payer_Address_State"},
-		  {label: "Country:", key: "Payer_Address_Country"},
-		  {label: "Tax ID:", key: "Payer_NationalId"},
-		  {label: "First Name:", key: "Payer_Contact_FirstName"},
-		  {label: "Last Name:", key: "Payer_Contact_LastName"},
-		  {label: "Phone:", key: "Payer_Contact_Phone"},
-		  {label: "Email:", key: "Payer_Contact_Email"},
-		  {label: "Country of residence:", key: "Payer_Contact_Country"},
-		]
+		  { label: "Form086", key: "Payer_PartyId" }, // Party ID
+		  { label: "Form058", key: "Payer_CompanyName" }, // Company name
+		  { label: "Address", key: "Payer_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "Payer_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "Payer_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "Payer_Address_City" }, // City
+		  { label: "StateProvince", key: "Payer_Address_State" }, // State / Province
+		  { label: "Country", key: "Payer_Address_Country" }, // Country
+		  { label: "Form495", key: "Payer_NationalId" }, // Tax ID (not exist so use SoldTo_NationalId)
+		  { label: "FirstName", key: "Payer_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "Payer_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "Payer_Contact_Phone" }, // Phone
+		  { label: "Email", key: "Payer_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "Payer_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "Bill to Information", // Form101
+		header: "Form101", // Bill to Information
 		items: [
-		  {label: "Party ID:", key: "BillTo_PartyId"},
-		  {label: "Company name:", key: "BillTo_CompanyName"},
-		  {label: "Address 1:", key: "BillTo_Address_Street"},
-		  {label: "Address 2:", key: "BillTo_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "BillTo_Address_Postal"},
-		  {label: "City:", key: "BillTo_Address_City"},
-		  {label: "State / Province:", key: "BillTo_Address_State"},
-		  {label: "Country:", key: "BillTo_Address_Country"},
-		  {label: "Tax ID:", key: "BillTo_NationalId"},
-		  {label: "First Name:", key: "BillTo_Contact_FirstName"},
-		  {label: "Last Name:", key: "BillTo_Contact_LastName"},
-		  {label: "Phone:", key: "BillTo_Contact_Phone"},
-		  {label: "Email:", key: "BillTo_Contact_Email"},
-		  {label: "Country of residence:", key: "BillTo_Contact_Country"},
-		]
+		  { label: "Form086", key: "BillTo_PartyId" }, // Party ID
+		  { label: "Form058", key: "BillTo_CompanyName" }, // Company name
+		  { label: "Address", key: "BillTo_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "BillTo_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "BillTo_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "BillTo_Address_City" }, // City
+		  { label: "StateProvince", key: "BillTo_Address_State" }, // State / Province
+		  { label: "Country", key: "BillTo_Address_Country" }, // Country
+		  { label: "Form495", key: "BillTo_NationalId" }, // Tax ID (not exist so use SoldTo_NationalId)
+		  { label: "FirstName", key: "BillTo_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "BillTo_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "BillTo_Contact_Phone" }, // Phone
+		  { label: "Email", key: "BillTo_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "BillTo_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "Shipping Information", // Form045
+		header: "Form045", // Shipping Information
 		items: [
-		  {label: "Party ID:", key: "ShipTo_PartyId"},
-		  {label: "Company name:", key: "ShipTo_CompanyName"},
-		  {label: "Address 1:", key: "ShipTo_Address_Street"},
-		  {label: "Address 2:", key: "ShipTo_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "ShipTo_Address_Postal"},
-		  {label: "City:", key: "ShipTo_Address_City"},
-		  {label: "State / Province:", key: "ShipTo_Address_State"},
-		  {label: "Country:", key: "ShipTo_Address_Country"},
-		  {label: "Tax ID:", key: "ShipTo_NationalId"},
-		  {label: "First Name:", key: "ShipTo_Contact_FirstName"},
-		  {label: "Last Name:", key: "ShipTo_Contact_LastName"},
-		  {label: "Phone:", key: "ShipTo_Contact_Phone"},
-		  {label: "Email:", key: "ShipTo_Contact_Email"},
-		  {label: "Country of residence:", key: "ShipTo_Contact_Country"},
-		]
+		  { label: "Form086", key: "ShipTo_PartyId" }, // Party ID
+		  { label: "Form058", key: "ShipTo_CompanyName" }, // Company name
+		  { label: "Address", key: "ShipTo_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "ShipTo_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "ShipTo_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "ShipTo_Address_City" }, // City
+		  { label: "StateProvince", key: "ShipTo_Address_State" }, // State / Province
+		  { label: "Country", key: "ShipTo_Address_Country" }, // Country
+		  { label: "Form495", key: "ShipTo_NationalId" }, // Tax ID (not exist so use SoldTo_NationalId)
+		  { label: "FirstName", key: "ShipTo_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "ShipTo_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "ShipTo_Contact_Phone" }, // Phone
+		  { label: "Email", key: "ShipTo_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "ShipTo_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "End customer Information", // Form138
+		header: "Form138", // End customer Information
 		items: [
-		  {label: "Party ID:", key: "EndCx_PartyId"},
-		  {label: "Company name:", key: "EndCx_CompanyName"},
-		  {label: "Address 1:", key: "EndCx_Address_Street"},
-		  {label: "Address 2:", key: "EndCx_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "EndCx_Address_Postal"},
-		  {label: "City:", key: "EndCx_Address_City"},
-		  {label: "State / Province:", key: "EndCx_Address_State"},
-		  {label: "Country:", key: "EndCx_Address_Country"},
-		  {label: "Tax ID:", key: "EndCx_NationalId"},
-		  {label: "First Name:", key: "EndCx_Contact_FirstName"},
-		  {label: "Last Name:", key: "EndCx_Contact_LastName"},
-		  {label: "Phone:", key: "EndCx_Contact_Phone"},
-		  {label: "Email:", key: "EndCx_Contact_Email"},
-		  {label: "Country of residence:", key: "EndCx_Contact_Country"},
-		]
+		  { label: "Form086", key: "EndCx_PartyId" }, // Party ID
+		  { label: "Form058", key: "EndCx_CompanyName" }, // Company name
+		  { label: "Address", key: "EndCx_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "EndCx_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "EndCx_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "EndCx_Address_City" }, // City
+		  { label: "StateProvince", key: "EndCx_Address_State" }, // State / Province
+		  { label: "Country", key: "EndCx_Address_Country" }, // Country
+		  { label: "Form495", key: "EndCx_NationalId" }, // Tax ID (not exist so use SoldTo_NationalId)
+		  { label: "FirstName", key: "EndCx_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "EndCx_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "EndCx_Contact_Phone" }, // Phone
+		  { label: "Email", key: "EndCx_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "EndCx_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "Reseller Information", // Form126
+		header: "Form126", // Reseller Information
 		items: [
-		  {label: "Party ID:", key: "Reseller_PartyId"},
-		  {label: "Company name:", key: "Reseller_CompanyName"},
-		  {label: "Address 1:", key: "Reseller_Address_Street"},
-		  {label: "Address 2:", key: "Reseller_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "Reseller_Address_Postal"},
-		  {label: "City:", key: "Reseller_Address_City"},
-		  {label: "State / Province:", key: "Reseller_Address_State"},
-		  {label: "Country:", key: "Reseller_Address_Country"},
-		  {label: "Tax ID:", key: "Reseller_NationalId"},
-		  {label: "First Name:", key: "Reseller_Contact_FirstName"},
-		  {label: "Last Name:", key: "Reseller_Contact_LastName"},
-		  {label: "Phone:", key: "Reseller_Contact_Phone"},
-		  {label: "Email:", key: "Reseller_Contact_Email"},
-		  {label: "Country of residence:", key: "Reseller_Contact_Country"},
-		]
+		  { label: "Form086", key: "Reseller_PartyId" }, // Party ID
+		  { label: "Form058", key: "Reseller_CompanyName" }, // Company name
+		  { label: "Address", key: "Reseller_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "Reseller_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "Reseller_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "Reseller_Address_City" }, // City
+		  { label: "StateProvince", key: "Reseller_Address_State" }, // State / Province
+		  { label: "Country", key: "Reseller_Address_Country" }, // Country
+		  { label: "Form495", key: "Reseller_NationalId" }, // Tax ID
+		  { label: "FirstName", key: "Reseller_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "Reseller_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "Reseller_Contact_Phone" }, // Phone
+		  { label: "Email", key: "Reseller_Contact_Email" }, // Email
+		  { label: "CountryOfResidence", key: "Reseller_Contact_Country" }, // Country of residence
+		],
 	  },
 	  {
-		header: "Custom Ship To Party Information", // Form486
+		header: "Form486", //  Custom Ship To Party Information
 		items: [
-		  {label: "Party ID:", key: "CustomShipTo_PartyId"},
-		  {label: "Company name:", key: "CustomShipTo_CompanyName"},
-		  {label: "Address 1:", key: "CustomShipTo_Address"},
-		  {label: "Address 2:", key: "CustomShipTo_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "CustomShipTo_Address_Postal"},
-		  {label: "City:", key: "CustomShipTo_Address_City"},
-		  {label: "State / Province:", key: "CustomShipTo_Address_State"},
-		  {label: "Country:", key: "CustomShipTo_Address_Country"},
-		]
+		  { label: "Form086", key: "CustomShipTo_PartyId" }, // Party ID
+		  { label: "Form058", key: "CustomShipTo_CompanyName" }, // Company name
+		  { label: "Address", key: "CustomShipTo_Address" }, // Address 1
+		  { label: "AddressLineOptional", key: "CustomShipTo_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "CustomShipTo_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "CustomShipTo_Address_City" }, // City
+		  { label: "StateProvince", key: "CustomShipTo_Address_State" }, // State / Province
+		  { label: "Country", key: "CustomShipTo_Address_Country" }, // Country
+		],
 	  },
 	  { // Products and Services
 		renderer: function() {
@@ -15185,9 +15620,9 @@
 
 		  const poCurrency = config.dataset.PO_Currency;
 
-		  const header = "<table><tr><th style='padding: 6px;' width='6%'>Item</td>" +
+		  const header = "<table><tr><th style='padding: 6px;' width='6%'>" + PDF.l10n("PdfItem") + "</td>" +
 				"<th style='padding: 6px;' width='26%'>" + PDF.l10n("FormHPN") + "</th>" +
-				"<th style='padding: 6px;' width='7%'>Qty</th>" +
+				"<th style='padding: 6px;' width='7%'>" + PDF.l10n("PdfQuantity") + "</th>" +
 				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormBIID") + "</th>" +
 				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormDealId") + "</th>" +
 				"<th style='padding: 6px;' width='15%'>" + PDF.l10n("FormUP") + " (" + poCurrency + ")</th>" +
@@ -15206,55 +15641,8 @@
 			  if (item.ProductPurchasedDate) {
 				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'><b>" + PDF.l10n("FormPPD") + "</b><br>" + (item.ProductPurchasedDate || "") + "</td></tr>";
 			  }
-/*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td></td><td colspan=6 style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
-			  }
-*/
-/*
-			  extra = "<tr><td colspan='6' cellpadding='0'><table>" +
-				(item.PreviouslyPurchasedProductDetails ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td><td>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>" : "") +
-				(item.SerialNumberOfProducts ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td><td>" + (item.SerialNumberOfProducts || "") + "</td></tr>" : "") +
-				(item.ProductPurchasedDate ? "<tr><td style='font-weight:bold;padding-right:6px;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td><td>" + (item.ProductPurchasedDate || "") + "</td></tr>" : "") +
-				"</table><td></tr>";
-*/
-			  /*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPPD") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormSNP") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td colspan=3 style='font-weight:bold;padding-left:6px;padding-bottom:3px;text-align:right;'>" + PDF.l10n("FormPPD") + "</td>" +
-				  "<td colspan='4' style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td></tr>";
-			  }
-*/
-/*
-			  if (item.PreviouslyPurchasedProductDetails) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPPD") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.PreviouslyPurchasedProductDetails || "") + "</td><td colspan='4'></td></tr>";
-			  }
-			  if (item.SerialNumberOfProducts) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormSNP") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.SerialNumberOfProducts || "") + "</td><td colspan='4'></td></tr>";
-			  }
-			  if (item.ProductPurchasedDate) {
-				extra += "<tr><td></td><td style='font-weight:bold;padding-left:6px;padding-bottom:3px;'>" + PDF.l10n("FormPPD") + "</td>" +
-				  "<td style='padding-left:6px;padding-bottom:3px;'>" + (item.ProductPurchasedDate || "") + "</td><td colspan='4'></td></tr>";
-			  }
-*/
 			}
-			// const configId = [item.ProductID == item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
-			const configId = [item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
+			const configId = [item.CfgSystemId ? null : item.ProductID, item.UCID, item.CfgSystemId].filter(i => !!i).join(" / ");
 			return `<tr><td style='padding: 6px;padding-bottom:3px;'>${index + 1}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${configId}</td>
 <td style='padding: 6px;padding-bottom:3px;'>${item.Count}</td>
@@ -15272,84 +15660,84 @@
 		}
 	  },
 	  {
-		header: "Asset location Information", // Form519
+		header: "Form519", // Asset location Information
 		items: [
-		  {label: "Party ID:", key: "AssLoc_PartyId"},
-		  {label: "Company name:", key: "AssLoc_CompanyName"},
-		  {label: "Address 1:", key: "AssLoc_Address_Street"},
-		  {label: "Address 2:", key: "AssLoc_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "AssLoc_Address_Postal"},
-		  {label: "City:", key: "AssLoc_Address_City"},
-		  {label: "State / Province:", key: "AssLoc_Address_State"},
-		  {label: "Country:", key: "AssLoc_Address_Country"},
-		]
+		  { label: "Form086", key: "AssLoc_PartyId" }, // Party ID
+		  { label: "Form058", key: "AssLoc_CompanyName" }, // Company name
+		  { label: "Address", key: "AssLoc_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "AssLoc_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "AssLoc_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "AssLoc_Address_City" }, // City
+		  { label: "StateProvince", key: "AssLoc_Address_State" }, // State / Province
+		  { label: "Country", key: "AssLoc_Address_Country" }, // Country
+		],
 	  },
 	  {
-		header: "Preferred Service Provider Information", // Form529
+		header: "Form529", // Preferred Service Provider Information
 		items: [
-		  {label: "Party ID:", key: "PSP_PartyId"},
-		  {label: "Company name:", key: "PSP_CompanyName"},
-		  {label: "Address 1:", key: "PSP_Address_Street"},
-		  {label: "Address 2:", key: "PSP_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "PSP_Address_Postal"},
-		  {label: "City:", key: "PSP_Address_City"},
-		  {label: "State / Province:", key: "PSP_Address_State"},
-		  {label: "Country:", key: "PSP_Address_Country"},
-		]
+		  { label: "Form086", key: "PSP_PartyId" }, // Party ID
+		  { label: "Form058", key: "PSP_CompanyName" }, // Company name
+		  { label: "Address", key: "PSP_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "PSP_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "PSP_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "PSP_Address_City" }, // City
+		  { label: "StateProvince", key: "PSP_Address_State" }, // State / Province
+		  { label: "Country", key: "PSP_Address_Country" }, // Country
+		],
 	  },
 	  {
-		header: "Entitled party Information", // Form520
+		header: "Form520", // Entitled party Information
 		items: [
-		  {label: "Party ID:", key: "EntPrty_PartyId"},
-		  {label: "Company name:", key: "EntPrty_CompanyName"},
-		  {label: "Address 1:", key: "EntPrty_Address_Street"},
-		  {label: "Address 2:", key: "EntPrty_Address_Street2"},
-		  {label: "ZIP / Postal Code:", key: "EntPrty_Address_Postal"},
-		  {label: "City:", key: "EntPrty_Address_City"},
-		  {label: "State / Province:", key: "EntPrty_Address_State"},
-		  {label: "Country:", key: "EntPrty_Address_Country"},
-		  {label: "First Name:", key: "EntPrty_Contact_FirstName"},
-		  {label: "Last Name:", key: "EntPrty_Contact_LastName"},
-		  {label: "Phone:", key: "EntPrty_Contact_Phone"},
-		  {label: "Email:", key: "EntPrty_Contact_Email"},
-		]
+		  { label: "Form086", key: "EntPrty_PartyId" }, // Party ID
+		  { label: "Form058", key: "EntPrty_CompanyName" }, // Company name
+		  { label: "Address", key: "EntPrty_Address_Street" }, // Address 1
+		  { label: "AddressLineOptional", key: "EntPrty_Address_Street2" }, // Address 2
+		  { label: "Postal code", key: "EntPrty_Address_Postal" }, // ZIP / Postal Code
+		  { label: "City", key: "EntPrty_Address_City" }, // City
+		  { label: "StateProvince", key: "EntPrty_Address_State" }, // State / Province
+		  { label: "Country", key: "EntPrty_Address_Country" }, // Country
+		  { label: "FirstName", key: "EntPrty_Contact_FirstName" }, // First Name
+		  { label: "Surname", key: "EntPrty_Contact_LastName" }, // Last Name
+		  { label: "Telephone", key: "EntPrty_Contact_Phone" }, // Phone
+		  { label: "Email", key: "EntPrty_Contact_Email" }, // Email
+		],
 	  },
 	  {
-		header: "Comments", // Form186
+		header: "Form186", // Comments
 		items: [
-		  {label:"Tax details (and any exemptions)", labelKey: "Form189", key: "Comment_Tax"},
-		  {label:"Invoice comments", labelKey: "Form191", key: "Comment_Invoice"},
-		  {label: "Delivery comments", labelKey: "Form193", key: "Comment_Delivery"},
-		  {label: "Packing list comments", labelKey: "Form195", key: "Comment_Packing"},
-		  {label: "Additional comments", labelKey: "Form197", key: "Comment_Extra"},
-		]
+		  { label: "Form189", key: "Comment_Tax" }, // Tax details (and any exemptions)
+		  { label: "Form191", key: "Comment_Invoice" }, // Invoice comments
+		  { label: "Form193", key: "Comment_Delivery" }, // Delivery comments
+		  { label: "Form195", key: "Comment_Packing" }, // Packing list comments
+		  { label: "Form197", key: "Comment_Extra" }, // Additional comments
+		],
 	  },
 	  {
-		header: "Additional information", // Form152
+		header: "Form152", // Additional information
 		items: [
-		  {label: "Select file", key: "Optional_Attachment"},
-		  {label: "Are you ordering support / Installation services or Software licenses?", key: "Config_PI", renderer: pdfYesNoRenderer},
-		  {label: "Do you have a system manager contact apart from the provided end customer contact?", key: "Config_SystemManager", renderer: pdfYesNoRenderer},
-		  {label: "First name", key: "EndCx_SysMng_FirstName"},
-		  {label: "Last name", key: "EndCx_SysMng_LastName"},
-		  {label: "Phone", key: "EndCx_SysMng_Phone"},
-		  {label: "Email", key: "EndCx_SysMng_Email"},
-		  {label: "Country of residence", key: "EndCx_SysMng_Country"},
-		  {label: "Reservation ID", key: "Config_ResId"},
-		  {label: "Label order ID (LOID)", key: "Config_LOID"},
-		  {label: "Non-chargeable special logistics services", key: "Config_LogCode"},
-		  {label: "Do you belong to Public sector entity?", key: "Config_PublicSectionPartner", renderer: pdfYesNoRenderer},
-		  {label: "CIG", key: "Config_CIG"},
-		  {label: "CUP", key: "Config_CUP"},
-		  {label: "Is the asset location address the same as the end customer address?", key: "Config_LocationDetails", renderer: pdfYesNoRenderer},
-		  {label: "Is the entitled party information the same as the end customer information?", key: "Config_EntitledDetails", renderer: pdfYesNoRenderer},
-		  {label: "Do you have a Preferred Service Provider (PSP)", key: "Config_PSP", renderer: pdfYesNoRenderer},
-		  {label: "Do you have an acknowledgement Letter information?", key: "Config_ALI", renderer: pdfYesNoRenderer},
-		  {label: "Are you ordering a combined order with other departments (PointNext/CMS/Parts Sales)?", key: "Config_CombinedOrder", renderer: pdfYesNoRenderer},
-		  {label: "Which team is in charge of other product", key: "CombinedOrder_Team"},
-		  {label: "The total value of other product", key: "CombinedOrder_Total"},
-		  {label: "Combined Share point ID", key: "CombinedOrder_SharePointID"},
-		  {label: "The owner of combined order", key: "CombinedOrder_Owner"},
+		  { label: "FormCFI06", key: "Optional_Attachment" }, // Select file
+		  { label: "Form156", key: "Config_PI", renderer: pdfYesNoRenderer }, // Are you ordering support / Installation services or Software licenses?
+		  { label: "Form157", key: "Config_SystemManager", renderer: pdfYesNoRenderer}, // Do you have a system manager contact apart from the provided end customer contact?
+		  { label: "FirstName", key: "EndCx_SysMng_FirstName" }, // First name
+		  { label: "LastName", key: "EndCx_SysMng_LastName" }, // Last name
+		  { label: "Telephone", key: "EndCx_SysMng_Phone" }, // Phone
+		  { label: "Email", key: "EndCx_SysMng_Email" }, // Email
+		  { label: "CountryOfResidence", key: "EndCx_SysMng_Country" }, // Country of residence
+		  { label: "Form163", key: "Config_ResId" }, // Reservation ID
+		  { label: "Form165", key: "Config_LOID" }, // Label order ID (LOID)
+		  { label: "Form454", key: "Config_LogCode" }, // Non-chargeable special logistics services
+		  { label: "Form481", key: "Config_PublicSectionPartner", renderer: pdfYesNoRenderer }, // Do you belong to Public sector entity?
+		  { label: "Form482", key: "Config_CIG" }, // CIG
+		  { label: "Form484", key: "Config_CUP" }, // CUP
+		  { label: "Form052", key: "Config_LocationDetails", renderer: pdfYesNoRenderer }, // Is the asset location address the same as the end customer address?
+		  { label: "Form053", key: "Config_EntitledDetails", renderer: pdfYesNoRenderer }, // Is the entitled party information the same as the end customer information?
+		  { label: "Form528", key: "Config_PSP", renderer: pdfYesNoRenderer }, // Do you have a Preferred Service Provider (PSP)
+		  { label: "Form240", key: "Config_ALI", renderer: pdfYesNoRenderer }, // Do you have an acknowledgement Letter information?
+		  { label: "Form242", key: "Config_CombinedOrder", renderer: pdfYesNoRenderer }, // Are you ordering a combined order with other departments (PointNext/CMS/Parts Sales)?
+		  { label: "Form244", key: "CombinedOrder_Team" }, // Which team is in charge of other product
+		  { label: "Form245", key: "CombinedOrder_Total" }, // The total value of other product
+		  { label: "Form246", key: "CombinedOrder_SharePointID" }, // Combined Share point ID
+		  { label: "Form247", key: "CombinedOrder_Owner" }, // The owner of combined order
 		],
 		newline: true,
 		row: true,
@@ -15406,22 +15794,130 @@
 		  "<tr><td style='vertical-align: top;padding-top:10px;' width='50%'>" + row[0].content + "</td><td  style='width:10px;'>" +
 		  "<td style='vertical-align: top;padding-top:10px;' width='50%'>" + (row[1] ? row[1].content : "") + "</td></tr></table>";
 	  });
-	  //config.dataset.PdfContent = "<h1 style='margin-top:10px;'>" + PDF.l10n("Form005") + " - <span>[PO_Number]</span></h1>" +  // Form005 = 'Purchase order number'
-	  config.dataset.PdfContent = "<h1 style='margin-top:10px;'>Purchase Order - <span>[PO_Number]</span></h1>" +  // Form005 = 'Purchase order number'
-		"<div style='font-weight:bold;'>THIS IS A COPY OF YOUR ELECTRONIC PURCHASE ORDER SUBMITTED WITH HPE</div>" +
+	  config.dataset.PdfContent =
+		"<h1 style='margin-top:10px;'>" +
+		PDF.l10n("Form005") +
+		" - <span>[PO_Number]</span></h1>" + // Form005 = 'Purchase order number'
+		"<div style='font-weight:bold;'>" +
+		PDF.l10n('PdfHPEPurchaseOrderConfirm') +
+		"</div>" +
 		tableCells.join("\n") +
-		"<br><p style='font-size:7pt'><i>The information provided above will be used for order creation and invoicing purpose.<br>Hewlett Packard Enterprise Confidential</i></p><br>" +
+		"<br><p style='font-size:7pt'><i>" +
+		PDF.l10n('PdfFooterInvoiceInfo') +
+		"<br>" +
+		PDF.l10n('PdfFooterHPE') +
+		"</i></p><br>" +
 		"<table style='width: 100%;'><tr>" +
 		"<td style='width:30%;vertical-align:bottom;'>" +
 		"    <img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAAAZCAYAAACrWNlOAAAABlBMVEUAAAABqYLY1jZUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAb0lEQVRoge3ZsQ3CQBAAQQ7Ro7txQDeu8mnAodcINBNedFpd8NLPHO/14HLPby/wr4SNCBsRNvI6G65tn7sX+WVnDwAXGxE2ImxE2IiwEWEjwkaEjQgbETYibETYiLARYSPjz6vhYiPCRoSNCBv5ACJhCIlJVOXyAAAAAElFTkSuQmCC'></td>" +
-		"<td style='width:70%;border-top:3px solid black;font-size:7pt;'>"+
-		"    <p>This is HPE Confidential and Proprietary Information. Do not share.</p>"+
-		"    <p>Hewlett Packard Enterprise uses automatic data collection tools to personalize your experience. For more information regarding Hewlett Packard Enterprise's privacy policies and practices, please visit our"+
-		"	    <a href='https://www.hpe.com/us/en/legal/privacy.html'>Privacy Statement</a> or <a href='https://www.hpe.com/us/en/about/legal/terms-of-use.html'>Terms of Use.</a> </p>" +
-		"    <p>©Copyright 2024 Hewlett Packard Enterprise Development LP. The information contained herein is subject to change without notice.</p>" +
+		"<td style='width:70%;border-top:3px solid black;font-size:7pt;'>" +
+		"    <p>" +
+		PDF.l10n('PdfFooterConfidentialNotice') +
+		"</p>" +
+		"    <p>" +
+		PDF.l10n('PdfFooterPrivacyPolicyText') +
+		"	    <a href='https://www.hpe.com/us/en/legal/privacy.html'>" +
+		PDF.l10n('PdfFooterPrivacyStatement') +
+		"</a> " +
+		PDF.l10n('PdfFooterOr') +
+		" <a href='https://www.hpe.com/us/en/about/legal/terms-of-use.html'>" +
+		PDF.l10n('PdfFooterTermsOfUse') +
+		".</a> </p>" +
+		"    <p>" +
+		PDF.l10n('PdfFooterCopyright') +
 		"</td></tr></table>";
 	}
   }
+
+  config.init();
+</script>
+
+<script>
+  const multiValues = {
+	OTHER: "==",
+	data: {},
+	init: function() {
+	  nbsf.callbacks.push(multiValues.pageCallback);
+	  config.onLoadCallbacks.push(multiValues.resetPredefinedProps);
+	  document.addEventListener("change", multiValues.handleChange);
+	},
+
+	hasValues: function(field) {
+	  return field in multiValues.data;
+	},
+
+	getValues: function(field) {
+	  if (field in multiValues.data) return [...multiValues.data[field], multiValues.OTHER];
+	  return [];
+	},
+
+	getOptions: function(field) {
+	  if (field in multiValues.data) return [...multiValues.data[field], "Other..."];
+	  return [];
+	},
+	
+	fieldIsVisible: function(dataset, field) {
+	  const predefined = multiValues.data[field];
+	  if (!predefined) return true;
+	  const fieldValue = dataset[field];
+	  const valueIsFromPredefined = predefined.indexOf(fieldValue) >= 0;
+	  return !predefined || (!!fieldValue && !valueIsFromPredefined) || dataset[field + "_Predefined"] === multiValues.OTHER;
+	},
+
+	resetPredefinedProps: function(rec) {
+	  Object.entries(multiValues.data).forEach(([field, values]) => {
+		const recVal = rec[field];
+		rec[field + "_Predefined"] = values.indexOf(recVal) >= 0 ? recVal : multiValues.OTHER;
+		if (!recVal) rec[field + "_Predefined"] = null;
+	  });
+	},
+
+	handleChange: function(e) {
+	  const suffixLen = "_Predefined".length;
+	  const dataName = e.target.getAttribute("data-name");
+	  if (!(dataName || "").endsWith("_Predefined")) return;
+	  const dataParam = dataName.slice(0, -suffixLen);
+	  const val = e.target.value;
+	  const valIsOther = val === multiValues.OTHER;
+	  // the same hack to preserve values after init()
+	  let completedData = document.querySelectorAll('*[data-name]');
+	  let rdsExists = config.reviewDataset && Object.keys(config.reviewDataset).length;
+	  for (let i = 0; i < completedData.length; i++) {
+		const dn = completedData[i].getAttribute('data-name');
+		config.dataset[dn] = completedData[i].value;
+		if (rdsExists) config.reviewDataset[dn] = completedData[i].value;
+	  }
+	  config.dataset[dataParam] = valIsOther ? null : val;
+	  config.dataset[dataName] = val;
+	  if (rdsExists) {
+		config.reviewDataset[dataParam] = config.dataset[dataParam];
+		config.reviewDataset[dataName] = config.dataset[val];
+	  }
+
+	  if (dataParam.endsWith("_PartyId") && valIsOther) {
+		const section = dataParam.slice(0, -"_PartyId".length);
+		config.addressField.forEach((field) => {
+		  config.dataset[section + "_" + field] = null;
+		  if (rdsExists) config.reviewDataset[section + "_" + field] = null;
+		})
+	  }
+	  nbsf.init(config, config.page);
+	},
+
+	pageCallback: function() {
+	  const suffixLen = "_Predefined".length;
+	  document.querySelectorAll("[data-name$=_Predefined]").forEach((el) => {
+		const dataParam = el.getAttribute("data-name").slice(0, -suffixLen);
+		const dependentParam = document.querySelector("[data-name=" + dataParam + "]");
+		if (dependentParam) {
+		  const lbl = dependentParam.closest(".wrapper").querySelector(".name");
+		  //if (lbl) lbl.remove();
+		}
+	  });
+	}
+  }
+
+  multiValues.init();
 </script>
 
 <!-- NOR application initialization -->
@@ -15472,5 +15968,5 @@
 	  stg: 'https://partner.hpe.com/group/prp/esm/-/link/19601?fid=989&id=nor-qids-stg',
 	},
   };
-  console.log("====\nNOR Pilot 2024-10-17\n====");
+  console.log("====\nNOR Pilot 2024-11-30\n====");
 </script>
