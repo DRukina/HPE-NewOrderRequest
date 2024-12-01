@@ -4919,6 +4919,15 @@
 					   values: function() {
 						 return reference.countriesArray
 					   }
+					 },
+					 {
+					   label: "CopyShipTo2EndCx",
+					   data: "toggleCopyShipto2Endx",
+					   required: false,
+					   type: "toggle",
+					   value: "N",
+					   values: ["N", "Y"],
+					   options: ["No", "Yes"],
 					 }
 					]
 				  ]
@@ -4973,6 +4982,15 @@
 					   values: function() {
 						 return reference.countriesArray
 					   }
+					 },
+					 {
+					   label: "CopyShipTo2EndCx",
+					   data: "toggleCopyShipto2Endx",
+					   required: false,
+					   type: "toggle",
+					   value: "N",
+					   values: ["N", "Y"],
+					   options: ["No", "Yes"],
 					 }
 					]
 				  ]
@@ -8376,6 +8394,28 @@
 	  });
   }
 
+  function handleCopyShipToEndCxToggle(config) {
+	if (!nbsf.fn.filter(config.dataset, page7.filter) || config.dataset.PO_Category === "Stock" || config.dataset.PO_Category == "Stage") {
+	  // toggleCopyShipto2Endx should be hidden because End Customer page is disabled
+	  $('[data-name="toggleCopyShipto2Endx"]').closest('label.wrapper').remove();
+	} else if (config.dataset.PO_Category === "Drop") {
+	  // Copy from ShipTo to EndCx toggle
+	  $('label[for="toggleCopyShipto2Endx"]').click(function() {
+		$('input[data-name="toggleCopyShipto2Endx"]').trigger("change");
+	  });
+	  $('input[data-name="toggleCopyShipto2Endx"]').change(function(e) {
+		if (e.target.value === 'Y') {
+		  ['PartyId', ...config.addressField].forEach(fieldName => {
+			$(`[data-name="EndCx_${fieldName}"]`).val($(`[data-name="ShipTo_${fieldName}"]`).val());
+			config.dataset[`EndCx_${fieldName}`] = $(`[data-name="ShipTo_${fieldName}"]`).val();
+		  });
+		  nbsf.ev.global(config, true);
+		}
+	  });
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label').css('paddingRight', '0px');
+	}
+  }
+
   const config = {
 	dom: null,
 	onLoadCallbacks:[],
@@ -10324,6 +10364,14 @@
 		  $('*[data-name="ShipTo_PartyId_Predefined"]').val('');
 		}
 	  });
+	  $('[data-name="toggleCopyShipto2Endx"]').parents('label.toggle').css({
+		'marginTop': '35px',
+		'maxWidth': '410px',
+		'width': '410px'
+	  });
+
+	  handleCopyShipToEndCxToggle(config);
+
 	  helper.buildFastClearAddressButton('ShipTo');
 	},
 	page7: function() {
