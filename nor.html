@@ -4871,7 +4871,7 @@
 				},
 				{
 				  header: "Contact",
-				  filter: filter: => {
+				  filter: () => {
 					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
@@ -10850,7 +10850,7 @@
 		PANumbers = [...new Set(PANumbers)];
 		PANumbers.join(', ');
 		// comment for testing
-		 return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
+		return { valid: false, text: hpe.fn.lang("Form237", config.locale, config.localizations).replace('[PANumber]', PANumbers) };
 	  }
 
 	  // clear big data
@@ -11465,12 +11465,12 @@
 
 			  if (d) {
 				let addressObj = {
-				  PartyId: d.party[0].currentPartyID || d.party[0].submittedPartyID || partyId,
-				  Address_Country: d.party[0].countryName
+				  PartyId: d.currentPartyID || d.submittedPartyID || partyId,
+				  Address_Country: d.countryName
 				};
 				let alternateName = '';
-				if (d.party[0].organizationAlternateName && d.party[0].organizationAlternateName.length > 0) {
-				  d.party[0].organizationAlternateName.forEach(function(item) {
+				if (d.organizationAlternateName && d.organizationAlternateName.length > 0) {
+				  d.organizationAlternateName.forEach(function(item) {
 					if (
 					  item.internalOverWriteFlag === 'Y' &&
 					  item.status === 'ACTIVE' &&
@@ -11481,28 +11481,28 @@
 					}
 				  });
 				}
-				addressObj['CompanyName'] = alternateName ? alternateName : d.party[0].organizationName;
+				addressObj['CompanyName'] = alternateName ? alternateName : d.organizationName;
 
 				let addressMatched = null;
-				if (d.party[0].address && d.party[0].address.length > 0) {
-				  addressMatched = d.party[0].address.find(item => {
+				if (d.address && d.address.length > 0) {
+				  addressMatched = d.address.find(item => {
 					return item.internalOverWriteFlag == "Y" && item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 				  });
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY" && item.countryLanguageCode.includes('-LATN');
 					});
 				  }
 
 				  if (!addressMatched) {
-					addressMatched = d.party[0].address.find(item => {
+					addressMatched = d.address.find(item => {
 					  return item.status == "ACTIVE" && item.addressType == "PHY";
 					});
 				  }
 
 				  if (addressMatched) {
-					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1)
+					if (["Australia", "New Zealand", "India", "Malaysia", "Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1)
 					  config.dataset[`${section}_Address_State`] = addressMatched.stateProvince;
 
 					let address1 = addressMatched.addressLine1;
@@ -11522,8 +11522,8 @@
 				}
 
 				if (section == 'ShipTo' || section == 'EndCx') {
-				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.party[0].countryName) > -1) {
-					var externalidentifier = d.party[0].externalIdentifier;
+				  if (["Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Puerto Rico"].indexOf(d.countryName) > -1) {
+					var externalidentifier = d.externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 						addressObj['NationalID'] = externalidentifier[i].identifierValue;
@@ -11535,8 +11535,8 @@
 				}
 				// SoldTo NationalID
 				if (section == 'SoldTo') {
-				  if (["Brazil"].indexOf(d.party[0].countryName) > -1) {
-					var externalidentifier = d.party[0].externalIdentifier;
+				  if (["Brazil"].indexOf(d.countryName) > -1) {
+					var externalidentifier = d.externalIdentifier;
 					for (i = 0; i < externalidentifier.length; i++) {
 					  if (externalidentifier[i].status == "ACTIVE" && ["Tax Number 1"].indexOf(externalidentifier[i].externalIdentifierName) > -1) {
 						addressObj['NationalID'] = externalidentifier[i].identifierValue;
