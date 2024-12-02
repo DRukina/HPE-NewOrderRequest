@@ -3423,7 +3423,7 @@
 			{
 			  label: "StateProvince",
 			  data: "SoldTo_Address_State",
-			  required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
+			  required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
 			  type: "text",
 			  //placeholder: "Form063",
 			  validation: ["kpDefault", "minLen|2"],
@@ -3432,7 +3432,7 @@
 			{
 			  label: "Postal code",
 			  data: "SoldTo_Address_Postal",
-			  required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
+			  required: true, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
 			  type: "text",
 			  //placeholder: "Form087",
 			  validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -3533,7 +3533,7 @@
 		   {
 			 label: "StateProvince",
 			 data: "SoldTo_Address_State",
-			 required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
+			 required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "RegionRequired"),
 			 type: "text",
 			 //placeholder: "Form063",
 			 validation: ["kpDefault", "minLen|2"],
@@ -3542,7 +3542,7 @@
 		   {
 			 label: "Postal code",
 			 data: "SoldTo_Address_Postal",
-			 required: () => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
+			 required: false, //() => isStateOrPostalRequired(config.dataset, "SoldTo_Address_Country", "SoldTo_Address_Street", reference.countriesData, "PostalRequired"),
 			 type: "text",
 			 //placeholder: "Form087",
 			 validation: ["kpDefault", "minLen|2", "maxLen|10"],
@@ -4580,7 +4580,7 @@
 				},
 				{
 				  header: "Contact",
-				  filter: => {
+				  filter: () => {
 					return config.dataset.Config_ShipToDetails_Contact != "Y" && config.dataset.SoldTo_Address_Country != "Korea (Rep.)" && config.dataset.CountryCode != "CN";
 				  },
 				  group: [
@@ -7416,7 +7416,7 @@
 		const heading = $(row).find('.heading');
 		if (heading) {
 		  const msg = hpe.fn.lang("DownloadTheTemplate", config.locale, config.localizations);
-		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V4.xlsx'>${msg}</a>`);
+		  $(heading).append(`<a style="display: block" href='https://hpe-rfb.it.hpe.com/builder/rs/forms/989/images/HPE%20NOR%20Template%20for%20Products%20and%20Services%20V5.xlsx'>${msg}</a>`);
 		  $(".k-dropzone").css({width: "100%", display: "flex", justifyContent: "space-between",});
 
 		  $(".k-dropzone").append(`<div class="k-button kUpload-reset" aria-label="Reset file" style="margin: 8px 0 15px 8px;"><span>${hpe.fn.lang("ResetSelectedFile", config.locale, config.localizations)}</span></div>`);
@@ -8321,7 +8321,7 @@
 	multiValues.data = {};
 	let prefs = global.data.userPreferences[newVal === undefined ? config.dataset.PartyId : newVal];
 	if (!prefs) return;
-	
+
 	Object.entries(prefs).forEach(([fieldName, fieldValue]) => {
 	  if (Array.isArray(fieldValue)) {
 		multiValues.data[fieldName] = fieldValue;
@@ -13254,7 +13254,7 @@
 				value: ucid.Carepack || "N",
 				values: ["N", "Y"],
 				options: ["Carepack", "Carepack"],
-				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId ? " carepack-hidden":"") //(ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
 			  });
 			}
 			group.push(item);
