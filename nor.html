@@ -11070,25 +11070,9 @@
             }
           });
         }
-	  
+	  const selectedAllEl = document.querySelector("input[type='checkbox'][data-name='Selected_All']");
 	  const changableInputs = document.querySelectorAll('input[data-name*="Count"], input[data-name*="Selected"]');
-	  if (changableInputs.length) {
-		for (let i = 0; i < changableInputs.length; i++) {
-		  changableInputs[i].addEventListener('change', function(e) {
-			const check = nbsf.ev.global(config);
-			if (!check.total.fail) {
-			  quoteHelper.saveProductAndServicesConfig(config);
-			}
-		  });
-		}
-	  }
-	  
-	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
-		 quoteHelper.onInitProductAndServices(config);
-	//	quoteHelper.onCloneProductAndServices(config, document);
-	  }
-
-	  const selectedAllEl = document.querySelector("input[data-name='Selected_All']");
+	  const individualCheckboxes = document.querySelectorAll("input[type='checkbox'][data-name^='Selected_']:not([data-name='Selected_All'])");
 	  if (selectedAllEl) {
 		if (document.querySelector("input[data-name='ProductServices_Attachment']")) {
 		  selectedAllEl.closest(".fmmcosmin").style.visibility = "hidden";
@@ -11096,17 +11080,36 @@
 		  selectedAllEl.addEventListener("change", (e) => {
 			const selAllChecked = e.target.checked;
 			const paramValue = selAllChecked ? "Y" : null;
-			config.dom.querySelectorAll("input[type='checkbox'][data-name^='Selected_']").forEach((cbEl) => {
+			individualCheckboxes.forEach((cbEl) => {
 			  const paramName = cbEl.getAttribute("data-name");
-			  if (paramName != "Selected_All") {
-				cbEl.checked = selAllChecked;
-				config.dataset[paramName] = paramValue;
-			  }
+			  cbEl.checked = selAllChecked;
+			  config.dataset[paramName] = paramValue;
 			});
 			nbsf.ev.global(config);
 		  });
 		}
 	  }
+
+	  if (changableInputs.length) {
+		for (let i = 0; i < changableInputs.length; i++) {
+		  changableInputs[i].addEventListener('change', function(e) {
+			const checkbox = e.target;
+			const paramName = checkbox.getAttribute("data-name");
+			config.dataset[paramName] = checkbox.checked ? "Y" : null;
+
+			allChecked = Array.from(individualCheckboxes).every(cbEl => cbEl.checked);
+			selectedAllEl.checked = allChecked;
+			config.dataset["Selected_All"] = allChecked ? "Y" : null;
+
+			quoteHelper.saveProductAndServicesConfig(config);
+		  });
+		}
+	  }
+
+	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
+		quoteHelper.onInitProductAndServices(config);
+	  }
+
 	},
 	quotePreview: function() {
 	  console.log('%c Quote Preview page ', 'background: #222; color: #bada55');    
