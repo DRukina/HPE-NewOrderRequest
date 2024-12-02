@@ -34,7 +34,7 @@
 		}
 	  });
 	  
-	  locationApi.partyCache[partyId] = loc;
+	  locationApi.partyCache[locationId] = loc;
 	  return loc;
 	},
 	
@@ -13257,7 +13257,7 @@
 				value: ucid.Carepack || "N",
 				values: ["N", "Y"],
 				options: ["Carepack", "Carepack"],
-				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId ? " carepack-hidden":"") //(ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
+				class: `ps-toggle carepack_toggle ID_${ucid.ID}` + (ucid.CfgSystemId && ucid.CfgSystemId != ucid.ProductID?" carepack-hidden":""),
 			  });
 			}
 			group.push(item);
