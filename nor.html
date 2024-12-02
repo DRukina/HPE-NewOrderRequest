@@ -11120,7 +11120,6 @@
 			selectedAllEl.checked = allChecked;
 			config.dataset["Selected_All"] = allChecked ? "Y" : null;
 
-			const check = nbsf.ev.global(config);
 			quoteHelper.saveProductAndServicesConfig(config);
 		  });
 		}
@@ -11128,7 +11127,6 @@
 
 	  if (!config.dataset.ProductServices_Attachment && config.dataset.Config_Quote !== 'Y') {
 		quoteHelper.onInitProductAndServices(config);
-		//	quoteHelper.onCloneProductAndServices(config, document);
 	  }
 
 	},
