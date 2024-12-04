@@ -140,7 +140,7 @@
 	})
   } // create error log
 
-  function locationAddress(currentVal, type, hasNationalID) {
+  function locationAddress(currentVal, type, hasNationalID, resolve, reject) {
 	mo.fn.overlay.show({
 	  progressText: hpe.fn.lang("FormCFI011", config.locale, config.localizations),
 	  progressPercent: 40,
@@ -201,6 +201,7 @@
 			setTimeout(function() {
 			  mo.fn.overlay.hide();
 			  mo.fn.events.closeAll();
+			  if (resolve) resolve();
 			}, 1000);
 		  } 
 		  else {
@@ -223,6 +224,7 @@
 				content: d.message + ".",
 				ctaCallback: function() {
 				  mo.fn.events.closeAll();
+			      if (reject) reject();
 				},
 				contentCallback: function() {}
 			  });
@@ -415,6 +417,10 @@
 	  };
 	  
 	});
+  }
+
+  function locationAddressPromise(currentVal, type, hasNationalID) {
+	return new Promise((resolve, reject) => locationAddress(currentVal, type, hasNationalID, resolve, reject));
   }
 
   function EMDMAddressPromise(currentVal, type, hasNationalID) {
@@ -11130,9 +11136,24 @@
 		  let currentVal = $(this).val();
 		  
 		  const isLocation = (partyIdNamePrefix == 'ShipTo' || partyIdNamePrefix == 'BillTo') && currentVal.length == 10 && currentVal[0] == "2";
-		  
+
+		  function updateShipToDetails(partyIdNamePrefix) {
+			if (partyIdNamePrefix === "ShipTo") {
+			  $(`[data-name="ShipTo_Contact_Country"]`).val(config.dataset.ShipTo_Address_Country);
+			  config.dataset.ShipTo_Contact_Country = config.dataset.ShipTo_Address_Country;
+			  nbsf.ev.global(config, true);
+			}
+		  }
+
 		  if (isLocation) {
-			locationAddress(currentVal, partyIdNamePrefix, false);
+			locationAddressPromise(currentVal, partyIdNamePrefix, partyIdNamePrefix)
+			  .then(() => {
+			  console.log(`${partyIdNamePrefix} has been successfully populated.`);
+			  updateShipToDetails(partyIdNamePrefix);
+			})
+			  .catch(error => {
+			  console.error("Failed to populate:", error);
+			});
 		  } else if ( 
 			(currentVal.length === 10 && !currentValLengthOnPages.includes(partyIdNamePrefix))
 			|| (currentVal.length === 10 && currentValLengthOnPages.includes(partyIdNamePrefix) && currentVal[0] == "1")
@@ -11143,10 +11164,17 @@
 			  close: false
 			})
 			config.dataset.SoldTo_PartyId = currentVal;
-			EMDMAddress(currentVal, partyIdNamePrefix, false);
+
+			EMDMAddressPromise(currentVal, partyIdNamePrefix, partyIdNamePrefix)
+			  .then(() => {
+			  console.log(`${partyIdNamePrefix} has been successfully populated.`);
+			  updateShipToDetails(partyIdNamePrefix);
+			})
+			  .catch(error => {
+			  console.error("Failed to populate:", error);
+			});
 		  }
 		});
-
 		$(`*[data-name*="${partyIdNamePrefix}_"]`).change(function() {
 		  if ($(this)[0].getAttribute("data-name") != partyIdName && $(this)[0].getAttribute("data-name").indexOf(`${partyIdNamePrefix}_Contact`) == -1) {
 			$(`*[data-name="${partyIdName}"]`).val('');
@@ -11230,6 +11258,23 @@
 	  });
 	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
 		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+	  });
+
+	  // ShipTo
+	  if (config.dataset.ShipTo_Address_Country && !config.dataset.ShipTo_Contact_Country) {
+		$(`[data-name="ShipTo_Contact_Country"]`).val(config.dataset.ShipTo_Address_Country);
+		config.dataset.ShipTo_Contact_Country = config.dataset.ShipTo_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.ShipTo_Contact_Country = config.dataset.ShipTo_Address_Country;
+	  }
+	  $(`[data-name="ShipTo_PartyId"]`).change(function() {
+		$(`[data-name="ShipTo_Contact_Country"]`).val(config.dataset.ShipTo_Address_Country);
+		config.dataset.ShipTo_Contact_Country = config.dataset.ShipTo_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.ShipTo_Contact_Country = config.dataset.ShipTo_Address_Country;
+	  });
+	  $(`[data-name="ShipTo_Address_Country"]`).change(function() {
+		$(`[data-name="ShipTo_Contact_Country"]`).val($(this).val());
+		config.dataset.ShipTo_Contact_Country = $(this).val();
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.ShipTo_Contact_Country = $(this).val();
 	  });
 	  
 	  // End Customer
