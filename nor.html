@@ -11252,12 +11252,18 @@
 	  // SoldTo
 	  if (config.dataset.SoldTo_Address_Country && !config.dataset.SoldTo_Contact_Country) {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		config.dataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
 	  }
 	  $(`[data-name="SoldTo_PartyId"]`).change(function() {
 		$(`[data-name="SoldTo_Contact_Country"]`).val(config.dataset.SoldTo_Address_Country);
+		config.dataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
 	  });
 	  $(`[data-name="SoldTo_Address_Country"]`).change(function() {
 		$(`[data-name="SoldTo_Contact_Country"]`).val($(this).val());
+		config.dataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.SoldTo_Contact_Country = config.dataset.SoldTo_Address_Country;
 	  });
 
 	  // ShipTo
@@ -11297,12 +11303,18 @@
 	  // Reseller
 	  if (config.dataset.Reseller_Address_Country && !config.dataset.Reseller_Contact_Country) {
 		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+		config.dataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
 	  }
 	  $(`[data-name="Reseller_PartyId"]`).change(function() {
 		$(`[data-name="Reseller_Contact_Country"]`).val(config.dataset.Reseller_Address_Country);
+		config.dataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
 	  });
 	  $(`[data-name="Reseller_Address_Country"]`).change(function() {
 		$(`[data-name="Reseller_Contact_Country"]`).val($(this).val());
+		config.dataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
+		if (config.reviewDataset && Object.keys(config.reviewDataset).length) config.reviewDataset.Reseller_Contact_Country = config.dataset.Reseller_Address_Country;
 	  });
 	  nbsf.ev.global(config, true);
 	  
